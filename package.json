@@ -20,13 +20,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
-<<<<<<< HEAD
     "react-router-dom": "^7.2.0",
     "tailwindcss": "^4.0.8"
-=======
-    "react-router-dom": "^7.5.0",
-    "tailwindcss": "^4.0.9"
->>>>>>> 79ef2e9fc771612e24cf2d96f6022303c09aa235
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
