@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+@theme {
+ 
+  --color-darkblue: #212A31;
+  --color-blue: #124E66;
+  --color-darkblue2: #2E3944;
+  --color-blue2: #748D92;
+  --color-blue3: #D3D9D4;
+  --color-customgray: #5f767c;
+  
+}
