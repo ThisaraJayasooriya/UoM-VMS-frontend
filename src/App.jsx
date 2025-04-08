@@ -12,6 +12,11 @@ import MeetingRequests from "./pages/host/MeetingRequests";
 import HostLayout from "./pages/host/HostLayout";
 import HostDashboard from "./pages/host/HostDashboard";
 import HostProfile from "./pages/host/HostProfile";
+import SecurityLayout from "./pages/security/SecurityLayout";
+import SecurityDashboard from "./pages/security/SecurityDashboard";
+import VerifyVisitors from "./pages/security/VerifyVisitors";
+import SecurityProfile from "./pages/security/SecurityProfile";
+import SecuritySettings from "./pages/security/SecuritySettings";
 
 
 function App() {
@@ -25,6 +30,12 @@ function App() {
             <Route index element={<HostDashboard />} />
             <Route path="meeting" element={<MeetingRequests />} />
             <Route path="profile" element={<HostProfile />} />
+          </Route>
+          <Route path="/security" element={<SecurityLayout />} >
+            <Route index element={<SecurityDashboard />} />
+            <Route path="visitor" element={<VerifyVisitors />} />
+            <Route path="profile" element={<SecurityProfile />} />
+            <Route path="settings" element={<SecuritySettings />} />
           </Route>
         </Routes>
       </BrowserRouter>
