@@ -7,6 +7,12 @@ import HomeNavbar from "./components/home/HomeNavbar";
 import MainNavbar from "./components/home/MainNavbar";
 import ContactUs from "./pages/common/ContactUs";
 import PrivacyPolicy from "./pages/common/PrivacyPolicy";
+import LoginPage from "./pages/LoginPage";
+import MeetingRequests from "./pages/host/MeetingRequests";
+import HostLayout from "./pages/host/HostLayout";
+import HostDashboard from "./pages/host/HostDashboard";
+import HostProfile from "./pages/host/HostProfile";
+
 
 function App() {
   return (
@@ -14,9 +20,12 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/*" element={<MainComponent />} />
-          
-
-      
+          <Route path="/roles" element={<LoginPage />} />
+          <Route path="/host" element={<HostLayout />}>
+            <Route index element={<HostDashboard />} />
+            <Route path="meeting" element={<MeetingRequests />} />
+            <Route path="profile" element={<HostProfile />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </div>
@@ -49,3 +58,4 @@ function MainComponent() {
 }
 
 export default App;
+   
