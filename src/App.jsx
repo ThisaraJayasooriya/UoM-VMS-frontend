@@ -17,13 +17,39 @@ import SecurityDashboard from "./pages/security/SecurityDashboard";
 import VerifyVisitors from "./pages/security/VerifyVisitors";
 import SecurityProfile from "./pages/security/SecurityProfile";
 import SecuritySettings from "./pages/security/SecuritySettings";
+import { useState } from "react"; // ✅ Add this
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserDetails from "./pages/admin/UserDetails";
+import VisitorLogbook from "./pages/admin/VisitorLogbook";
+import StaffRegistration from "./pages/admin/StaffRegistration";
+import AdminReports from "./pages/admin/AdminReports";
+import Profile from "./pages/admin/AdminProfile";
+import Settings from "./pages/admin/AdminSettings";
 
 
 function App() {
+  // ✅ Shared user state
+  const [userData, setUserData] = useState({
+    visitor: [],
+    host: [],
+    security: [],
+    admin: [],
+  });
+
+  const addUser = (role, user) => {
+    setUserData((prev) => ({
+      ...prev,
+      [role]: [...prev[role], user],
+    }));
+  };
+
   return (
     <div>
       <BrowserRouter>
-        <Routes>
+        
+        <Routes> 
+    
           <Route path="/*" element={<MainComponent />} />
           <Route path="/roles" element={<LoginPage />} />
           <Route path="/host" element={<HostLayout />}>
@@ -37,11 +63,22 @@ function App() {
             <Route path="profile" element={<SecurityProfile />} />
             <Route path="settings" element={<SecuritySettings />} />
           </Route>
+          <Route path="/admin" element={<AdminLayout />} >
+            <Route index element={<AdminDashboard />} />
+            <Route path="userdetails" element={<UserDetails userData={userData} />} /> {/* ✅ pass userData */}
+            <Route path="staffregistration" element={<StaffRegistration addUser={addUser} />} /> {/* ✅ pass addUser */}
+            <Route path="visitorlogbook" element={<VisitorLogbook />} />
+            <Route path="adminreports" element={<AdminReports />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </div>
-  );
+ );
 }
+
+
 
 function MainComponent() {
   const location = useLocation();
@@ -65,8 +102,8 @@ function MainComponent() {
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
       </Routes>
     </>
+
   );
 }
 
 export default App;
-   
