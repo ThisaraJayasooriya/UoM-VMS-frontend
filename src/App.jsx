@@ -26,7 +26,12 @@ import StaffRegistration from "./pages/admin/StaffRegistration";
 import AdminReports from "./pages/admin/AdminReports";
 import Profile from "./pages/admin/AdminProfile";
 import Settings from "./pages/admin/AdminSettings";
-
+import VisitorLayout from "./pages/visitor/VisitorLayout";
+import VisitorDashboard from "./pages/visitor/VisitorDashboard.jsx";
+import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
+import Visithistory from "./pages/visitor/Visithistory.jsx";
+import UpcomingVisit from "./pages/visitor/UpcomingVisit.jsx";
+import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
 
 function App() {
   // ✅ Shared user state
@@ -72,6 +77,13 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
           </Route>
+          <Route path="/visitor" element={<VisitorLayout />} >
+            <Route index element={<VisitorDashboard />} />
+            <Route path="appointment" element={<VisitorAppointment />} />
+            <Route path="history" element={<Visithistory />} />
+            <Route path="upcoming" element={<UpcomingVisit/>} />
+            <Route path="feedback" element={<VisitorFeedback/>} />
+           </Route>
         </Routes>
       </BrowserRouter>
     </div>
