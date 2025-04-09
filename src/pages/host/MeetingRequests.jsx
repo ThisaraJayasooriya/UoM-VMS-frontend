@@ -1,4 +1,5 @@
 import  { useState, useEffect } from "react";
+import { FaTimes } from "react-icons/fa";
 
 const MeetingRequests = () => {
   // Dummy data to simulate meeting requests from a database
@@ -57,9 +58,9 @@ const MeetingRequests = () => {
           <div className="relative bg-white p-6 rounded-lg w-96 z-10 shadow-lg">
           <button
               onClick={() => setIsPopupOpen(false)}
-              className="absolute top-2 right-2 bg-blue2 text-white px-4 py-2 rounded hover:bg-customgray transition duration-300"
+              className="absolute top-2 right-2  text-white px-4 py-2 rounded hover:bg-gray-300 transition duration-300 cursor-pointer"
               >
-              
+              <FaTimes className="text-black text" />
             </button>
             <h3 className="text-2xl font-bold mb-4 flex justify-center">Meeting Details</h3>
            
