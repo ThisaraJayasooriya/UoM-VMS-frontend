@@ -3,6 +3,7 @@ import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { FaClock, FaClockRotateLeft } from "react-icons/fa6";
+import { addTimeSlots, getTimeSlots } from "../../services/timeslotService";
 
 
 const HostCalendar = () => {
