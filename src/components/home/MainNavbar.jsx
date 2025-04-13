@@ -3,7 +3,7 @@ import vlogo from "../../assets/v.png"; // Make sure the path is correct
 
 function MainNavbar() {
   return (
-    <nav className="bg-[#212A31] p-4 shadow-md">
+    <nav className="bg-gradient-to-r from-darkblue to-blue text-white p-6 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center">
@@ -11,12 +11,12 @@ function MainNavbar() {
         </Link>
 
         {/* Navigation Links */}
-        <div className="space-x-6">
-          <Link to="/" className="text-white hover:text-gray-300">Home</Link>
-          <Link to="/about" className="text-white hover:text-gray-300">About Us</Link>
-          <Link to="/contact" className="text-white hover:text-gray-300">Contact Us</Link>
-          <Link to="/login" className="text-white hover:text-gray-300">Log In</Link>
-          <Link to="/signup" className="text-white hover:text-gray-300">Sign Up</Link>
+        <div className="space-x-6 text-base font-medium">
+          <Link to="/" className="hover:text-gray-300 transition">Home</Link>
+          <Link to="/about" className="hover:text-gray-300 transition">About Us</Link>
+          <Link to="/contact" className="hover:text-gray-300 transition">Contact Us</Link>
+          <Link to="/login" className="hover:text-gray-300 transition">Log In</Link>
+          <Link to="/signup" className="hover:text-gray-300 transition">Sign Up</Link>
         </div>
       </div>
     </nav>

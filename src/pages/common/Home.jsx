@@ -1,7 +1,12 @@
 import React from 'react';
-import { FaCalendarCheck, FaUserCheck, FaBell } from "react-icons/fa";
+import {
+  FaCalendarCheck,
+  FaUserCheck,
+  FaBell,
+  FaArrowRight,
+} from "react-icons/fa";
 import FeatureCard from "../../components/home/FeatureCard";
-import StreamlineSteps from '../../components/home/StreamlineSteps'; 
+import StreamlineSteps from "../../components/home/StreamlineSteps";
 import Footer from "../../components/home/Footer";
 import bgImage from "../../assets/bg.jpg";
 import { useNavigate } from "react-router-dom";
@@ -10,41 +15,47 @@ function Home() {
   const navigate = useNavigate();
 
   return (
-    <div>
-      {/* Background Container */}
-      <div 
+    <div className="overflow-x-hidden">
+      {/* Hero Section */}
+      <div
         className="relative h-screen w-full bg-cover bg-center flex items-center"
-        style={{ backgroundImage: `url(${bgImage})` }}
+        style={{
+          backgroundImage: `linear-gradient(rgba(3, 33, 57, 0.85), rgba(3, 33, 57, 0.85)), url(${bgImage})`,
+          backgroundPosition: "center center",
+          backgroundAttachment: "fixed",
+        }}
       >
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-[#032139]/80"></div>
-
-        {/* Content */}
-        <div className="relative w-11/12 mx-auto text-white z-10">
-          <div className="flex flex-col gap-16 justify-center h-[calc(100vh-8rem)]">
-            <div className="mt-36">
-              <p className="text-6xl font-light font-[Abhaya Libre] mb-4">Visitor Management System</p>
-              <p className="text-lg font-[Abhaya Libre]">University of Moratuwa</p>
-            </div>
-
-            <div>
-              <p className="text-lg text-white/50">
-                Streamline your visit with <br />
-                seamless pre-registration and secure check-in.
+        <div className="relative w-full px-6 z-10">
+          <div className="max-w-6xl mx-auto flex flex-col justify-center items-start text-white pt-24">
+            {/* Title & Subtitle */}
+            <div className="mb-8 backdrop-blur-sm bg-white/5 p-6 rounded-lg shadow-md">
+              <h1 className="text-4xl md:text-6xl font-semibold leading-tight font-[Abhaya Libre] mb-2 text-[#D3D9D4]">
+                Visitor Management System
+              </h1>
+              <p className="text-lg md:text-xl font-[Abhaya Libre] text-[#B0BEC5]">
+                University of Moratuwa
               </p>
             </div>
-            <div className="flex justify-end gap-2 mt-8">
-              <button 
-                className="px-20 py-3 bg-white text-black font-bold border border-black rounded-md"
+
+            {/* Description */}
+            <p className="text-base md:text-lg text-[#D3D9D4] max-w-xl mt-4 leading-relaxed mb-10">
+              Seamlessly manage visitor flow with secure pre-registration, identity verification,
+              and instant host notifications — ensuring a smarter, safer, and smoother visit.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                className="px-8 py-4 bg-white text-[#124E66] font-bold rounded-md hover:bg-[#f0f0f0] transition-colors duration-300 flex items-center gap-2"
                 onClick={() => navigate("/signup")}
               >
-                Sign Up
+                Sign Up <FaArrowRight />
               </button>
-              <button 
-                className="px-20 py-3 bg-[#124E66] text-white font-bold border border-white rounded-md"
+              <button
+                className="px-8 py-4 bg-[#124E66] text-white font-bold border border-[#124E66] rounded-md hover:bg-[#0e3d52] transition-colors duration-300 flex items-center gap-2"
                 onClick={() => navigate("/login")}
               >
-                Log In
+                Log In <FaArrowRight />
               </button>
             </div>
           </div>
@@ -52,22 +63,39 @@ function Home() {
       </div>
 
       {/* Features Section */}
-      <div className="flex justify-center gap-8 py-28 bg-[#dde2e6]">
-        <FeatureCard
-          icon={<FaCalendarCheck />}
-          title="Sign Up & Request Appointments"
-          description="Create an account and request appointments with your host."
-        />
-        <FeatureCard
-          icon={<FaUserCheck />}
-          title="Secure Check-In"
-          description="Verify your identity at the security desk using your unique code."
-        />
-        <FeatureCard
-          icon={<FaBell />}
-          title="Real-Time Notifications"
-          description="Hosts receive instant notifications when visitors arrive."
-        />
+      <div className="py-20 bg-gradient-to-b from-[#D3D9D4] to-[#f5f7f6]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-light text-[#124E66] mb-4">
+              Key Features
+            </h2>
+            <div className="w-24 h-1 bg-[#748D92] mx-auto"></div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={<FaCalendarCheck className="text-4xl text-[#124E66] mb-4" />}
+              title="Sign Up & Request Appointments"
+              description="Create an account and request appointments with your host."
+              bgColor="bg-white"
+              borderColor="border-[#124E66]"
+            />
+            <FeatureCard
+              icon={<FaUserCheck className="text-4xl text-[#124E66] mb-4" />}
+              title="Secure Check-In"
+              description="Verify your identity at the security desk using your unique code."
+              bgColor="bg-white"
+              borderColor="border-[#124E66]"
+            />
+            <FeatureCard
+              icon={<FaBell className="text-4xl text-[#124E66] mb-4" />}
+              title="Real-Time Notifications"
+              description="Hosts receive instant notifications when visitors arrive."
+              bgColor="bg-white"
+              borderColor="border-[#124E66]"
+            />
+          </div>
+        </div>
       </div>
 
       <StreamlineSteps />
