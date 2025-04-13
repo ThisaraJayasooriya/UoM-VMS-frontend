@@ -24,6 +24,7 @@ function VisitorLayout() {
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/visitor" },
     { icon: <FaUser />, description: "Profile", route: "/visitor/profile" },
     { icon: <IoMdNotificationsOutline />, description: "Notification", route: "/visitor/notification" },
+   
   ];
 
   // Function to get current page title based on route

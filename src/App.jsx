@@ -37,7 +37,7 @@ import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
 import UpcomingVisit from "./pages/visitor/UpcomingVisit.jsx";
 import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
-import VisitorProfile from "./pages/visitor/VisitorProfile.jsx"; // Add this import
+import VisitorProfile from "./pages/visitor/VisitorProfile.jsx"; 
 
 function App() {
   const [userData, setUserData] = useState({
@@ -94,7 +94,7 @@ function App() {
             <Route path="history" element={<Visithistory />} />
             <Route path="upcoming" element={<UpcomingVisit />} />
             <Route path="feedback" element={<VisitorFeedback />} />
-            <Route path="profile" element={<VisitorProfile />} /> {/* Added Visitor Profile Route */}
+            <Route path="profile" element={<VisitorProfile />} /> 
           </Route>
         </Routes>
       </BrowserRouter>
