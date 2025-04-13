@@ -20,7 +20,7 @@ const About = () => {
           alt="University of Moratuwa Campus"
           className="w-full h-full object-cover brightness-75 transition-all duration-500 hover:scale-105"
         />
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center text-white text-center p-4">
+        <div className="absolute inset-0 bg-opacity-40 flex flex-col justify-center items-center text-white text-center p-4">
           <h2 className="text-4xl md:text-5xl font-bold drop-shadow-lg mb-4">
             About Our Visitor Management System
           </h2>

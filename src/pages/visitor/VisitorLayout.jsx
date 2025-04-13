@@ -39,7 +39,7 @@ function VisitorLayout() {
     <div className="h-screen w-full bg-white relative">
       {isSidebarVisible && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-10"
+          className="fixed inset-0 bg-opacity-50 z-10"
           onClick={hideSidebar}
         ></div>
       )}
