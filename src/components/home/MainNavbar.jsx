@@ -15,6 +15,7 @@ function MainNavbar() {
           <Link to="/" className="hover:text-gray-300 transition">Home</Link>
           <Link to="/about" className="hover:text-gray-300 transition">About Us</Link>
           <Link to="/contact" className="hover:text-gray-300 transition">Contact Us</Link>
+          <Link to="/privacy-policy" className="hover:text-gray-300 transition">Privacy Policy</Link>
           <Link to="/login" className="hover:text-gray-300 transition">Log In</Link>
           <Link to="/signup" className="hover:text-gray-300 transition">Sign Up</Link>
         </div>
@@ -24,3 +25,4 @@ function MainNavbar() {
 }
 
 export default MainNavbar;
+ 
