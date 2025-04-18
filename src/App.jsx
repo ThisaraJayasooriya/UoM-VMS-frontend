@@ -1,4 +1,6 @@
 import { Routes, Route, BrowserRouter, useLocation } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Home from "./pages/common/Home";
 import About from "./pages/common/About";
 import SignUp from "./pages/common/Signup"; 
@@ -57,6 +59,20 @@ function App() {
   return (
     <div>
       <BrowserRouter>
+        {/* Toast Container should be at the root level */}
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
+        
         <Routes> 
           <Route path="/*" element={<MainComponent />} />
           <Route path="/roles" element={<LoginPage />} />

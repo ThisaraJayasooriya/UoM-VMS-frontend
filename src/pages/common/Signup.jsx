@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import validator from "validator";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import logo from "../../assets/logouom.png";
 import VLogo from "../../assets/v.png";
 
@@ -14,37 +16,141 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
     username: "",
+    nationality: "",
     nicNumber: "",
+    passportNumber: ""
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
+    nationality: "",
+    nicNumber: "",
+    passportNumber: ""
+  });
+
+  const validateNIC = (nic) => {
+    const cleanedNIC = nic.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    const oldFormat = /^[0-9]{9}[VX]$/;
+    const newFormat = /^[0-9]{12}$/;
+    
+    if (!cleanedNIC) return "NIC is required";
+    if (oldFormat.test(cleanedNIC)) return "";
+    if (newFormat.test(cleanedNIC)) return "";
+    return "Please enter a valid NIC (ex: 123456789V or 200012345678)";
+  };
+
+  const validatePassport = (passport) => {
+    if (!passport.trim()) return "Passport number is required";
+    if (!/^[A-Za-z0-9]{5,20}$/.test(passport)) {
+      return "Passport must be 5-20 alphanumeric characters";
+    }
+    return "";
+  };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+
+    if (name === "nicNumber" && formData.nationality === "Sri Lankan") {
+      const nicError = validateNIC(value);
+      setErrors(prev => ({ ...prev, nicNumber: nicError || "" }));
+    }
+    
+    if (name === "passportNumber" && formData.nationality === "Foreigner") {
+      const passportError = validatePassport(value);
+      setErrors(prev => ({ ...prev, passportNumber: passportError || "" }));
+    }
+
+    if (name === "nationality") {
+      if (!value) {
+        setErrors(prev => ({ ...prev, nationality: "Please select your nationality" }));
+      } else {
+        setErrors(prev => ({ ...prev, nationality: "" }));
+        setFormData(prev => ({
+          ...prev,
+          nicNumber: value === "Sri Lankan" ? prev.nicNumber : "",
+          passportNumber: value === "Foreigner" ? prev.passportNumber : ""
+        }));
+      }
+    }
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      email: "",
+      phoneNumber: "",
+      password: "",
+      confirmPassword: "",
+      nationality: "",
+      nicNumber: "",
+      passportNumber: ""
+    };
+
+    if (!validator.isEmail(formData.email)) {
+      newErrors.email = "Please enter a valid email address.";
+      isValid = false;
+    }
+
+    const phoneRegex = /^(?:\+94|94|0)?(7[0-9]{8})$/;
+    if (!phoneRegex.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Please enter a valid Sri Lankan phone number (e.g., 0712345678)";
+      isValid = false;
+    }
+
+    if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+      isValid = false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match!";
+      isValid = false;
+    }
+
+    if (!formData.nationality) {
+      newErrors.nationality = "Please select your nationality";
+      isValid = false;
+    }
+
+    if (formData.nationality === "Sri Lankan") {
+      const nicError = validateNIC(formData.nicNumber);
+      if (nicError) {
+        newErrors.nicNumber = nicError;
+        isValid = false;
+      }
+    } else if (formData.nationality === "Foreigner") {
+      const passportError = validatePassport(formData.passportNumber);
+      if (passportError) {
+        newErrors.passportNumber = passportError;
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validator.isEmail(formData.email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
+    
+    if (!validateForm()) return;
 
     setIsLoading(true);
-    setError("");
+    setErrors({ ...errors, form: "" });
 
     try {
       const { confirmPassword, ...dataToSend } = formData;
-
       const response = await fetch("http://localhost:5000/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,15 +159,42 @@ const Signup = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        alert("Signup successful!");
-        navigate("/login");
-      } else {
-        setError(data.message || "Something went wrong. Please try again.");
+      if (!response.ok) {
+        throw new Error(data.message || "Signup failed. Please try again.");
       }
+
+      // On successful signup
+      toast.success("🎉 Signup successful! Redirecting to login...", {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+
+      // Store token if available
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+      }
+
+      // Redirect to login after delay
+      setTimeout(() => navigate("/login"), 2000);
+
     } catch (error) {
-      console.error("Error:", error);
-      setError("An unexpected error occurred. Please try again.");
+      console.error("Signup error:", error);
+      toast.error(`❌ ${error.message}`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -92,24 +225,67 @@ const Signup = () => {
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="grid grid-cols-2 gap-4">
-            <input type="text" name="firstName" placeholder="First Name" className="bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none" onChange={handleChange} required />
-            <input type="text" name="lastName" placeholder="Last Name" className="bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none" onChange={handleChange} required />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <input type="email" name="email" placeholder="Email Address" className="bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none" onChange={handleChange} required />
-            <input type="text" name="phoneNumber" placeholder="Phone Number" className="bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none" onChange={handleChange} required />
+            <div>
+              <input 
+                type="text" 
+                name="firstName" 
+                placeholder="First Name" 
+                className="w-full bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none" 
+                onChange={handleChange} 
+                required 
+                value={formData.firstName}
+              />
+            </div>
+            <div>
+              <input 
+                type="text" 
+                name="lastName" 
+                placeholder="Last Name" 
+                className="w-full bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none" 
+                onChange={handleChange} 
+                required 
+                value={formData.lastName}
+              />
+            </div>
           </div>
           
-          {/* Password Fields with Corrected Toggle Visibility */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <input 
+                type="email" 
+                name="email" 
+                placeholder="Email Address" 
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border ${errors.email ? 'border-red-500' : 'border-[#D3D9D2]'} focus:ring-2 focus:ring-[#124E66] focus:outline-none`} 
+                onChange={handleChange} 
+                required 
+                value={formData.email}
+              />
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+            </div>
+            <div>
+              <input 
+                type="text" 
+                name="phoneNumber" 
+                placeholder="Phone Number (0712345678)" 
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border ${errors.phoneNumber ? 'border-red-500' : 'border-[#D3D9D2]'} focus:ring-2 focus:ring-[#124E66] focus:outline-none`} 
+                onChange={handleChange} 
+                required 
+                value={formData.phoneNumber}
+              />
+              {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+            </div>
+          </div>
+          
           <div className="grid grid-cols-2 gap-4">
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Password"
-                className="w-full bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none pr-12"
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border ${errors.password ? 'border-red-500' : 'border-[#D3D9D2]'} focus:ring-2 focus:ring-[#124E66] focus:outline-none pr-12`}
                 onChange={handleChange}
                 required
+                value={formData.password}
               />
               <button
                 type="button"
@@ -128,6 +304,7 @@ const Signup = () => {
                   </svg>
                 )}
               </button>
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>
 
             <div className="relative">
@@ -135,9 +312,10 @@ const Signup = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 placeholder="Confirm Password"
-                className="w-full bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none pr-12"
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border ${errors.confirmPassword ? 'border-red-500' : 'border-[#D3D9D2]'} focus:ring-2 focus:ring-[#124E66] focus:outline-none pr-12`}
                 onChange={handleChange}
                 required
+                value={formData.confirmPassword}
               />
               <button
                 type="button"
@@ -156,15 +334,67 @@ const Signup = () => {
                   </svg>
                 )}
               </button>
+              {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <input type="text" name="username" placeholder="Username" className="bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none" onChange={handleChange} required />
-            <input type="text" name="nicNumber" placeholder="NIC Number" className="bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none" onChange={handleChange} required />
+            <div>
+              <input 
+                type="text" 
+                name="username" 
+                placeholder="Username" 
+                className="w-full bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none" 
+                onChange={handleChange} 
+                required 
+                value={formData.username}
+              />
+            </div>
+            <div>
+              <select
+                name="nationality"
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border ${errors.nationality ? 'border-red-500' : 'border-[#D3D9D2]'} focus:ring-2 focus:ring-[#124E66] focus:outline-none`}
+                onChange={handleChange}
+                required
+                value={formData.nationality}
+              >
+                <option value="">Select Nationality</option>
+                <option value="Sri Lankan">Sri Lankan</option>
+                <option value="Foreigner">Foreigner</option>
+              </select>
+              {errors.nationality && <p className="text-red-500 text-xs mt-1">{errors.nationality}</p>}
+            </div>
           </div>
 
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {formData.nationality === "Sri Lankan" && (
+            <div>
+              <input
+                type="text"
+                name="nicNumber"
+                placeholder="NIC Number (123456789V or 200012345678)"
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border ${errors.nicNumber ? 'border-red-500' : 'border-[#D3D9D2]'} focus:ring-2 focus:ring-[#124E66] focus:outline-none`}
+                onChange={handleChange}
+                value={formData.nicNumber}
+                required={formData.nationality === "Sri Lankan"}
+              />
+              {errors.nicNumber && <p className="text-red-500 text-xs mt-1">{errors.nicNumber}</p>}
+            </div>
+          )}
+
+          {formData.nationality === "Foreigner" && (
+            <div>
+              <input
+                type="text"
+                name="passportNumber"
+                placeholder="Passport Number"
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border ${errors.passportNumber ? 'border-red-500' : 'border-[#D3D9D2]'} focus:ring-2 focus:ring-[#124E66] focus:outline-none`}
+                onChange={handleChange}
+                value={formData.passportNumber}
+                required={formData.nationality === "Foreigner"}
+              />
+              {errors.passportNumber && <p className="text-red-500 text-xs mt-1">{errors.passportNumber}</p>}
+            </div>
+          )}
 
           <div>
             <button
