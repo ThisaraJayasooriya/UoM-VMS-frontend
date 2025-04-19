@@ -11,6 +11,7 @@ function VisitorLayout() {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const state = location.state || {};
 
   const toggleSidebar = () => {
     setSidebarVisible(!isSidebarVisible);
@@ -53,6 +54,7 @@ function VisitorLayout() {
           toggleSidebar={toggleSidebar}
           userName="john"
           userRole="Staff account"
+          type= {state.name}
           pageTitle={getCurrentPageTitle()}
           pageSubtitle="Visitor"
         />

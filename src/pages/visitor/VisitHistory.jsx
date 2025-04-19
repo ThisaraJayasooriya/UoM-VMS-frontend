@@ -2,27 +2,51 @@ import React from 'react';
 
 function Visithistory() {
   const visitHistory = [
-    "2025/04/01",
-    "2025/04/01",
-    "2025/04/01",
-    "2025/04/01",
-    "2025/04/01",
-    "2025/04/01",
-    "2025/04/01",
-    "2025/04/01",
-  ]; // Example data for visit history
+    {
+      visitorName: "Thisara Jayasooriya ",
+      host: "Mr. Smith",
+      date: "2025/04/01",
+      time: "10:30 AM",
+      reason: "Official Meeting",
+    },
+    {
+      visitorName: "Thisara Jayasooriya",
+      host: "Ms. Taylor",
+      date: "2025/04/02",
+      time: "2:00 PM",
+      reason: "Document Submission",
+    },
+    {
+      visitorName: "Thisara Jayasooriya",
+      host: "Dr. Williams",
+      date: "2025/04/03",
+      time: "9:00 AM",
+      reason: "Consultation",
+    },
+    {
+      visitorName: "Thisara Jayasooriya",
+      host: "Dr. Williams",
+      date: "2025/04/03",
+      time: "9:00 AM",
+      reason: "Consultation",
+    },
+  ];
 
   return (
-    <div className="p-6">
-     
-      {/* Visit History List */}
-      <div className="mt-6 space-y-3 m-30 mt-20">
-        {visitHistory.map((date, index) => (
+    <div className="min-h-screen bg-white p-6 flex flex-col items-center mt-10">
+      <div className="w-full max-w-2xl space-y-4">
+        {visitHistory.map((visit, index) => (
           <div
             key={index}
-            className="bg-gray-500 text-white p-3 rounded-lg shadow-md text-center text-sm"
+            className="bg-blue2 p-5 rounded-lg shadow-sm border border-gray-400 colour-gray-200 hover:shadow-lg transition duration-300 ease-in-out"
           >
-            {date}
+            <p className="text-lg font-semibold text-gray-800">
+              Visitor: {visit.visitorName}
+            </p>
+            <p className="text-sm text-gray-600">Host: {visit.host}</p>
+            <p className="text-sm text-gray-600">Date: {visit.date}</p>
+            <p className="text-sm text-gray-600">Time: {visit.time}</p>
+            <p className="text-sm text-gray-600">Reason: {visit.reason}</p>
           </div>
         ))}
       </div>

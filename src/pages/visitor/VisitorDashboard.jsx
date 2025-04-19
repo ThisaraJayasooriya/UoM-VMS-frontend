@@ -7,6 +7,34 @@ import { VscFeedback } from "react-icons/vsc";
 
 function VisitorDashboard() {
   const navigate = useNavigate(); 
+  const handleAppointmentClick = () => {
+    navigate('/visitor/appointment', {
+      state: {
+        name: 'Make an Appointment'
+      },
+    });
+  };
+  const handleHistoryClick = () => {
+    navigate('/visitor/history', {
+      state: {
+        name:'Visit History'
+      },
+    });
+  };
+  const handleUpcommingClick = () => {
+    navigate('/visitor/upcoming', {
+      state: {
+        name:'Upcomming Visits'
+      },
+    });
+  };
+  const handleFeedbackClick = () => {
+    navigate('/visitor/feedback', {
+      state: {
+        name:'Provide Feedback'
+      },
+    });
+  };
 
   return (
     <div className="pt-20 px-4 lg:px-20">
@@ -17,7 +45,7 @@ function VisitorDashboard() {
       <div className="flex flex-wrap justify-center gap-6 mt-8 max-w-[1300px] mx-auto">
         <div
           className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
-          onClick={() => navigate('/visitor/appointment')} // Navigate to Appointment page
+          onClick={handleAppointmentClick} // Navigate to Appointment page
         >
           <FaRegCalendarAlt className='mr-2'/>
           Make an Appointment
@@ -25,7 +53,7 @@ function VisitorDashboard() {
 
         <div
           className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
-          onClick={() => navigate('/visitor/history')} // Navigate to Visit History page
+          onClick={handleHistoryClick} // Navigate to Visit History page
         >
         
           <FaHistory className='mr-2'/>
@@ -34,14 +62,14 @@ function VisitorDashboard() {
 
         <div
           className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
-          onClick={() => navigate('/visitor/upcoming')} // Navigate to Upcoming Visits page
+          onClick={handleUpcommingClick} // Navigate to Upcoming Visits page
         >
           <FaShareSquare className='mr-2'/>
           Upcoming Visits
         </div>
         <div
           className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer "
-          onClick={() => navigate('/visitor/feedback')} // Navigate to provide feedback page
+          onClick={handleFeedbackClick} // Navigate to provide feedback page
         >
         <VscFeedback className="mr-2 text-2xl font-bold" />
           Provide Feedback
@@ -51,4 +79,4 @@ function VisitorDashboard() {
   );
 }
 
-export default VisitorDashboard;  
+export default VisitorDashboard;
