@@ -21,7 +21,6 @@ import SecurityLayout from "./pages/security/SecurityLayout";
 import SecurityDashboard from "./pages/security/SecurityDashboard";
 import VerifyVisitors from "./pages/security/VerifyVisitors";
 import SecurityProfile from "./pages/security/SecurityProfile";
-import SecuritySettings from "./pages/security/SecuritySettings";
 import { useState } from "react";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -73,7 +72,6 @@ function App() {
             <Route index element={<SecurityDashboard />} />
             <Route path="visitor" element={<VerifyVisitors />} />
             <Route path="profile" element={<SecurityProfile />} />
-            <Route path="settings" element={<SecuritySettings />} />
           </Route>
           
           {/* Admin Routes */}
