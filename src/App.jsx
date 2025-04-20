@@ -27,7 +27,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDetails from "./pages/admin/UserDetails";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
 import StaffRegistration from "./pages/admin/StaffRegistration";
-import AdminReports from "./pages/admin/AdminReports";
+import AdminInsights from "./pages/admin/AdminInsights.jsx";
 import Profile from "./pages/admin/AdminProfile";
 import Settings from "./pages/admin/AdminSettings";
 import VisitorLayout from "./pages/visitor/VisitorLayout";
@@ -80,7 +80,7 @@ function App() {
             <Route path="userdetails" element={<UserDetails userData={userData} />} />
             <Route path="staffregistration" element={<StaffRegistration addUser={addUser} />} />
             <Route path="visitorlogbook" element={<VisitorLogbook />} />
-            <Route path="adminreports" element={<AdminReports />} />
+            <Route path="admininsights" element={<AdminInsights />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
           </Route>
