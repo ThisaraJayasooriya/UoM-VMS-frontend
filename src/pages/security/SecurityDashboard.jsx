@@ -35,7 +35,7 @@ const SecurityDashboard = () => {
   ];
 
   return (
-    <main className="flex items-center justify-center min-h-[calc(100vh-112px)] px-4 lg:px-8 pb-8 pt-4" style={{ backgroundColor: "#ffffff" }}>
+    <main className="flex items-center justify-center min-h-[calc(100vh-112px)] px-4  lg:px-8 pb-8 pt-4" style={{ backgroundColor: "#ffffff" }}>
       <section className="rounded-2xl shadow-lg w-full max-w-5xl p-8 flex flex-col" style={{ backgroundColor: colors.blue3 }}>
         <div className="flex items-center mb-8">
           <div className="w-1 h-8 rounded mr-3" style={{ backgroundColor: colors.blue }}></div>
