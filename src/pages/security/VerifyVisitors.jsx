@@ -122,8 +122,6 @@ const VerifyVisitors = () => {
 
   return (
     <div className="flex flex-col flex-1 pt-16 px-4 max-w-5xl mx-auto text-darkblue2">
-      {/* Header */}
-      <h1 className="text-2xl font-bold mb-6 text-center text-blue">Visitor Management System</h1>
       
       {/* Alert */}
       {alert.show && (

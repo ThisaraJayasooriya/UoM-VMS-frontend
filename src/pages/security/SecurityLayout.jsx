@@ -17,7 +17,7 @@ function SecurityLayout() {
   const currentTitle = sidebarItems.find(item => item.route === window.location.pathname)?.description;
 
   return (
-    <div className="h-screen w-full bg-gray-100 relative">
+    <div className="h-full w-full bg-white relative">
       {isSidebarVisible && (
         <div className="fixed inset-0 bg-opacity-50 z-10" onClick={() => setSidebarVisible(false)}></div>
       )}
