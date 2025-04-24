@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useState } from "react";
 import Sidebar from "../../components/common/Sidebar";
 import Headerbar from "../../components/common/Headerbar";
@@ -16,6 +16,8 @@ function HostLayout() {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state || {};
 
   const toggleSidebar = () => {
     setSidebarVisible(!isSidebarVisible);
@@ -29,19 +31,23 @@ function HostLayout() {
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/host" },
     {
       icon: <FaCalendarPlus />,
-      description: "Meeting Requests",
-      route: "/host/meeting",
+      description: "Appointment Details",
+      route: "/host/appointmentdetails",
     },
-    {
-      icon: <FaCalendarAlt />,
-      description: "Appointments",
-      route: "/host/appointments",
-    },
+
     { icon: <FaUsers />, description: "Visit Log", route: "/host/visitlog" },
 
-    { icon: <FaUser />, description: "Profile", route: "/host/profile" },
-    { icon: <FaCog />, description: "Settings", route: "/host/settings" },
+    { icon: <FaCog />, description: "Profile", route: "/host/profile" },
   ];
+
+   // Function to get current page title based on route
+   const getCurrentPageTitle = () => {
+    const currentItem = sidebarItems.find(item => 
+      location.pathname === item.route || 
+      (item.route !== '/host' && location.pathname.startsWith(item.route))
+    );
+    return currentItem?.description || 'Appointment Details';
+  };
 
   return (
     <div className="h-screen w-full bg-white relative">
@@ -60,10 +66,8 @@ function HostLayout() {
           toggleSidebar={toggleSidebar}
           userName="john"
           userRole="Staff account"
-          pageTitle={
-            sidebarItems.find((item) => item.route === window.location.pathname)
-              ?.description
-          }
+          type= {state.name}
+          pageTitle={getCurrentPageTitle()}
           pageSubtitle="Host"
         />
 

@@ -40,6 +40,7 @@ import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
 import VisitorProfile from "./pages/visitor/VisitorProfile.jsx"; 
 import VisitLog from "./pages/host/VisitLog.jsx";
 import Appointments from "./pages/host/Appointments.jsx";
+import AppointmentDetails from "./pages/host/AppointmentDetails.jsx";
 
 function App() {
   const [userData, setUserData] = useState({
@@ -70,6 +71,7 @@ function App() {
             <Route path="profile" element={<HostProfile />} />
             <Route path="visitlog" element={<VisitLog />} />
             <Route path="appointments" element={<Appointments />} />
+            <Route path="appointmentdetails" element={<AppointmentDetails />} />
           </Route>
           
           {/* Security Routes */}
