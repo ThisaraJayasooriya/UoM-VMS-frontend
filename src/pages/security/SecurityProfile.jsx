@@ -4,12 +4,8 @@ import { FaUser, FaIdCard, FaEnvelope, FaPhone } from "react-icons/fa";
 const SecurityProfile = () => {
   const navigate = useNavigate();
 
-  const handleResetPassword = () => {
-    navigate("/reset-password"); 
-  };
-
   const handleLogout = () => {
-    navigate("/Login"); 
+    navigate("/Login");
   };
 
   return (
@@ -85,12 +81,6 @@ const SecurityProfile = () => {
 
           {/* Footer Actions */}
           <div className="bg-[#F8FAF9] px-6 py-4 border-t border-[#D3D9D2] flex justify-end">
-            <button
-              onClick={handleResetPassword}
-              className="bg-[#124E66] text-white px-4 py-2 rounded-md hover:bg-[#0E3D52] transition-colors duration-200 mr-3"
-            >
-              Reset Password
-            </button>
             <button
               onClick={handleLogout}
               className="bg-[#748D92] text-white px-4 py-2 rounded-md hover:bg-[#5A7176] transition-colors duration-200"
