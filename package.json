@@ -28,7 +28,7 @@
     "react-toastify": "^11.0.5",
     "tailwindcss": "^4.0.8",
     "validator": "^13.15.0",
-    "recharts": "^2.15.3",
+    "recharts": "^2.15.3"
     
   },
   "devDependencies": {
