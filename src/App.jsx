@@ -21,6 +21,9 @@ import MeetingRequests from "./pages/host/MeetingRequests";
 import HostLayout from "./pages/host/HostLayout";
 import HostDashboard from "./pages/host/HostDashboard";
 import HostProfile from "./pages/host/HostProfile";
+import VisitLog from "./pages/host/VisitLog.jsx";
+import Appointments from "./pages/host/Appointments.jsx";
+import AppointmentDetails from "./pages/host/AppointmentDetails.jsx";
 
 import SecurityLayout from "./pages/security/SecurityLayout";
 import SecurityDashboard from "./pages/security/SecurityDashboard";
@@ -43,7 +46,9 @@ import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
 import UpcomingVisit from "./pages/visitor/UpcomingVisit.jsx";
 import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
-import VisitorProfile from "./pages/visitor/VisitorProfile.jsx";
+import VisitorProfile from "./pages/visitor/VisitorProfile.jsx"; 
+
+
 
 function App() {
   return (
@@ -71,6 +76,9 @@ function App() {
             <Route index element={<HostDashboard />} />
             <Route path="meeting" element={<MeetingRequests />} />
             <Route path="profile" element={<HostProfile />} />
+            <Route path="visitlog" element={<VisitLog />} />
+            <Route path="appointments" element={<Appointments />} />
+            <Route path="appointmentdetails" element={<AppointmentDetails />} />
           </Route>
           
           {/* Security Routes */}
