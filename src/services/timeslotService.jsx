@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5001/api/host"; // Backend URL
+const API_URL = "http://localhost:5000/api/host"; // Backend URL
 
 // Function to add a new time slot
 export const addTimeSlots = async (hostId, date, startTime, endTime, status = "available") => {

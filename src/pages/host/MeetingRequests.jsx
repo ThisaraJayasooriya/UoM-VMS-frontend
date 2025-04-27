@@ -234,13 +234,13 @@ const MeetingRequests = () => {
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={() => handleReject(selectedMeeting.id)}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-semibold cursor-pointer"
               >
                 Reject
               </button>
               <button
                 onClick={saveAccept}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold cursor-pointer"
               >
                 Accept
               </button>
