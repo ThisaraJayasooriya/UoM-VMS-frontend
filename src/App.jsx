@@ -1,6 +1,7 @@
 import { Routes, Route, BrowserRouter, useLocation } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 import Home from "./pages/common/Home";
 import About from "./pages/common/About";
 import SignUp from "./pages/common/Signup"; 
@@ -15,50 +16,39 @@ import EmailSent from "./pages/common/ResetPWemail";
 import SMSSent from "./pages/common/ResetPWsms";
 import ResetPassword from "./pages/common/ResetPW";
 import SuccessfulPWreset from "./pages/common/SuccessfulPWreset";
+
 import MeetingRequests from "./pages/host/MeetingRequests";
 import HostLayout from "./pages/host/HostLayout";
 import HostDashboard from "./pages/host/HostDashboard";
 import HostProfile from "./pages/host/HostProfile";
+
 import SecurityLayout from "./pages/security/SecurityLayout";
 import SecurityDashboard from "./pages/security/SecurityDashboard";
 import VerifyVisitors from "./pages/security/VerifyVisitors";
 import SecurityProfile from "./pages/security/SecurityProfile";
 import { useState } from "react";
+
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDetails from "./pages/admin/UserDetails";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
 import StaffRegistration from "./pages/admin/StaffRegistration";
+import AdminReports from "./pages/admin/AdminReports";
 import AdminInsights from "./pages/admin/AdminInsights.jsx";
-import Profile from "./pages/admin/AdminProfile";
 import Settings from "./pages/admin/AdminSettings";
+
 import VisitorLayout from "./pages/visitor/VisitorLayout";
 import VisitorDashboard from "./pages/visitor/VisitorDashboard.jsx";
 import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
 import UpcomingVisit from "./pages/visitor/UpcomingVisit.jsx";
 import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
-import VisitorProfile from "./pages/visitor/VisitorProfile.jsx"; 
+import VisitorProfile from "./pages/visitor/VisitorProfile.jsx";
 
 function App() {
-  const [userData, setUserData] = useState({
-    visitor: [],
-    host: [],
-    security: [],
-    admin: [],
-  });
-
-  const addUser = (role, user) => {
-    setUserData((prev) => ({
-      ...prev,
-      [role]: [...prev[role], user],
-    }));
-  };
-
   return (
     <div>
       <BrowserRouter>
-        {/* Toast Container should be at the root level */}
         <ToastContainer
           position="top-center"
           autoClose={3000}
@@ -93,11 +83,11 @@ function App() {
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
-            <Route path="userdetails" element={<UserDetails userData={userData} />} />
-            <Route path="staffregistration" element={<StaffRegistration addUser={addUser} />} />
+            <Route path="userdetails" element={<UserDetails />} />
+            <Route path="staffregistration" element={<StaffRegistration />} />
             <Route path="visitorlogbook" element={<VisitorLogbook />} />
+            <Route path="adminreports" element={<AdminReports />} />
             <Route path="admininsights" element={<AdminInsights />} />
-            <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           

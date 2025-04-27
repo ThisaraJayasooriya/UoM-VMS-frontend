@@ -48,7 +48,7 @@ function AdminLayout() {
         route: "/admin/admininsights",
       },
 
-    { icon: <FaUser />, description: "Profile", route: "/admin/profile" },
+    
     { icon: <FaCog />, description: "Settings", route: "/admin/settings" },
   ];
 
