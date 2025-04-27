@@ -88,7 +88,7 @@ const VisitorHistoryReport = () => {
 
   return (
     <div className="flex-1 overflow-auto p-6 bg-[#F8F9FA] mt-10">
-      <h1 className="text-2xl font-bold text-[#212A31] mb-6">Visitor History Report</h1>
+      
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
