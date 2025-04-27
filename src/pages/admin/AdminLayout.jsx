@@ -44,8 +44,8 @@ function AdminLayout() {
 
     {
         icon: <FaChartBar/>,
-        description: "Reports & Analytics",
-        route: "/admin/adminreports",
+        description: "Insights",
+        route: "/admin/admininsights",
       },
 
     

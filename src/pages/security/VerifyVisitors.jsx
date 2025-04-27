@@ -4,228 +4,278 @@ import { useLocation } from 'react-router-dom';
 const VerifyVisitors = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const initialVisitCode = queryParams.get('code') || '';
+  const initialVisitorId = queryParams.get('id') || ''; 
 
-  // Sample visitor data
-  const [visitors, setVisitors] = useState([
-    {
-      name: 'Joe Root',
-      visitCode: 'V00125',
-      email: 'joe@email.com',
-      vehicleNumber: 'AB1234',
-      phone: '0712345678',
-      nic: '20012345678',
-      host: 'George Smith',
-      status: 'Awaiting Check-In'
-    },
-    {
-      name: 'Jane Doe',
-      visitCode: 'V00126',
-      email: 'jane@email.com',
-      vehicleNumber: 'CD5678',
-      phone: '0712345679',
-      nic: '20012345679',
-      host: 'John Doe',
-      status: 'Awaiting Check-In'
-    },
-    // Add more sample visitors as needed
-  ]);
-
-  const [filteredVisitors, setFilteredVisitors] = useState(visitors);
-  const [searchTerm, setSearchTerm] = useState(initialVisitCode);
-  const [actionResult, setActionResult] = useState(null);
+  const [visitors, setVisitors] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(initialVisitorId);
+  const [filteredVisitor, setFilteredVisitor] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [alert, setAlert] = useState({ show: false, message: '', type: '' });
 
-  // Filter visitors based on search term
+  // Fetch recent activities on component mount
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = visitors.filter((visitor) =>
-        visitor.visitCode.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredVisitors(filtered);
-
-      // Show alert if no visitors match the search term
-      if (filtered.length === 0) {
-        window.alert('⚠ Invalid Visit code. Please enter a valid code.');
+    const fetchActivities = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/verify-visitors/activities");
+        const data = await response.json();
+        setActivities(data);
+      } catch (error) {
+        console.error("Error fetching activities:", error);
       }
-    } else {
-      setFilteredVisitors(visitors); // Reset to all visitors when no search term
-    }
-  }, [searchTerm, visitors]);
+    };
+    fetchActivities();
+  }, []);
 
-  // Show alerts after state updates
+  // Search for visitor when searchTerm changes
   useEffect(() => {
-    if (actionResult) {
-      window.alert(actionResult.message);
-      setActionResult(null); // Reset the action result
-    }
-  }, [actionResult]);
-
-  // Handle search
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setSearchTerm(searchTerm);
-    console.log('Searching for visitor with code:', searchTerm);
-  };
-  
-  const handleInputChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  // Handle clear search
-  const handleClearSearch = () => {
-    setSearchTerm('');
-  };
-
-  // Handle check-in
-  const handleCheckIn = async () => {
-    if (!searchTerm) {
-      setActionResult({ message: '⚠ Please enter a visit code.' });
-      return;
-    }
-
-    setIsLoading(true); // Start loading state
-
-    // Simulate an API call or delay for better UX
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const visitorIndex = visitors.findIndex(
-      (visitor) => visitor.visitCode === searchTerm
-    );
-
-    if (visitorIndex !== -1) {
-      const updatedVisitors = [...visitors];
-      updatedVisitors[visitorIndex].status = 'Checked-In';
-      setVisitors(updatedVisitors);
-      setActionResult({ message: '✅ Checked-In Successfully!' });
+    const term = searchTerm.trim();
+    if (term) {
+      const fetchVisitor = async () => {
+        try {
+          const response = await fetch(`http://localhost:5000/api/verify-visitors/search?term=${term}`);
+          if (!response.ok) {
+            setFilteredVisitor(null);
+            return;
+          }
+          const data = await response.json();
+          setFilteredVisitor(data);
+        } catch (error) {
+          console.error("Error searching for visitor:", error);
+          setFilteredVisitor(null);
+        }
+      };
+      fetchVisitor();
     } else {
-      setActionResult({ message: '⚠ Invalid Visit code. Please enter a valid code.' });
+      setFilteredVisitor(null);
     }
+  }, [searchTerm]);
 
-    setIsLoading(false); // End loading state
+  // Hide alert after 5 seconds
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert({ show: false, message: '', type: '' });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
+
+  const handleInputChange = (e) => setSearchTerm(e.target.value);
+  const handleClearSearch = () => setSearchTerm('');
+
+  const showAlert = (message, type) => {
+    setAlert({ show: true, message, type });
   };
 
-  // Handle check-out
-  const handleCheckOut = async () => {
-    if (!searchTerm) {
-      setActionResult({ message: '⚠ Please enter a visit code.' });
-      return;
+  const handleAction = async (type) => {
+    const term = searchTerm.trim();
+    if (!term || !filteredVisitor) return;
+
+    setIsLoading(true);
+    try {
+      const endpoint = type === 'in'
+        ? `http://localhost:5000/api/verify-visitors/${filteredVisitor.visitorId}/checkin` 
+        : `http://localhost:5000/api/verify-visitors/${filteredVisitor.visitorId}/checkout`; 
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        showAlert(errorData.message || `Failed to ${type === 'in' ? 'check in' : 'check out'} visitor`, 'error');
+        setIsLoading(false);
+        return;
+      }
+
+      const updatedVisitor = await response.json();
+      setFilteredVisitor(updatedVisitor.visitor);
+
+      // Update activities
+      const newActivity = {
+        visitorId: updatedVisitor.visitor.visitorId, 
+        name: updatedVisitor.visitor.name,
+        action: type === 'in' ? 'Checked-In' : 'Checked-Out',
+        timestamp: new Date().toISOString(),
+      };
+      setActivities([newActivity, ...activities]);
+
+      showAlert(
+        `${updatedVisitor.visitor.name} has been successfully ${type === 'in' ? 'checked in' : 'checked out'}.`,
+        type === 'in' ? 'success-in' : 'success-out'
+      );
+      setSearchTerm('');
+    } catch (error) {
+      showAlert(`Error: ${error.message}`, 'error');
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    setIsLoading(true); // Start loading state
-
-    // Simulate an API call or delay for better UX
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const visitorIndex = visitors.findIndex(
-      (visitor) => visitor.visitCode === searchTerm
-    );
-
-    if (visitorIndex !== -1) {
-      const updatedVisitors = [...visitors];
-      updatedVisitors[visitorIndex].status = 'Checked-Out';
-      setVisitors(updatedVisitors);
-      setActionResult({ message: '✅ Checked-Out Successfully!' });
-    } else {
-      setActionResult({ message: '⚠ Invalid Visit code. Please enter a valid code.' });
-    }
-
-    setIsLoading(false); // End loading state
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
   };
 
   return (
-    <div className="flex flex-col flex-1 pt-20">
-      <div className="max-w-4xl mx-auto w-full bg-gray-200 rounded-lg p-6">
-        
-        {/* Search Form */}
-        <div className="bg-blue bg-opacity-20 rounded-lg p-8 mb-6">
-          <p className="text-xl mb-4 text-center text-white">Enter Visitor Code</p>
-          <form onSubmit={handleSearch} className="flex justify-center">
-            <div className="relative w-64">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={handleInputChange}
-                placeholder="Enter visitor code"
-                className="w-full px-4 py-2 rounded-full pr-10 color-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-darkblue2 focus:border-transparent"
-              />
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-500"
-                >
-                  ×
-                </button>
+    <div className="flex flex-col flex-1 pt-16 px-4 max-w-5xl mx-auto text-darkblue2">
+      
+      {/* Alert */}
+      {alert.show && (
+        <div className={`mb-6 py-3 px-4 rounded-lg flex items-center justify-between ${
+          alert.type === 'success-in' ? 'bg-green-100 text-green-800 border border-green-200' : 
+          alert.type === 'success-out' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+          'bg-yellow-100 text-yellow-800 border border-yellow-200'
+        }`}>
+          <div className="flex items-center">
+            <span className={`flex-shrink-0 inline-flex item-center justify-center h-8 w-8 rounded-full mr-3 ${
+              alert.type === 'success-in' ? 'bg-green-200' : 
+              alert.type === 'success-out' ? 'bg-blue-200' : 
+              'bg-yellow-200'
+            }`}>
+              {alert.type.includes('success') ? (
+                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
+              ) : (
+                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                </svg>
               )}
-            </div>
-            <button
-              type="submit"
-              className="ml-2 bg-darkblue2 text-white px-4 py-2 rounded-lg"
-              disabled={isLoading}
-            >
-              Search
-            </button>
-          </form>
+            </span>
+            <p>{alert.message}</p>
+          </div>
+          <button 
+            onClick={() => setAlert({ show: false, message: '', type: '' })}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+            </svg>
+          </button>
         </div>
-        
-        {/* Visitor Details */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Visitor Details</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="text-left bg-blue text-white">
-                  <th className="p-3 rounded-tl-lg">Name</th>
-                  <th className="p-3">Visitor Code</th>
-                  <th className="p-3">E-mail Address</th>
-                  <th className="p-3">Vehicle Number</th>
-                  <th className="p-3">Phone</th>
-                  <th className="p-3">NIC</th>
-                  <th className="p-3">Host</th>
-                  <th className="p-3 rounded-tr-lg">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredVisitors.map((visitor, index) => (
-                  <tr key={index} className={index % 2 === 0 ? "bg-blue-100" : "bg-white"}>
-                    <td className="p-3">{visitor.name}</td>
-                    <td className="p-3">{visitor.visitCode}</td>
-                    <td className="p-3">{visitor.email}</td>
-                    <td className="p-3">{visitor.vehicleNumber}</td>
-                    <td className="p-3">{visitor.phone}</td>
-                    <td className="p-3">{visitor.nic}</td>
-                    <td className="p-3">{visitor.host}</td>
-                    <td className="p-3">{visitor.status}</td>
-                  </tr>
-                ))}
-                {filteredVisitors.length === 0 && (
-                  <tr className="bg-white">
-                    <td colSpan="8" className="p-3 text-center">No visitors found</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+      )}
+      
+      {/* Search Box */}
+      <div className="bg-blue3 shadow-lg rounded-xl p-6 mb-8 border border-blue2/20">
+        <h2 className="text-xl font-semibold mb-5 text-center text-blue">Verify Visitor</h2>
+        <form onSubmit={(e) => e.preventDefault()} className="flex items-center gap-4 justify-center">
+          <div className="relative w-full max-w-md">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleInputChange}
+              placeholder="Enter Visitor ID or NIC" // Updated placeholder
+              className="px-5 py-3 rounded-full border border-blue2/30 w-full focus:outline-none focus:ring-2 focus:ring-blue shadow-sm bg-white text-darkblue placeholder-customgray/70"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-customgray hover:text-darkblue text-xl font-bold"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+
+      {/* Visitor Card */}
+      {filteredVisitor && (
+        <div className="bg-white shadow-md rounded-xl p-6 mb-8 border border-blue3 transition-all duration-300 ease-in-out">
+          <div className="flex justify-between items-center mb-5">
+            <h3 className="text-lg font-semibold text-blue">Visitor Details</h3>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              filteredVisitor.status === 'Checked-In' 
+                ? 'bg-green-100 text-green-700' 
+                : filteredVisitor.status === 'Checked-Out'
+                ? 'bg-red-100 text-red-700'
+                : 'bg-yellow-100 text-yellow-700'
+            }`}>
+              {filteredVisitor.status}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+            <div className="flex flex-col">
+              <span className="text-sm text-customgray">Name</span>
+              <span className="font-medium text-darkblue">{filteredVisitor.name}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-customgray">Visitor ID</span> {/* Updated label */}
+              <span className="font-medium text-darkblue">{filteredVisitor.visitorId}</span> 
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-customgray">NIC</span>
+              <span className="font-medium text-darkblue">{filteredVisitor.nic}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-customgray">Vehicle Number</span>
+              <span className="font-medium text-darkblue">{filteredVisitor.vehicleNumber || "N/A"}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-customgray">Host</span>
+              <span className="font-medium text-darkblue">{filteredVisitor.host}</span>
+            </div>
           </div>
         </div>
-        
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={handleCheckIn}
-            className="bg-blue text-white px-6 py-3 rounded-lg text-lg"
-            disabled={isLoading}
-          >
-            {isLoading ? "Processing..." : "Check-In"}
-          </button>
-          <button
-            onClick={handleCheckOut}
-            className="bg-blue text-white px-6 py-3 rounded-lg text-lg"
-            disabled={isLoading}
-          >
-            {isLoading ? "Processing..." : "Check-Out"}
-          </button>
-        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+        <button
+          onClick={() => handleAction('in')}
+          className="bg-blue hover:bg-blue/90 text-white px-8 py-3 rounded-lg shadow-md transition-all duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={isLoading || (filteredVisitor?.status === 'Checked-In')}
+        >
+          {isLoading ? 'Processing...' : 'Check-In Visitor'}
+        </button>
+        <button
+          onClick={() => handleAction('out')}
+          className="bg-blue2 hover:bg-blue2/90 text-white px-8 py-3 rounded-lg shadow-md transition-all duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={isLoading || (filteredVisitor?.status === 'Checked-Out')}
+        >
+          {isLoading ? 'Processing...' : 'Check-Out Visitor'}
+        </button>
+      </div>
+
+      {/* Recent Activities */}
+      <div className="bg-blue3 shadow-md rounded-xl p-6 mb-6">
+        <h3 className="text-lg font-semibold mb-5 text-blue flex items-center">
+          <span className="mr-2">Recent Activities</span>
+          {activities.length > 0 && (
+            <span className="bg-blue text-white text-xs rounded-full px-2 py-1">
+              {activities.length}
+            </span>
+          )}
+        </h3>
+        {activities.length === 0 ? (
+          <div className="text-center py-8 text-customgray">
+            <p>No recent activity recorded</p>
+          </div>
+        ) : (
+          <ul className="space-y-3 max-h-72 overflow-y-auto pr-1">
+            {activities.map((activity, index) => (
+              <li key={index} className="bg-white p-4 rounded-lg border border-blue2/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium text-darkblue">{activity.name}</p>
+                    <p className="text-xs text-customgray mt-1">ID: {activity.visitorId}</p> 
+                  </div>
+                  <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                    activity.action === 'Checked-In'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}>
+                    {activity.action}
+                  </span>
+                </div>
+                <p className="text-xs text-customgray mt-2 italic">{formatTime(activity.timestamp)}</p>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

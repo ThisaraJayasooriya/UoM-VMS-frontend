@@ -90,6 +90,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="pt-20 px-4 lg:px-20">
+
       <div className="min-h-screen bg-gray-50">
         {/* Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

@@ -26,7 +26,7 @@ import SecurityLayout from "./pages/security/SecurityLayout";
 import SecurityDashboard from "./pages/security/SecurityDashboard";
 import VerifyVisitors from "./pages/security/VerifyVisitors";
 import SecurityProfile from "./pages/security/SecurityProfile";
-import SecuritySettings from "./pages/security/SecuritySettings";
+import { useState } from "react";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -34,7 +34,7 @@ import UserDetails from "./pages/admin/UserDetails";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
 import StaffRegistration from "./pages/admin/StaffRegistration";
 import AdminReports from "./pages/admin/AdminReports";
-
+import AdminInsights from "./pages/admin/AdminInsights.jsx";
 import Settings from "./pages/admin/AdminSettings";
 
 import VisitorLayout from "./pages/visitor/VisitorLayout";
@@ -78,7 +78,6 @@ function App() {
             <Route index element={<SecurityDashboard />} />
             <Route path="visitor" element={<VerifyVisitors />} />
             <Route path="profile" element={<SecurityProfile />} />
-            <Route path="settings" element={<SecuritySettings />} />
           </Route>
           
           {/* Admin Routes */}
@@ -88,7 +87,7 @@ function App() {
             <Route path="staffregistration" element={<StaffRegistration />} />
             <Route path="visitorlogbook" element={<VisitorLogbook />} />
             <Route path="adminreports" element={<AdminReports />} />
-           
+            <Route path="admininsights" element={<AdminInsights />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           
