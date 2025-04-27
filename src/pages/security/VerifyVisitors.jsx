@@ -4,68 +4,59 @@ import { useLocation } from 'react-router-dom';
 const VerifyVisitors = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const initialVisitCode = queryParams.get('code') || '';
+  const initialVisitorId = queryParams.get('id') || ''; 
 
-  const [visitors, setVisitors] = useState([
-    {
-      name: 'Joe Root',
-      visitCode: 'V00125',
-      nic: '20012345678',
-      vehicleNumber: 'AB1234',
-      host: 'George Smith',
-      status: 'Awaiting Check-In'
-    },
-    {
-      name: 'Jane Doe',
-      visitCode: 'V00126',
-      nic: '20012345679',
-      vehicleNumber: 'CD5678',
-      host: 'John Doe',
-      status: 'Awaiting Check-In'
-    },
-  ]);
-
-  const [activities, setActivities] = useState([
-    {
-      id: 1,
-      visitCode: 'V00125',
-      name: 'Joe Root',
-      action: 'Checked-In',
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-    },
-    {
-      id: 2,
-      visitCode: 'V00126',
-      name: 'Jane Doe',
-      action: 'Checked-Out',
-      timestamp: new Date(Date.now() - 7200000).toISOString(),
-    },
-  ]);
-
-  const [searchTerm, setSearchTerm] = useState(initialVisitCode);
+  const [visitors, setVisitors] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(initialVisitorId);
   const [filteredVisitor, setFilteredVisitor] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
 
+  // Fetch recent activities on component mount
   useEffect(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const fetchActivities = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/verify-visitors/activities");
+        const data = await response.json();
+        setActivities(data);
+      } catch (error) {
+        console.error("Error fetching activities:", error);
+      }
+    };
+    fetchActivities();
+  }, []);
+
+  // Search for visitor when searchTerm changes
+  useEffect(() => {
+    const term = searchTerm.trim();
     if (term) {
-      const match = visitors.find(v =>
-        v.visitCode.toLowerCase() === term || v.nic.toLowerCase() === term
-      );
-      setFilteredVisitor(match || null);
+      const fetchVisitor = async () => {
+        try {
+          const response = await fetch(`http://localhost:5000/api/verify-visitors/search?term=${term}`);
+          if (!response.ok) {
+            setFilteredVisitor(null);
+            return;
+          }
+          const data = await response.json();
+          setFilteredVisitor(data);
+        } catch (error) {
+          console.error("Error searching for visitor:", error);
+          setFilteredVisitor(null);
+        }
+      };
+      fetchVisitor();
     } else {
       setFilteredVisitor(null);
     }
-  }, [searchTerm, visitors]);
+  }, [searchTerm]);
 
+  // Hide alert after 5 seconds
   useEffect(() => {
-    // Hide alert after 5 seconds
     if (alert.show) {
       const timer = setTimeout(() => {
         setAlert({ show: false, message: '', type: '' });
       }, 5000);
-      
       return () => clearTimeout(timer);
     }
   }, [alert]);
@@ -78,41 +69,48 @@ const VerifyVisitors = () => {
   };
 
   const handleAction = async (type) => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return;
+    const term = searchTerm.trim();
+    if (!term || !filteredVisitor) return;
 
     setIsLoading(true);
-    await new Promise(res => setTimeout(res, 1000));
+    try {
+      const endpoint = type === 'in'
+        ? `http://localhost:5000/api/verify-visitors/${filteredVisitor.visitorId}/checkin` 
+        : `http://localhost:5000/api/verify-visitors/${filteredVisitor.visitorId}/checkout`; 
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-    const index = visitors.findIndex(v =>
-      v.visitCode.toLowerCase() === term || v.nic.toLowerCase() === term
-    );
+      if (!response.ok) {
+        const errorData = await response.json();
+        showAlert(errorData.message || `Failed to ${type === 'in' ? 'check in' : 'check out'} visitor`, 'error');
+        setIsLoading(false);
+        return;
+      }
 
-    if (index !== -1) {
-      const updatedVisitors = [...visitors];
-      const visitorName = updatedVisitors[index].name;
-      updatedVisitors[index].status = type === 'in' ? 'Checked-In' : 'Checked-Out';
-      setVisitors(updatedVisitors);
+      const updatedVisitor = await response.json();
+      setFilteredVisitor(updatedVisitor.visitor);
 
+      // Update activities
       const newActivity = {
-        id: activities.length + 1,
-        visitCode: updatedVisitors[index].visitCode,
-        name: visitorName,
+        visitorId: updatedVisitor.visitor.visitorId, 
+        name: updatedVisitor.visitor.name,
         action: type === 'in' ? 'Checked-In' : 'Checked-Out',
         timestamp: new Date().toISOString(),
       };
-
       setActivities([newActivity, ...activities]);
-      
-      // Show success alert
+
       showAlert(
-        `${visitorName} has been successfully ${type === 'in' ? 'checked in' : 'checked out'}.`,
+        `${updatedVisitor.visitor.name} has been successfully ${type === 'in' ? 'checked in' : 'checked out'}.`,
         type === 'in' ? 'success-in' : 'success-out'
       );
+      setSearchTerm('');
+    } catch (error) {
+      showAlert(`Error: ${error.message}`, 'error');
+    } finally {
+      setIsLoading(false);
     }
-
-    setSearchTerm('');
-    setIsLoading(false);
   };
 
   const formatTime = (timestamp) => {
@@ -168,7 +166,7 @@ const VerifyVisitors = () => {
               type="text"
               value={searchTerm}
               onChange={handleInputChange}
-              placeholder="Enter Visit Code or NIC"
+              placeholder="Enter Visitor ID or NIC" // Updated placeholder
               className="px-5 py-3 rounded-full border border-blue2/30 w-full focus:outline-none focus:ring-2 focus:ring-blue shadow-sm bg-white text-darkblue placeholder-customgray/70"
             />
             {searchTerm && (
@@ -205,8 +203,8 @@ const VerifyVisitors = () => {
               <span className="font-medium text-darkblue">{filteredVisitor.name}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-sm text-customgray">Visitor Code</span>
-              <span className="font-medium text-darkblue">{filteredVisitor.visitCode}</span>
+              <span className="text-sm text-customgray">Visitor ID</span> {/* Updated label */}
+              <span className="font-medium text-darkblue">{filteredVisitor.visitorId}</span> 
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-customgray">NIC</span>
@@ -214,7 +212,7 @@ const VerifyVisitors = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-customgray">Vehicle Number</span>
-              <span className="font-medium text-darkblue">{filteredVisitor.vehicleNumber}</span>
+              <span className="font-medium text-darkblue">{filteredVisitor.vehicleNumber || "N/A"}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-customgray">Host</span>
@@ -258,12 +256,12 @@ const VerifyVisitors = () => {
           </div>
         ) : (
           <ul className="space-y-3 max-h-72 overflow-y-auto pr-1">
-            {activities.map((activity) => (
-              <li key={activity.id} className="bg-white p-4 rounded-lg border border-blue2/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+            {activities.map((activity, index) => (
+              <li key={index} className="bg-white p-4 rounded-lg border border-blue2/20 shadow-sm hover:shadow-md transition-shadow duration-200">
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-medium text-darkblue">{activity.name}</p>
-                    <p className="text-xs text-customgray mt-1">Code: {activity.visitCode}</p>
+                    <p className="text-xs text-customgray mt-1">ID: {activity.visitorId}</p> 
                   </div>
                   <span className={`text-xs px-3 py-1 rounded-full font-medium ${
                     activity.action === 'Checked-In'
