@@ -30,7 +30,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div
           className="bg-white p-10 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-100"
-          onClick={() => navigate("/admin/adminreports")}
+          onClick={() => navigate("/admin/admininsights")}
         >
           <h2 className="text-5xl font-bold text-blue-700">58</h2>
           <p className="text-md text-green-600">+12% vs. Yesterday</p>
