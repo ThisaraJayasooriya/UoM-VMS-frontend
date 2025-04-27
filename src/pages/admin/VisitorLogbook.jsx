@@ -115,6 +115,9 @@ const VisitorLogbook = () => {
           <table className="min-w-full divide-y divide-[#D3D9D2]">
             <thead className="bg-[#F8F9FA]">
               <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
+                 Visitor ID
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
                   <div className="flex items-center gap-1">
                     Visitor
@@ -123,9 +126,7 @@ const VisitorLogbook = () => {
                     </button>
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                 Visitor ID
-                </th>
+                
 
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
                   Host
@@ -150,12 +151,13 @@ const VisitorLogbook = () => {
             <tbody className="bg-white divide-y divide-[#D3D9D2]">
               {filteredEntries.map((entry) => (
                 <tr key={entry.id} className="hover:bg-[#F8F9FA]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#212A31]">
-                    {entry.visitor}
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
                    {entry.id}
                     </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#212A31]">
+                    {entry.visitor}
+                  </td>
+                  
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
                     {entry.host}

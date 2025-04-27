@@ -44,11 +44,11 @@ function AdminLayout() {
 
     {
         icon: <FaChartBar/>,
-        description: "Reports & Analytics",
-        route: "/admin/adminreports",
+        description: "Insights",
+        route: "/admin/admininsights",
       },
 
-    { icon: <FaUser />, description: "Profile", route: "/admin/profile" },
+    
     { icon: <FaCog />, description: "Settings", route: "/admin/settings" },
   ];
 
