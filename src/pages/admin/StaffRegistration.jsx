@@ -1,115 +1,149 @@
 import React, { useState } from "react";
+import { FiUser, FiMail, FiPhone, FiLock, FiChevronDown, FiCreditCard } from "react-icons/fi";
+import { MdWorkOutline, MdSchool } from "react-icons/md";
 
-const StaffRegistration = ({ addUser }) => {
+const StaffRegistration = () => {
   const [selectedRole, setSelectedRole] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [userID, setUserID] = useState("");
+  const [faculty, setFaculty] = useState("");
+  const [department, setDepartment] = useState("");
+  const [nicNumber, setNicNumber] = useState("");
 
-  const handleSubmit = () => {
-    if (name && email && password && phone && selectedRole) {
-      addUser(selectedRole.toLowerCase(), {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const isHost = selectedRole === "Host";
+
+    if (
+      name &&
+      email &&
+      password &&
+      phone &&
+      selectedRole &&
+      userID &&
+      nicNumber &&
+      (!isHost || (faculty && department))
+    ) {
+      const newUser = {
         name,
         email,
         phone,
         password,
-        userID: `#${selectedRole[0].toLowerCase()}${Math.floor(Math.random() * 1000)}`,
+        role: selectedRole.toLowerCase(),
+        userID,
+        nicNumber,
         registeredDate: new Date().toLocaleString(),
-      });
+        ...(isHost && { faculty, department }),
+      };
 
-      setName("");
-      setEmail("");
-      setPhone("");
-      setPassword("");
-      setSelectedRole("");
-      alert(`${selectedRole} added successfully!`);
+      try {
+        const res = await fetch("http://localhost:5000/api/staff/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newUser),
+        });
+
+        if (res.ok) {
+          alert(`${selectedRole} added successfully!`);
+          setName("");
+          setEmail("");
+          setPhone("");
+          setPassword("");
+          setSelectedRole("");
+          setUserID("");
+          setFaculty("");
+          setDepartment("");
+          setNicNumber("");
+        } else {
+          alert("Registration failed");
+        }
+      } catch (err) {
+        alert("Server error");
+      }
     } else {
-      alert("Please fill all fields and select a role.");
+      alert("Please fill all required fields.");
     }
   };
 
   return (
-    <div className="pt-20 px-4 lg:px-20 relative z-10">
-      <div className="flex flex-col items-center bg-blue3 mt-12 w-full h-full p-8 rounded-lg">
-        <h1 className="text-2xl font-bold mt-5 mb-8">Add New User</h1>
+    <div className="pt-20 px-4 lg:px-20">
+      <div className="max-w-5xl mx-auto bg-white shadow-2xl rounded-2xl border border-gray-200 overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#212A31] to-[#124E66] p-8 text-white text-center">
+          <h2 className="text-3xl font-bold">Register New Staff Members</h2>
+        </div>
 
-        <div className="w-full max-w-3xl bg-white shadow-xl p-10 rounded-xl border border-gray-200">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-10 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Role Dropdown */}
-          <div className="mb-6">
-            <label className="block text-gray-700 font-semibold mb-2">Select Role</label>
+          <div className="relative col-span-full">
+            <label className="block text-gray-700 font-medium mb-2">Select Role</label>
             <select
-              className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1b3242]"
+              className="w-full p-4 appearance-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#124E66] bg-white"
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
+              required
             >
               <option value="" disabled>Select Role</option>
               <option value="Host">Host</option>
               <option value="Security">Security</option>
               <option value="Admin">Admin</option>
             </select>
+            <FiChevronDown className="absolute right-5 top-[70%] transform -translate-y-1/2 text-gray-500" />
           </div>
 
           {/* Input Fields */}
-          <div className="grid grid-cols-1 gap-6 mb-8">
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">Name</label>
-              <input
-                type="text"
-                placeholder="Enter full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1b3242]"
-              />
-            </div>
+          <InputField label="User ID" value={userID} onChange={setUserID} icon={<FiUser />} />
+          <InputField label="Full Name" value={name} onChange={setName} icon={<FiUser />} />
+          <InputField label="Email" value={email} onChange={setEmail} icon={<FiMail />} type="email" />
+          <InputField label="Phone Number" value={phone} onChange={setPhone} icon={<FiPhone />} type="tel" />
+          <InputField label="NIC / Passport No" value={nicNumber} onChange={setNicNumber} icon={<FiCreditCard />} />
 
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">Email</label>
-              <input
-                type="email"
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1b3242]"
-              />
-            </div>
+          {/* Only for Host */}
+          {selectedRole === "Host" && (
+            <>
+              <InputField label="Faculty" value={faculty} onChange={setFaculty} icon={<MdSchool />} />
+              <InputField label="Department" value={department} onChange={setDepartment} icon={<MdWorkOutline />} />
+            </>
+          )}
 
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">Contact Number</label>
-              <input
-                type="tel"
-                placeholder="07XXXXXXXX"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1b3242]"
-              />
-            </div>
+          <InputField label="Password" value={password} onChange={setPassword} icon={<FiLock />} type="password" fullWidth />
 
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">Password</label>
-              <input
-                type="password"
-                placeholder="Create password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1b3242]"
-              />
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="text-center">
+          {/* Submit */}
+          <div className="col-span-full text-center mt-4">
             <button
-              onClick={handleSubmit}
-              className="bg-[#1b3242] hover:bg-[#10222e] text-white font-semibold px-8 py-3 rounded-lg shadow-md transition-all duration-200"
+              type="submit"
+              className="bg-[#1b3242] hover:bg-[#10222e] text-white font-semibold px-12 py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
             >
-              Register User
+              Register Staff Member
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
 };
+
+const InputField = ({ label, value, onChange, icon, type = "text", fullWidth = false }) => (
+  <div className={fullWidth ? "col-span-full" : ""}>
+    <label className="block text-gray-700 font-medium mb-2">{label}</label>
+    <div className="relative">
+      <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+        {icon}
+      </span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={`Enter ${label}`}
+        className="w-full p-4 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1b3242] focus:outline-none"
+        required
+      />
+    </div>
+  </div>
+);
 
 export default StaffRegistration;

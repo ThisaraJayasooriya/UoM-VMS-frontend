@@ -1,45 +1,60 @@
 import { Routes, Route, BrowserRouter, useLocation } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useState } from "react";
+
+// Common Pages
 import Home from "./pages/common/Home";
 import About from "./pages/common/About";
 import SignUp from "./pages/common/Signup"; 
 import Login from "./pages/common/Login"; 
-import HomeNavbar from "./components/home/HomeNavbar";
-import MainNavbar from "./components/home/MainNavbar";
 import ContactUs from "./pages/common/ContactUs";
 import PrivacyPolicy from "./pages/common/PrivacyPolicy";
-import LoginPage from "./pages/LoginPage";
 import ForgotPassword from "./pages/common/ForgotPassword";
 import EmailSent from "./pages/common/ResetPWemail";
 import SMSSent from "./pages/common/ResetPWsms";
 import ResetPassword from "./pages/common/ResetPW";
 import SuccessfulPWreset from "./pages/common/SuccessfulPWreset";
-import MeetingRequests from "./pages/host/MeetingRequests";
+
+// Home Components
+import HomeNavbar from "./components/home/HomeNavbar";
+import MainNavbar from "./components/home/MainNavbar";
+
+// Admin Pages
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserDetails from "./pages/admin/UserDetails";
+import VisitorLogbook from "./pages/admin/VisitorLogbook";
+import AdminReports from "./pages/admin/AdminReports";
+import VisitorHistoryReport from "./pages/admin/VisitorHistoryReport";
+import StaffRegistration from "./pages/admin/StaffRegistration";
+import Profile from "./pages/admin/AdminProfile";
+import Settings from "./pages/admin/AdminSettings";
+
+// Host Pages
 import HostLayout from "./pages/host/HostLayout";
 import HostDashboard from "./pages/host/HostDashboard";
+import MeetingRequests from "./pages/host/MeetingRequests";
 import HostProfile from "./pages/host/HostProfile";
+
+// Security Pages
 import SecurityLayout from "./pages/security/SecurityLayout";
 import SecurityDashboard from "./pages/security/SecurityDashboard";
 import VerifyVisitors from "./pages/security/VerifyVisitors";
 import SecurityProfile from "./pages/security/SecurityProfile";
 import SecuritySettings from "./pages/security/SecuritySettings";
-import { useState } from "react";
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import UserDetails from "./pages/admin/UserDetails";
-import VisitorLogbook from "./pages/admin/VisitorLogbook";
-import StaffRegistration from "./pages/admin/StaffRegistration";
-import AdminReports from "./pages/admin/AdminReports";
-import Profile from "./pages/admin/AdminProfile";
-import Settings from "./pages/admin/AdminSettings";
+
+// Visitor Pages
 import VisitorLayout from "./pages/visitor/VisitorLayout";
 import VisitorDashboard from "./pages/visitor/VisitorDashboard.jsx";
 import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
 import UpcomingVisit from "./pages/visitor/UpcomingVisit.jsx";
 import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
-import VisitorProfile from "./pages/visitor/VisitorProfile.jsx"; 
+import VisitorProfile from "./pages/visitor/VisitorProfile.jsx";
+
+// Other
+import LoginPage from "./pages/LoginPage";
 
 function App() {
   const [userData, setUserData] = useState({
@@ -59,7 +74,6 @@ function App() {
   return (
     <div>
       <BrowserRouter>
-        {/* Toast Container should be at the root level */}
         <ToastContainer
           position="top-center"
           autoClose={3000}
@@ -72,18 +86,19 @@ function App() {
           pauseOnHover
           theme="colored"
         />
-        
-        <Routes> 
+
+        <Routes>
+          {/* Common Routes */}
           <Route path="/*" element={<MainComponent />} />
           <Route path="/roles" element={<LoginPage />} />
-          
+
           {/* Host Routes */}
           <Route path="/host" element={<HostLayout />}>
             <Route index element={<HostDashboard />} />
             <Route path="meeting" element={<MeetingRequests />} />
             <Route path="profile" element={<HostProfile />} />
           </Route>
-          
+
           {/* Security Routes */}
           <Route path="/security" element={<SecurityLayout />}>
             <Route index element={<SecurityDashboard />} />
@@ -91,7 +106,7 @@ function App() {
             <Route path="profile" element={<SecurityProfile />} />
             <Route path="settings" element={<SecuritySettings />} />
           </Route>
-          
+
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
@@ -99,10 +114,11 @@ function App() {
             <Route path="staffregistration" element={<StaffRegistration addUser={addUser} />} />
             <Route path="visitorlogbook" element={<VisitorLogbook />} />
             <Route path="adminreports" element={<AdminReports />} />
+            <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-          
+
           {/* Visitor Routes */}
           <Route path="/visitor" element={<VisitorLayout />}>
             <Route index element={<VisitorDashboard />} />
@@ -110,7 +126,7 @@ function App() {
             <Route path="history" element={<Visithistory />} />
             <Route path="upcoming" element={<UpcomingVisit />} />
             <Route path="feedback" element={<VisitorFeedback />} />
-            <Route path="profile" element={<VisitorProfile />} /> 
+            <Route path="profile" element={<VisitorProfile />} />
           </Route>
         </Routes>
       </BrowserRouter>
