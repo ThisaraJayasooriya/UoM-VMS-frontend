@@ -1,57 +1,78 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; // make sure to import your API
+import { useNavigate } from "react-router-dom";
+import {makeAppointment} from '../../services/appoinment.api.js'; // Adjust the import path as necessary
 
 function VisitorAppointment() {
-  const [host, setHost] = useState(""); 
-  const [vehicleRequired, setVehicleRequired] = useState(false); // State for vehicle entry
-  const [vehicleNumber, setVehicleNumber] = useState(""); // State for vehicle number
-  const [appointmentCategory, setAppointmentCategory] = useState(""); // State for appointment category
-  const [reason, setReason] = useState(""); // State for reason
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [contact, setContact] = useState("");
+  const [host, setHost] = useState("");
+  const [vehicleRequired, setVehicleRequired] = useState(false);
+  const [vehicle, setVehicle] = useState("");
+  const [category, setCategory] = useState("");
+  const [reason, setReason] = useState("");
 
-  const handleHostChange = (e) => {
-    setHost(e.target.value);
-  };
+  const navigate = useNavigate();
 
-  const handleVehicleNumberChange = (e) => {
-    setVehicleNumber(e.target.value);
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent the default form submission
 
-  const handleCategoryChange = (e) => {
-    setAppointmentCategory(e.target.value);
-  };
+    const appointmentData = {
+      firstName,
+      lastName,
+      contact,
+      host,
+      vehicle,
+      category,
+      reason,
+    };
 
-  const handleReasonChange = (e) => {
-    setReason(e.target.value);
-  };
-  const handleGoBack = () => {
-    navigate("/visitor"); // Navigate to the visitor dashboard
+    try {
+      const result = await makeAppointment(appointmentData);
+      console.log("Appointment submitted:", result);
+      alert("Appointment submitted successfully!");
+      // Optional: reset form here
+    } catch (err) {
+      console.error("Error submitting appointment:", err);
+      alert("Failed to submit appointment.");
+    }
   };
 
   return (
     <div className="pt-20 px-4 lg:px-20">
       <div className="bg-blue p-6 rounded-xl shadow-md mt-8 mx-60">
-        <form className="flex flex-col gap-4">
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          {/* First & Last Name */}
           <div className="flex gap-4">
             <input
               type="text"
               placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               className="p-3 rounded-lg bg-gray-200 outline-none flex-1"
             />
             <input
               type="text"
               placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               className="p-3 rounded-lg bg-gray-200 outline-none flex-1"
             />
           </div>
+
+          {/* Contact */}
           <input
             type="text"
             placeholder="Contact"
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
             className="p-3 rounded-lg bg-gray-200 outline-none w-full"
           />
 
-          {/* Host Selection Dropdown */}
-          <select 
+          {/* Host */}
+          <select
             value={host}
-            onChange={handleHostChange}
+            onChange={(e) => setHost(e.target.value)}
             className="text-gray-500 p-3 rounded-lg bg-gray-200 outline-none w-full"
           >
             <option value="">Host</option>
@@ -59,8 +80,9 @@ function VisitorAppointment() {
             <option value="Host 2">Host 2</option>
             <option value="Host 3">Host 3</option>
           </select>
-          
-          <div className="mt-4  text-gray-500">
+
+          {/* Vehicle Entry */}
+          <div className="mt-4 text-gray-500">
             <p className="mb-2">Vehicle Entry Required?</p>
             <div className="flex items-center gap-4">
               <label className="flex items-center">
@@ -87,44 +109,44 @@ function VisitorAppointment() {
                 type="text"
                 name="vehicleNumber"
                 placeholder="Add Vehicle Number"
-                value={vehicleNumber}
-                onChange={handleVehicleNumberChange}
+                value={vehicle}
+                onChange={(e) => setVehicle(e.target.value)}
                 className="mt-2 p-3 rounded-lg bg-gray-200 outline-none w-full"
               />
             )}
           </div>
 
-          <div className="text-gray-500">
-          {/* Appointment Category Dropdown */}
+          {/* Category */}
           <select
             name="appointmentCategory"
-            value={appointmentCategory}
-            onChange={handleCategoryChange}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
             className="mt-4 p-3 rounded-lg bg-gray-200 outline-none w-full"
           >
-            <option value="" className=" bg-gray-200 ">Select Appointment Category</option>
-            <option value="category1">Official</option>
-            <option value="category2">Private</option>
+            <option value="">Select Appointment Category</option>
+            <option value="Official">Official</option>
+            <option value="Private">Private</option>
           </select>
-          </div>
 
-          {/* Reason Input */}
+          {/* Reason */}
           <textarea
             name="reason"
             placeholder="Reason"
             value={reason}
-            onChange={handleReasonChange}
+            onChange={(e) => setReason(e.target.value)}
             className="p-3 rounded-lg bg-gray-200 outline-none h-24 w-full"
           />
-        </form>
-      </div>
 
-      <div>
-        <div className="mt-4 flex justify-end">
-          <button className="bg-blue text-white py-2 px-6 rounded-lg hover:bg-darkblue mr-30">
-           Submit
-          </button>
-        </div>
+          {/* Submit Button */}
+          <div className="mt-4 flex justify-end">
+            <button
+              type="submit"
+              className="bg-blue text-white py-2 px-6 rounded-lg hover:bg-darkblue"
+            >
+              Submit
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

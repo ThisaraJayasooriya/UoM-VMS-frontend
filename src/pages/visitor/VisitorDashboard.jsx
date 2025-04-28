@@ -14,6 +14,7 @@ function VisitorDashboard() {
       },
     });
   };
+
   const handleHistoryClick = () => {
     navigate('/visitor/history', {
       state: {
@@ -22,9 +23,9 @@ function VisitorDashboard() {
     });
   };
   const handleUpcommingClick = () => {
-    navigate('/visitor/upcoming', {
+    navigate('/visitor/Status', {
       state: {
-        name:'Upcomming Visits'
+        name:'Appointment Status' 
       },
     });
   };
@@ -35,7 +36,13 @@ function VisitorDashboard() {
       },
     });
   };
-
+  const handleHostAvailableTimeClick = () => {
+    navigate('/visitor/HostAvailableTime', {
+      state: {
+        name:'Host Available Time Slot'
+      },
+    });
+  };
   return (
     <div className="pt-20 px-4 lg:px-20">
       <div className="flex items-center mt-10">
@@ -53,6 +60,14 @@ function VisitorDashboard() {
 
         <div
           className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
+          onClick={handleHostAvailableTimeClick} // Navigate to Appointment page
+        >
+          <FaRegCalendarAlt className='mr-2'/>
+          Host Available Time Slot
+        </div>
+
+        <div
+          className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
           onClick={handleHistoryClick} // Navigate to Visit History page
         >
         
@@ -61,19 +76,22 @@ function VisitorDashboard() {
         </div>
 
         <div
-          className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
-          onClick={handleUpcommingClick} // Navigate to Upcoming Visits page
-        >
-          <FaShareSquare className='mr-2'/>
-          Upcoming Visits
-        </div>
-        <div
           className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer "
           onClick={handleFeedbackClick} // Navigate to provide feedback page
         >
         <VscFeedback className="mr-2 text-2xl font-bold" />
           Provide Feedback
         </div>
+        <div
+          className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
+          onClick={handleUpcommingClick} // Navigate to Upcoming Visits page
+        >
+          <FaShareSquare className='mr-2'/>
+        Appointment Status
+        </div>
+      
+
+     
       </div>
     </div>
   );

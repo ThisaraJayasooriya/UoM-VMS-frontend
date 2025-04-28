@@ -3,9 +3,9 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useState } from "react";
 import Sidebar from "../../components/common/Sidebar";
 import Headerbar from "../../components/common/Headerbar";
-import { IoMdNotificationsOutline } from "react-icons/io";
-import { FaTachometerAlt, FaUser } from "react-icons/fa";
+import { FaTachometerAlt, FaUser,FaCog } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
 function VisitorLayout() {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
@@ -23,13 +23,17 @@ function VisitorLayout() {
 
   const sidebarItems = [
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/visitor" },
-    { icon: <FaUser />, description: "Profile", route: "/visitor/profile" },
-    { icon: <IoMdNotificationsOutline />, description: "Notification", route: "/visitor/notification" },
+    { icon: <FaCog />, description: "Settings", route: "/visitor/settings" },
+    
    
   ];
 
   // Function to get current page title based on route
   const getCurrentPageTitle = () => {
+    if (location.pathname === "/visitor/editprofile") {
+      return "Edit Profile"; // Set the title for the Edit Profile page
+    }
+  
     const currentItem = sidebarItems.find(item => 
       location.pathname === item.route || 
       (item.route !== '/visitor' && location.pathname.startsWith(item.route))
@@ -58,6 +62,7 @@ function VisitorLayout() {
           pageTitle={getCurrentPageTitle()}
           pageSubtitle="Visitor"
         />
+
       
         <Outlet />
       </div>
