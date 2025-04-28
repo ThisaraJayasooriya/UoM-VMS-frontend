@@ -52,9 +52,13 @@ import VisitorLayout from "./pages/visitor/VisitorLayout";
 import VisitorDashboard from "./pages/visitor/VisitorDashboard.jsx";
 import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
-import UpcomingVisit from "./pages/visitor/UpcomingVisit.jsx";
+import UpcomingVisit from "./pages/visitor/AppointmentStatus.jsx";
 import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
-import VisitorProfile from "./pages/visitor/VisitorProfile.jsx";
+import VisitorProfile from "./pages/visitor/VisitorSettings.jsx"; 
+import AppointmentStatus from "./pages/visitor/AppointmentStatus.jsx";
+import HostAvailableTimeSlots from "./pages/visitor/HostAvailableTimeSlots.jsx";
+import VisitorSettings from "./pages/visitor/VisitorSettings.jsx";
+import VisitorEditProfile from "./pages/visitor/VisitorEditProfile.jsx";
 
 // Other
 import LoginPage from "./pages/LoginPage";
@@ -117,9 +121,13 @@ function App() {
             <Route index element={<VisitorDashboard />} />
             <Route path="appointment" element={<VisitorAppointment />} />
             <Route path="history" element={<Visithistory />} />
-            <Route path="upcoming" element={<UpcomingVisit />} />
+            <Route path="Status" element={<AppointmentStatus/>} />
             <Route path="feedback" element={<VisitorFeedback />} />
-            <Route path="profile" element={<VisitorProfile />} />
+            <Route path="HostAvailableTime" element={<HostAvailableTimeSlots/>} />
+            <Route path="settings" element={<VisitorSettings />} /> 
+            <Route path="editprofile" element={<VisitorEditProfile/>} /> 
+
+
           </Route>
         </Routes>
       </BrowserRouter>
