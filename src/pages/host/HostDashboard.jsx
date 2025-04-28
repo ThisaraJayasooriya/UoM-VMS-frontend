@@ -9,10 +9,10 @@ return (
         <h1 className="text-2xl font-bold mb-5 text-center lg:text-left">Hi, John! 👋</h1>
         <div className="flex flex-col lg:flex-row lg:space-x-20 space-y-4 lg:space-y-0">
         <div className="mb-4 lg:mb-0">
-          <DashboardCard icon={<FaClipboardList />} title="Total Pre-Registers" count={5} />
+          <DashboardCard icon={<FaClipboardList />} title="Total Meeting Requests" count={5} textcolor="text-blue-600"/>
         </div>
         <div className="mb-4 lg:mb-0">
-          <DashboardCard icon={<FaUsers />} title="Total Visitors" count={25} />
+          <DashboardCard icon={<FaUsers />} title="Total Appointments" count={25} textcolor="text-green-600" />
         </div>
         </div>
 
