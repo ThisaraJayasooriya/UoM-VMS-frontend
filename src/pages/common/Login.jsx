@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import logo from "../../assets/logouom.png";
 import VLogo from "../../assets/v.png";
 
@@ -10,15 +12,64 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log("Logging in with:", { username, password });
-    // Simulate API call
-    setTimeout(() => {
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(text || 'Server returned non-JSON response');
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed. Please try again.");
+      }
+
+      toast.success("🎉 Login successful! Redirecting...", {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("visitorData", JSON.stringify(data.visitor));
+      }
+
+      // Redirect to Visitor Dashboard
+      setTimeout(() => navigate("/visitor"), 2000);
+
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error(`❌ ${error.message || 'Login failed. Please try again.'}`, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    } finally {
       setIsLoading(false);
-      navigate("/roles");
-    }, 1500);
+    }
   };
 
   return (

@@ -34,6 +34,25 @@ const Signup = () => {
     passportNumber: ""
   });
 
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!/[a-z]/.test(password)) {
+      return "Password must contain at least one lowercase letter";
+    }
+    if (!/[0-9]/.test(password)) {
+      return "Password must contain at least one number";
+    }
+    if (!/[\W_]/.test(password)) {
+      return "Password must contain at least one special character";
+    }
+    return "";
+  };
+
   const validateNIC = (nic) => {
     const cleanedNIC = nic.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
     const oldFormat = /^[0-9]{9}[VX]$/;
@@ -59,6 +78,11 @@ const Signup = () => {
     
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+
+    if (name === "password") {
+      const passwordError = validatePassword(value);
+      setErrors(prev => ({ ...prev, password: passwordError || "" }));
     }
 
     if (name === "nicNumber" && formData.nationality === "Sri Lankan") {
@@ -108,8 +132,9 @@ const Signup = () => {
       isValid = false;
     }
 
-    if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      newErrors.password = passwordError;
       isValid = false;
     }
 
@@ -151,11 +176,18 @@ const Signup = () => {
 
     try {
       const { confirmPassword, ...dataToSend } = formData;
-      const response = await fetch("http://localhost:5000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend),
       });
+
+      // First check if the response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(text || 'Server returned non-JSON response');
+      }
 
       const data = await response.json();
 
@@ -163,7 +195,6 @@ const Signup = () => {
         throw new Error(data.message || "Signup failed. Please try again.");
       }
 
-      // On successful signup
       toast.success("🎉 Signup successful! Redirecting to login...", {
         position: "top-center",
         autoClose: 2000,
@@ -175,17 +206,30 @@ const Signup = () => {
         theme: "colored",
       });
 
-      // Store token if available
       if (data.token) {
         localStorage.setItem("authToken", data.token);
       }
 
-      // Redirect to login after delay
       setTimeout(() => navigate("/login"), 2000);
 
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error(`❌ ${error.message}`, {
+      
+      // Handle specific error cases
+      let errorMessage = error.message;
+      if (error.message.includes("duplicate key error")) {
+        if (error.message.includes("email")) {
+          errorMessage = "Email already registered";
+        } else if (error.message.includes("username")) {
+          errorMessage = "Username already taken";
+        } else if (error.message.includes("nicNumber")) {
+          errorMessage = "NIC number already registered";
+        } else if (error.message.includes("passportNumber")) {
+          errorMessage = "Passport number already registered";
+        }
+      }
+
+      toast.error(`❌ ${errorMessage || 'Signup failed. Please try again.'}`, {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: false,
@@ -304,7 +348,30 @@ const Signup = () => {
                   </svg>
                 )}
               </button>
-              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+              {errors.password && (
+                <div className="text-red-500 text-xs mt-1">
+                  {errors.password}
+                  {!errors.password && formData.password && (
+                    <div className="grid grid-cols-2 gap-1 mt-1">
+                      <span className={`text-xs ${formData.password.length >= 8 ? 'text-green-500' : 'text-gray-400'}`}>
+                        • 8+ characters
+                      </span>
+                      <span className={`text-xs ${/[A-Z]/.test(formData.password) ? 'text-green-500' : 'text-gray-400'}`}>
+                        • Uppercase
+                      </span>
+                      <span className={`text-xs ${/[a-z]/.test(formData.password) ? 'text-green-500' : 'text-gray-400'}`}>
+                        • Lowercase
+                      </span>
+                      <span className={`text-xs ${/[0-9]/.test(formData.password) ? 'text-green-500' : 'text-gray-400'}`}>
+                        • Number
+                      </span>
+                      <span className={`text-xs ${/[\W_]/.test(formData.password) ? 'text-green-500' : 'text-gray-400'}`}>
+                        • Special char
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="relative">
