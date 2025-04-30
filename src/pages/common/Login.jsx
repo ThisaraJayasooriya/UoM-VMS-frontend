@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,68 +9,97 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
+
+  // Check for existing valid token on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const rememberMe = localStorage.getItem('authRemember') === 'true';
+
+    if (token) {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            navigate('/visitor'); // Redirect if token is valid
+          } else if (!rememberMe) {
+            // Only clear if not in rememberMe mode
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('visitorData');
+            localStorage.removeItem('authRemember');
+          }
+        })
+        .catch(() => {
+          if (!rememberMe) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('visitorData');
+            localStorage.removeItem('authRemember');
+          }
+        })
+        .finally(() => setCheckingAuth(false));
+    } else {
+      setCheckingAuth(false);
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+  
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, rememberMe }),
       });
-
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        throw new Error(text || 'Server returned non-JSON response');
-      }
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         throw new Error(data.message || "Login failed. Please try again.");
       }
-
-      toast.success("🎉 Login successful! Redirecting...", {
-        position: "top-center",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-
+  
+      toast.success("🎉 Login successful! Redirecting...");
+  
       if (data.token) {
         localStorage.setItem("authToken", data.token);
+        // Store rememberMe status in localStorage
+        localStorage.setItem("authRemember", data.rememberMe ? "true" : "false");
+        
+        console.log('Token saved with rememberMe:', data.rememberMe);
+        
+        // Store visitor data
         localStorage.setItem("visitorData", JSON.stringify(data.visitor));
       }
-
-      // Redirect to Visitor Dashboard
+  
       setTimeout(() => navigate("/visitor"), 2000);
-
+  
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error(`❌ ${error.message || 'Login failed. Please try again.'}`, {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
+      toast.error(`❌ ${error.message || 'Login failed. Please try again.'}`);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Show loading state while checking auth
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#124E66] to-[#2E3944] flex items-center justify-center">
+        <div className="text-white text-center">
+          <svg className="animate-spin h-12 w-12 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p>Checking authentication status...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#124E66] to-[#2E3944] flex flex-col items-center justify-center relative p-4">
@@ -179,6 +208,8 @@ const Login = () => {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 text-[#124E66] focus:ring-[#124E66] border-[#D3D9D2] rounded"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-[#2E3944]">
