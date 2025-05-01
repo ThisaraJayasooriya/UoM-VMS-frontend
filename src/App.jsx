@@ -1,4 +1,5 @@
-import { Routes, Route, BrowserRouter, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -23,6 +24,7 @@ import MainNavbar from "./components/home/MainNavbar";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDetails from "./pages/admin/UserDetails";
+import AdminReports from "./pages/admin/AdminReports";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
 import VisitorHistoryReport from "./pages/admin/VisitorHistoryReport";
 import StaffRegistration from "./pages/admin/StaffRegistration";
@@ -30,7 +32,6 @@ import Settings from "./pages/admin/AdminSettings";
 import AdminInsights from "./pages/admin/AdminInsights.jsx";
 
 // Host Pages
-
 import MeetingRequests from "./pages/host/MeetingRequests";
 import HostLayout from "./pages/host/HostLayout";
 import HostDashboard from "./pages/host/HostDashboard";
@@ -44,10 +45,8 @@ import SecurityLayout from "./pages/security/SecurityLayout";
 import SecurityDashboard from "./pages/security/SecurityDashboard";
 import VerifyVisitors from "./pages/security/VerifyVisitors";
 import SecurityProfile from "./pages/security/SecurityProfile";
-import { useState } from "react";
 
 // Visitor Pages
-
 import VisitorLayout from "./pages/visitor/VisitorLayout";
 import VisitorDashboard from "./pages/visitor/VisitorDashboard.jsx";
 import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
@@ -63,74 +62,196 @@ import VisitorEditProfile from "./pages/visitor/VisitorEditProfile.jsx";
 // Other
 import LoginPage from "./pages/LoginPage";
 
-
-
+// Debug Component
+const TokenDebugger = () => {
+  useEffect(() => {
+    console.log('Current token on mount:', localStorage.getItem('authToken'));
+    
+    const interval = setInterval(() => {
+      console.log('Token check:', localStorage.getItem('authToken'));
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  return null;
+};
 
 function App() {
+  const navigate = useNavigate();
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Monitor localStorage.removeItem calls
+  useEffect(() => {
+    const originalRemoveItem = localStorage.removeItem;
+    localStorage.removeItem = function(key) {
+      if (key === 'authToken') {
+        console.group('Token Removal Detected');
+        console.log('Attempt to remove authToken detected!');
+        console.trace('Removal Stack Trace');
+        console.groupEnd();
+      }
+      return originalRemoveItem.apply(this, arguments);
+    };
+    
+    return () => {
+      localStorage.removeItem = originalRemoveItem;
+    };
+  }, []);
+
+  // Enhanced storage event listener
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'authToken') {
+        console.group('Auth Token Change');
+        console.log('Action:', e.newValue ? 'SET' : 'CLEARED');
+        console.log('Old Value:', e.oldValue);
+        console.log('New Value:', e.newValue);
+        console.log('URL:', window.location.href);
+        console.trace('Change Origin');
+        console.groupEnd();
+        
+        if (!e.newValue) {
+          const stack = new Error().stack;
+          if (!stack.includes('Login.jsx') && !stack.includes('AuthService')) {
+            console.warn('UNEXPECTED TOKEN CLEARING DETECTED!');
+          }
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Enhanced token verification on app load with detailed logging
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = localStorage.getItem('authToken');
+      const rememberMe = localStorage.getItem('authRemember') === 'true';
+      console.log('Starting token verification:', { token, rememberMe });
+      
+      if (token) {
+        try {
+          const verifyUrl = `${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/verify`;
+          console.log('Fetching verify endpoint:', verifyUrl);
+          const response = await fetch(verifyUrl, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          console.log('Verify response status:', response.status);
+          const data = await response.json();
+          console.log('Verify response data:', data);
+          
+          if (data.success) {
+            console.log('Token verification successful, navigating to /visitor');
+            navigate('/visitor');
+          } else {
+            console.log('Token verification failed:', data.message || 'No message provided');
+            if (!rememberMe) {
+              console.log('Clearing localStorage (rememberMe: false)');
+              localStorage.removeItem('authToken');
+              localStorage.removeItem('visitorData');
+              localStorage.removeItem('authRemember');
+            }
+          }
+        } catch (error) {
+          console.error('Token verification error:', error.message);
+          console.log('Error details:', error);
+          if (!rememberMe) {
+            console.log('Clearing localStorage (rememberMe: false)');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('visitorData');
+            localStorage.removeItem('authRemember');
+          }
+        }
+      } else {
+        console.log('No token found in localStorage');
+      }
+      console.log('Finished token verification, setting checkingAuth to false');
+      setCheckingAuth(false);
+    };
+
+    verifyToken();
+  }, [navigate]);
+
+  // Show loading state while checking auth
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#124E66] to-[#2E3944] flex items-center justify-center">
+        <div className="text-white text-center">
+          <svg className="animate-spin h-12 w-12 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p>Checking authentication status...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <BrowserRouter>
-        <ToastContainer
-          position="top-center"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="colored"
-        />
+      <TokenDebugger />
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
 
-        <Routes>
-          {/* Common Routes */}
-          <Route path="/*" element={<MainComponent />} />
-          <Route path="/roles" element={<LoginPage />} />
+      <Routes>
+        {/* Common Routes */}
+        <Route path="/*" element={<MainComponent />} />
+        <Route path="/roles" element={<LoginPage />} />
 
-          {/* Host Routes */}
-          <Route path="/host" element={<HostLayout />}>
-            <Route index element={<HostDashboard />} />
-            <Route path="meeting" element={<MeetingRequests />} />
-            <Route path="profile" element={<HostProfile />} />
-            <Route path="visitlog" element={<VisitLog />} />
-            <Route path="appointments" element={<Appointments />} />
-            <Route path="appointmentdetails" element={<AppointmentDetails />} />
-          </Route>
+        {/* Host Routes */}
+        <Route path="/host" element={<HostLayout />}>
+          <Route index element={<HostDashboard />} />
+          <Route path="meeting" element={<MeetingRequests />} />
+          <Route path="profile" element={<HostProfile />} />
+          <Route path="visitlog" element={<VisitLog />} />
+          <Route path="appointments" element={<Appointments />} />
+          <Route path="appointmentdetails" element={<AppointmentDetails />} />
+        </Route>
 
-          {/* Security Routes */}
-          <Route path="/security" element={<SecurityLayout />}>
-            <Route index element={<SecurityDashboard />} />
-            <Route path="visitor" element={<VerifyVisitors />} />
-            <Route path="profile" element={<SecurityProfile />} />
-          </Route>
+        {/* Security Routes */}
+        <Route path="/security" element={<SecurityLayout />}>
+          <Route index element={<SecurityDashboard />} />
+          <Route path="visitor" element={<VerifyVisitors />} />
+          <Route path="profile" element={<SecurityProfile />} />
+        </Route>
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="userdetails" element={<UserDetails />} />
-            <Route path="staffregistration" element={<StaffRegistration />} />
-            <Route path="visitorlogbook" element={<VisitorLogbook />} />
-            <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
-            <Route path="admininsights" element={<AdminInsights />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="userdetails" element={<UserDetails />} />
+          <Route path="staffregistration" element={<StaffRegistration />} />
+          <Route path="adminreports" element={<AdminReports />} />
+          <Route path="visitorlogbook" element={<VisitorLogbook />} />
+          <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
+          <Route path="admininsights" element={<AdminInsights />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
 
-          {/* Visitor Routes */}
-          <Route path="/visitor" element={<VisitorLayout />}>
-            <Route index element={<VisitorDashboard />} />
-            <Route path="appointment" element={<VisitorAppointment />} />
-            <Route path="history" element={<Visithistory />} />
-            <Route path="Status" element={<AppointmentStatus/>} />
-            <Route path="feedback" element={<VisitorFeedback />} />
-            <Route path="HostAvailableTime" element={<HostAvailableTimeSlots/>} />
-            <Route path="settings" element={<VisitorSettings />} /> 
-            <Route path="editprofile" element={<VisitorEditProfile/>} /> 
-
-
-          </Route>
-        </Routes>
-      </BrowserRouter>
+        {/* Visitor Routes */}
+        <Route path="/visitor" element={<VisitorLayout />}>
+          <Route index element={<VisitorDashboard />} />
+          <Route path="appointment" element={<VisitorAppointment />} />
+          <Route path="history" element={<Visithistory />} />
+          <Route path="Status" element={<AppointmentStatus/>} />
+          <Route path="feedback" element={<VisitorFeedback />} />
+          <Route path="HostAvailableTime" element={<HostAvailableTimeSlots/>} />
+          <Route path="settings" element={<VisitorSettings />} /> 
+          <Route path="editprofile" element={<VisitorEditProfile/>} /> 
+        </Route>
+      </Routes>
     </div>
   );
 }
