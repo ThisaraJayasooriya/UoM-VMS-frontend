@@ -1,176 +1,91 @@
-import React, { useState } from 'react';
-import { FiUser, FiMail, FiPhone, FiLock } from 'react-icons/fi';
+import { FaUser, FaIdCard, FaEnvelope, FaPhone } from 'react-icons/fa';
 
-const SettingsPage = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState('view');
-  const [profile, setProfile] = useState({
-    name: 'Kevin Decker',
-    userId: 'S0001',
-    designation: 'Admin',
-    nicNumber: '9574823V',
-    email: 'kevind@email.com',
-    phone: '0113567854'
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProfile(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
-    alert('Profile updated successfully!');
-  };
-
+const AdminProfile = () => {
   return (
-    <div className="pt-20 px-4 lg:px-20">
-      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
-
-        {/* Tabs */}
-        <div className="flex justify-center gap-8 p-6 bg-gray-100 border-b">
-          <button
-            className={`text-lg px-8 py-4 rounded-full font-semibold transition-all ${
-              activeTab === 'view'
-                ? 'bg-[#124E66] text-white shadow-md'
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-            onClick={() => {
-              setActiveTab('view');
-              setIsEditing(false);
-            }}
-          >
-            See My Profile
-          </button>
-          <button
-            className={`text-lg px-8 py-4 rounded-full font-semibold transition-all ${
-              activeTab === 'edit'
-                ? 'bg-[#124E66] text-white shadow-md'
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-            onClick={() => {
-              setActiveTab('edit');
-              setIsEditing(true);
-            }}
-          >
-            Edit My Profile
-          </button>
-        </div>
-
-        {/* Profile Content */}
-        <div className="p-8">
-          <div className="flex flex-col md:flex-row gap-6 items-center mb-8">
-            <div className="w-24 h-24 rounded-full bg-[#124E66] text-white flex items-center justify-center text-3xl font-bold">
-              {profile.name.charAt(0)}
-            </div>
-            <div className="text-center md:text-left">
-              <h3 className="text-2xl font-bold text-gray-800">{profile.name}</h3>
-              <p className="text-gray-500">{profile.designation}</p>
+    <div className="pt-20 px-4 lg:px-20 min-h-screen">
+      <div className="max-w-3xl mx-auto">
+        {/* Profile Card */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Profile Header */}
+          <div className="bg-[#124E66] p-6 text-white">
+            <div className="flex items-center">
+              <div className="bg-[#748D92] p-3 rounded-full mr-4">
+                <FaUser className="text-2xl" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Admin Name</h1>
+                <div className="flex items-center mt-1">
+                  <span className="bg-[#2E3944] text-xs px-2 py-1 rounded-full">Admin</span>
+                  <span className="ml-3 text-sm opacity-90">ID: A0001</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">User ID</label>
-              <input
-                type="text"
-                name="userId"
-                value={profile.userId}
-                disabled
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-              />
+          {/* Profile Details */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* NIC Section */}
+              <div className="bg-[#F8FAF9] p-4 rounded-lg border border-[#D3D9D2]">
+                <div className="flex items-center mb-3">
+                  <FaIdCard className="text-[#124E66] mr-2" />
+                  <h3 className="font-semibold text-[#212A31]">NIC Number</h3>
+                </div>
+                <p className="text-[#2E3944]">912345678V</p>
+              </div>
+
+              {/* Email Section */}
+              <div className="bg-[#F8FAF9] p-4 rounded-lg border border-[#D3D9D2]">
+                <div className="flex items-center mb-3">
+                  <FaEnvelope className="text-[#124E66] mr-2" />
+                  <h3 className="font-semibold text-[#212A31]">Email Address</h3>
+                </div>
+                <p className="text-[#2E3944]">admin@email.com</p>
+              </div>
+
+              {/* Phone Section */}
+              <div className="bg-[#F8FAF9] p-4 rounded-lg border border-[#D3D9D2]">
+                <div className="flex items-center mb-3">
+                  <FaPhone className="text-[#124E66] mr-2" />
+                  <h3 className="font-semibold text-[#212A31]">Phone Number</h3>
+                </div>
+                <p className="text-[#2E3944]">0112345678</p>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Full Name</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="name"
-                  value={profile.name}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              ) : (
-                <p className="p-3 bg-gray-50 rounded-lg">{profile.name}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Designation</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="designation"
-                  value={profile.designation}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              ) : (
-                <p className="p-3 bg-gray-50 rounded-lg">{profile.designation}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">NIC Number</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="nicNumber"
-                  value={profile.nicNumber}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              ) : (
-                <p className="p-3 bg-gray-50 rounded-lg">{profile.nicNumber}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
-              {isEditing ? (
-                <input
-                  type="email"
-                  name="email"
-                  value={profile.email}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              ) : (
-                <p className="p-3 bg-gray-50 rounded-lg">{profile.email}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Phone Number</label>
-              {isEditing ? (
-                <input
-                  type="tel"
-                  name="phone"
-                  value={profile.phone}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              ) : (
-                <p className="p-3 bg-gray-50 rounded-lg">{profile.phone}</p>
-              )}
+            {/* Additional Information Section */}
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold text-[#212A31] mb-4">Admin Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-[#748D92]">Last Login</h4>
+                  <p className="text-[#2E3944]">May 1, 2025</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-[#748D92]">Department</h4>
+                  <p className="text-[#2E3944]">IT Services</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-[#748D92]">Status</h4>
+                  <p className="text-green-600 font-medium">Active</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {isEditing && (
-            <div className="text-center mt-10">
-              <button
-                onClick={handleSave}
-                className="bg-[#124E66] hover:bg-[#0e3a4f] text-white px-10 py-4 rounded-full text-lg font-semibold shadow-lg transition-all"
-              >
-                Save Changes
-              </button>
-            </div>
-          )}
+          {/* Footer Actions */}
+          <div className="bg-[#F8FAF9] px-6 py-4 border-t border-[#D3D9D2] flex justify-end">
+            <button className="bg-[#124E66] text-white px-4 py-2 rounded-md hover:bg-[#0E3D52] transition-colors duration-200 mr-3">
+              Edit Profile
+            </button>
+            <button className="bg-[#748D92] text-white px-4 py-2 rounded-md hover:bg-[#5A7176] transition-colors duration-200">
+              Log Out
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default SettingsPage;
+export default AdminProfile;
