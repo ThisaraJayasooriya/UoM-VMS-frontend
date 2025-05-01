@@ -20,17 +20,24 @@ import SuccessfulPWreset from "./pages/common/SuccessfulPWreset";
 import HomeNavbar from "./components/home/HomeNavbar";
 import MainNavbar from "./components/home/MainNavbar";
 
-// Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import UserDetails from "./pages/admin/UserDetails";
-import AdminReports from "./pages/admin/AdminReports";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
-import VisitorHistoryReport from "./pages/admin/VisitorHistoryReport";
-import StaffRegistration from "./pages/admin/StaffRegistration";
+import AdminReports from "./pages/admin/AdminReports";
 import Settings from "./pages/admin/AdminSettings";
-import AdminInsights from "./pages/admin/AdminInsights.jsx";
 
+// 🔥 NEW User Details Pages
+import UserDetailsMain from "./pages/admin/userdetails/UserDetailsMain";
+import VisitorDetails from "./pages/admin/userdetails/VisitorDetails";
+import HostDetails from "./pages/admin/userdetails/HostDetails";
+import SecurityDetails from "./pages/admin/userdetails/SecurityDetails";
+import AdminDetails from "./pages/admin/userdetails/AdminDetails";
+
+// 🔥 NEW Add User Pages
+import AddVisitor from "./pages/admin/adduser/AddVisitor";
+import AddHost from "./pages/admin/adduser/AddHost";
+import AddSecurity from "./pages/admin/adduser/AddSecurity";
+import AddAdmin from "./pages/admin/adduser/AddAdmin";
 // Host Pages
 import MeetingRequests from "./pages/host/MeetingRequests";
 import HostLayout from "./pages/host/HostLayout";
@@ -228,17 +235,27 @@ function App() {
           <Route path="profile" element={<SecurityProfile />} />
         </Route>
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="userdetails" element={<UserDetails />} />
-          <Route path="staffregistration" element={<StaffRegistration />} />
-          <Route path="adminreports" element={<AdminReports />} />
-          <Route path="visitorlogbook" element={<VisitorLogbook />} />
-          <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
-          <Route path="admininsights" element={<AdminInsights />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
+       {/* Admin Routes */}
+       <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            
+            {/* 🔥 NEW User Details Routes */}
+            <Route path="userdetails" element={<UserDetailsMain />} />
+            <Route path="userdetails/visitor" element={<VisitorDetails />} />
+            <Route path="userdetails/host" element={<HostDetails />} />
+            <Route path="userdetails/security" element={<SecurityDetails />} />
+            <Route path="userdetails/admin" element={<AdminDetails />} />
+
+            {/* 🔥 NEW Add User Routes */}
+            <Route path="userdetails/add-visitor" element={<AddVisitor />} />
+            <Route path="userdetails/add-host" element={<AddHost />} />
+            <Route path="userdetails/add-security" element={<AddSecurity />} />
+            <Route path="userdetails/add-admin" element={<AddAdmin />} />
+
+            <Route path="visitorlogbook" element={<VisitorLogbook />} />
+            <Route path="adminreports" element={<AdminReports />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
 
         {/* Visitor Routes */}
         <Route path="/visitor" element={<VisitorLayout />}>
