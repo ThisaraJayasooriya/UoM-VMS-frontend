@@ -29,11 +29,35 @@ function AdminLayout() {
   const sidebarItems = [
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/admin" },
     { icon: <FaBook />, description: "User Details", route: "/admin/userdetails" },
-    { icon: <FaChalkboardTeacher />, description: "Visitor Logbook", route: "/admin/visitorlogbook" },
-    { icon: <FaChartBar />, description: "Reports & Analytics", route: "/admin/adminreports" },
+
+    { icon: <FaUsers />, description: "Staff Registration", route: "/admin/staffregistration" },
+    {
+      icon: <FaChalkboardTeacher />,
+      description: "Reports",
+      route: "/admin/AdminReports",
+    },
+
+    {
+        icon: <FaChartBar/>,
+        description: "Insights",
+        route: "/admin/adminInsights",
+      },
+
+    
     { icon: <FaCog />, description: "Settings", route: "/admin/settings" },
   ];
 
+  const pageTitles = {
+    "/admin": "Dashboard",
+    "/admin/userdetails": "User Details",
+    "/admin/AdminReports": "Reports",
+    "/admin/adminInsights": "Insights",
+    "/admin/settings": "Settings",
+    "/admin/VisitorLogbook": "Visitor Logbook",       
+    "/admin/VisitorHistoryReport": "Visitor History Report"  
+  };
+   
+   
   // Dynamic page title based on route
   const getPageTitle = () => {
     const path = location.pathname;
@@ -43,7 +67,7 @@ function AdminLayout() {
     if (path.includes("/admin/userdetails/admin")) return "Admin Details";
     if (path.includes("/admin/userdetails")) return "User Details"; // Default if inside userdetails
     if (path.includes("/admin/visitorlogbook")) return "Visitor Logbook";
-    if (path.includes("/admin/adminreports")) return "Reports & Analytics";
+    if (path.includes("/admin/visitorhistoryreport")) return "Visitor History Report";
     if (path.includes("/admin/settings")) return "Settings";
     return "Dashboard"; // fallback
   };
