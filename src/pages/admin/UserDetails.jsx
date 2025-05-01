@@ -1,4 +1,7 @@
+// ✅ NEW VERSION of UserDetails.jsx with Integrated Add User Modal (No Separate StaffRegistration)
+
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const PAGE_SIZE = 3;
 
@@ -9,6 +12,7 @@ const UserDetails = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [editUser, setEditUser] = useState(null);
+  const [newUser, setNewUser] = useState(null);
 
   useEffect(() => {
     if (selectedRole !== "visitor") {
@@ -33,11 +37,7 @@ const UserDetails = () => {
   }, [searchQuery, userList, currentPage]);
 
   const handleEdit = (user) => setEditUser(user);
-
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditUser((prev) => ({ ...prev, [name]: value }));
-  };
+  const handleEditChange = (e) => setEditUser((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleEditSubmit = async () => {
     const res = await fetch(`http://localhost:5000/api/staff/${editUser._id}`, {
@@ -45,24 +45,18 @@ const UserDetails = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editUser),
     });
-
     if (res.ok) {
       alert("User updated successfully!");
       setEditUser(null);
-      setSelectedRole(selectedRole); // Refresh list
+      setSelectedRole(selectedRole); // Refresh
     } else {
       alert("Update failed");
     }
   };
 
   const handleDelete = async (userId) => {
-    const confirm = window.confirm("Are you sure you want to delete this user?");
-    if (!confirm) return;
-
-    const res = await fetch(`http://localhost:5000/api/staff/${userId}`, {
-      method: "DELETE",
-    });
-
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    const res = await fetch(`http://localhost:5000/api/staff/${userId}`, { method: "DELETE" });
     if (res.ok) {
       alert("User deleted");
       setUserList((prev) => prev.filter((user) => user._id !== userId));
@@ -71,28 +65,54 @@ const UserDetails = () => {
     }
   };
 
+  const handleAddSubmit = async () => {
+    const res = await fetch("http://localhost:5000/api/staff/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...newUser, registeredDate: new Date().toLocaleString(), role: selectedRole }),
+    });
+    if (res.ok) {
+      alert("User added successfully!");
+      setNewUser(null);
+      setSelectedRole(selectedRole);
+    } else {
+      alert("Failed to add user");
+    }
+  };
+
   return (
     <div className="pt-20 px-4 lg:px-20">
-      {/* Role + Search */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-        <select
-          className="w-64 p-3 border border-blue-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
-          value={selectedRole}
-          onChange={(e) => setSelectedRole(e.target.value)}
-        >
-          <option value="visitor">Visitor</option>
-          <option value="host">Host</option>
-          <option value="security">Security</option>
-          <option value="admin">Admin</option>
-        </select>
+      {/* Controls */}
+      <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-4 mb-6">
+        <div className="flex gap-4 w-full md:w-auto">
+          <select
+            className="w-60 p-3 border border-blue-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+          >
+            <option value="visitor">Visitor</option>
+            <option value="host">Host</option>
+            <option value="security">Security</option>
+            <option value="admin">Admin</option>
+          </select>
 
-        <input
-          type="text"
-          placeholder="Search by name"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full md:w-80 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
-        />
+          <input
+            type="text"
+            placeholder="Search by name"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-64 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {selectedRole !== "visitor" && (
+          <button
+            onClick={() => setNewUser({})}
+            className="bg-[#124E66] text-white px-6 py-3 rounded-lg hover:bg-[#0e3a4f]"
+          >
+            + Add New User
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -118,69 +138,69 @@ const UserDetails = () => {
             </tr>
           </thead>
           <tbody>
-            {visibleUsers.length > 0 ? (
-              visibleUsers.map((user, index) => (
-                <tr key={user._id} className="border-t hover:bg-blue-50 transition">
-                  <td className="py-3 px-4">{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
-                  <td className="py-3 px-4">{user.userID}</td>
-                  <td className="py-3 px-4">{user.name}</td>
-                  <td className="py-3 px-4">{user.email}</td>
-                  <td className="py-3 px-4">{user.phone}</td>
-                  <td className="py-3 px-4">{user.nicNumber || "-"}</td>
-                  {selectedRole === "host" && (
-                    <>
-                      <td className="py-3 px-4">{user.faculty}</td>
-                      <td className="py-3 px-4">{user.department}</td>
-                    </>
-                  )}
-                  <td className="py-3 px-4">{user.registeredDate}</td>
-                  <td className="py-3 px-4 text-center">
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="bg-[#124E66] text-white py-1 px-4 rounded mr-2"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user._id)}
-                      className="bg-red-500 text-white py-1 px-4 rounded"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={selectedRole === "host" ? 10 : 8} className="text-center py-6 text-gray-500">
-                  No users found.
+            {visibleUsers.map((user, index) => (
+              <tr key={user._id} className="border-t hover:bg-blue-50 transition">
+                <td className="py-3 px-4">{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
+                <td className="py-3 px-4">{user.userID}</td>
+                <td className="py-3 px-4">{user.name}</td>
+                <td className="py-3 px-4">{user.email}</td>
+                <td className="py-3 px-4">{user.phone}</td>
+                <td className="py-3 px-4">{user.nicNumber}</td>
+                {selectedRole === "host" && (
+                  <>
+                    <td className="py-3 px-4">{user.faculty}</td>
+                    <td className="py-3 px-4">{user.department}</td>
+                  </>
+                )}
+                <td className="py-3 px-4">{user.registeredDate}</td>
+                <td className="py-3 px-4 text-center">
+                  <button onClick={() => handleEdit(user)} className="bg-blue-700 text-white py-1 px-4 rounded mr-2">
+                    Edit
+                  </button>
+                  <button onClick={() => handleDelete(user._id)} className="bg-red-500 text-white py-1 px-4 rounded">
+                    Remove
+                  </button>
                 </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
-
-        {/* Pagination */}
-        {visibleUsers.length < userList.filter((u) =>
-          u.name.toLowerCase().includes(searchQuery.toLowerCase())
-        ).length && (
-          <div className="text-right mt-4">
-            <button
-              className="bg-[#124E66] text-white px-6 py-2 rounded-lg hover:bg-[#0e3a4f]"
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-            >
-              Load More
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* New User Modal */}
+      {newUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+            <h2 className="text-lg font-semibold mb-4">Add New {selectedRole} User</h2>
+            {[
+              "userID", "name", "email", "phone", "password", "nicNumber",
+              ...(selectedRole === "host" ? ["faculty", "department"] : []),
+            ].map((field) => (
+              <input
+                key={field}
+                name={field}
+                placeholder={`Enter ${field}`}
+                value={newUser[field] || ""}
+                onChange={(e) => setNewUser((prev) => ({ ...prev, [field]: e.target.value }))}
+                className="w-full p-3 mb-3 border rounded"
+              />
+            ))}
+            <div className="flex justify-end gap-4">
+              <button onClick={() => setNewUser(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+              <button onClick={handleAddSubmit} className="bg-green-600 text-white px-4 py-2 rounded">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {editUser && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
             <h2 className="text-lg font-semibold mb-4">Edit User</h2>
-            {["userID", "name", "email", "phone", "nicNumber", "faculty", "department"].map((field) => (
+            {[
+              "userID", "name", "email", "phone", "nicNumber", "faculty", "department"
+            ].map((field) => (
               <input
                 key={field}
                 name={field}
@@ -191,12 +211,8 @@ const UserDetails = () => {
               />
             ))}
             <div className="flex justify-end gap-4">
-              <button onClick={() => setEditUser(null)} className="bg-gray-300 px-4 py-2 rounded">
-                Cancel
-              </button>
-              <button onClick={handleEditSubmit} className="bg-blue-600 text-white px-4 py-2 rounded">
-                Save
-              </button>
+              <button onClick={() => setEditUser(null)} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+              <button onClick={handleEditSubmit} className="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
             </div>
           </div>
         </div>
