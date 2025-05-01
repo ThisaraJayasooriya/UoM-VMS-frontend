@@ -24,6 +24,7 @@ import MainNavbar from "./components/home/MainNavbar";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDetails from "./pages/admin/UserDetails";
+import AdminReports from "./pages/admin/AdminReports";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
 import VisitorHistoryReport from "./pages/admin/VisitorHistoryReport";
 import StaffRegistration from "./pages/admin/StaffRegistration";
@@ -232,6 +233,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="userdetails" element={<UserDetails />} />
           <Route path="staffregistration" element={<StaffRegistration />} />
+          <Route path="adminreports" element={<AdminReports />} />
           <Route path="visitorlogbook" element={<VisitorLogbook />} />
           <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
           <Route path="admininsights" element={<AdminInsights />} />
