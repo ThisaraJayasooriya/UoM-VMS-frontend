@@ -34,8 +34,8 @@ function AdminLayout() {
     { icon: <FaUsers />, description: "Staff Registration", route: "/admin/staffregistration" },
     {
       icon: <FaChalkboardTeacher />,
-      description: "Visitor Logbook",
-      route: "/admin/VisitorLogbook",
+      description: "Reports",
+      route: "/admin/AdminReports",
     },
 
     {
@@ -52,10 +52,11 @@ function AdminLayout() {
     "/admin": "Dashboard",
     "/admin/userdetails": "User Details",
     "/admin/staffregistration": "Staff Registration",
+    "/admin/AdminReports": "Reports",
     "/admin/adminInsights": "Insights",
     "/admin/settings": "Settings",
-    "/admin/VisitorLogbook": "Visitor Logbook",       // Correct path for visitor logbook
-    "/admin/VisitorHistoryReport": "Visitor History Report"  // Correct path for visitor history report
+    "/admin/VisitorLogbook": "Visitor Logbook",       
+    "/admin/VisitorHistoryReport": "Visitor History Report"  
   };
 
   return (
