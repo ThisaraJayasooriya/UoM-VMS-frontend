@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom"; 
 import logo from "../../assets/logouom.png";
 import VLogo from "../../assets/v.png";
 
@@ -10,8 +10,14 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
-  const token = location.search.split("=")[1]; // Get token from URL
+  const { token } = useParams(); // useParams to get token from route
+  
+  // Validate token on page load
+  React.useEffect(() => {
+    if (!token) {
+      setError("Invalid or missing token. Please request a new reset link.");
+    }
+  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,10 +31,8 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // In production, replace with:
-      // await api.resetPassword(token, newPassword);
+      // Simulate API call (to be replaced with real API call in the next step)
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       navigate("/login", { state: { passwordReset: true } });
     } catch (err) {
       setError(err.message || "Failed to reset password");

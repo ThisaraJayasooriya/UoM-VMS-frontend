@@ -13,7 +13,7 @@ import PrivacyPolicy from "./pages/common/PrivacyPolicy";
 import ForgotPassword from "./pages/common/ForgotPassword";
 import EmailSent from "./pages/common/ResetPWemail";
 import SMSSent from "./pages/common/ResetPWsms";
-import ResetPassword from "./pages/common/ResetPW";
+import ResetPW from "./pages/common/ResetPW";
 import SuccessfulPWreset from "./pages/common/SuccessfulPWreset";
 
 // Home Components
@@ -61,7 +61,7 @@ import VisitorDashboard from "./pages/visitor/VisitorDashboard.jsx";
 import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
 import UpcomingVisit from "./pages/visitor/AppointmentStatus.jsx";
-import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
+import VisitorFeedback from "./pages Analysis/visitor/VisitorFeedback.jsx";
 import VisitorProfile from "./pages/visitor/VisitorSettings.jsx"; 
 import AppointmentStatus from "./pages/visitor/AppointmentStatus.jsx";
 import HostAvailableTimeSlots from "./pages/visitor/HostAvailableTimeSlots.jsx";
@@ -237,29 +237,29 @@ function App() {
           <Route path="profile" element={<SecurityProfile />} />
         </Route>
 
-       {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            
-            {/* 🔥 NEW User Details Routes */}
-            <Route path="userdetails" element={<UserDetailsMain />} />
-            <Route path="userdetails/visitor" element={<VisitorDetails />} />
-            <Route path="userdetails/host" element={<HostDetails />} />
-            <Route path="userdetails/security" element={<SecurityDetails />} />
-            <Route path="userdetails/admin" element={<AdminDetails />} />
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          
+          {/* 🔥 NEW User Details Routes */}
+          <Route path="userdetails" element={<UserDetailsMain />} />
+          <Route path="userdetails/visitor" element={<VisitorDetails />} />
+          <Route path="userdetails/host" element={<HostDetails />} />
+          <Route path="userdetails/security" element={<SecurityDetails />} />
+          <Route path="userdetails/admin" element={<AdminDetails />} />
 
-            {/* 🔥 NEW Add User Routes */}
-            <Route path="userdetails/add-visitor" element={<AddVisitor />} />
-            <Route path="userdetails/add-host" element={<AddHost />} />
-            <Route path="userdetails/add-security" element={<AddSecurity />} />
-            <Route path="userdetails/add-admin" element={<AddAdmin />} />
+          {/* 🔥 NEW Add User Routes */}
+          <Route path="userdetails/add-visitor" element={<AddVisitor />} />
+          <Route path="userdetails/add-host" element={<AddHost />} />
+          <Route path="userdetails/add-security" element={<AddSecurity />} />
+          <Route path="userdetails/add-admin" element={<AddAdmin />} />
 
-            <Route path="visitorlogbook" element={<VisitorLogbook />} />
-            <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
-            <Route path="adminreports" element={<AdminReports />} />
-            <Route path="adminInsights" element={<AdminInsights />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+          <Route path="visitorlogbook" element={<VisitorLogbook />} />
+          <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
+          <Route path="adminreports" element={<AdminReports />} />
+          <Route path="adminInsights" element={<AdminInsights />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
 
         {/* Visitor Routes */}
         <Route path="/visitor" element={<VisitorLayout />}>
@@ -282,12 +282,12 @@ function MainComponent() {
   const { pathname } = location;
 
   const noNavbarRoutes = [
-    "/signup", 
-    "/login", 
-    "/forgot-password", 
-    "/reset-password",
+    "/signup",
+    "/login",
+    "/forgot-password",
+    "/reset-password/:token",
     "/successful-reset",
-    "/email-sent", 
+    "/email-sent",
     "/sms-sent"
   ];
 
@@ -303,7 +303,7 @@ function MainComponent() {
         <Route path="signup" element={<SignUp />} />
         <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="reset-password/:token" element={<ResetPW />} />
         <Route path="successful-reset" element={<SuccessfulPWreset />} />
         <Route path="email-sent" element={<EmailSent />} />
         <Route path="sms-sent" element={<SMSSent />} />
