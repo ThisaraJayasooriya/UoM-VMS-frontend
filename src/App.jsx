@@ -25,6 +25,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
 import VisitorHistoryReport from "./pages/admin/VisitorHistoryReport";
 import AdminReports from "./pages/admin/AdminReports";
+import AdminInsights from "./pages/admin/AdminInsights.jsx";
 import Settings from "./pages/admin/AdminSettings";
 
 // 🔥 NEW User Details Pages
@@ -256,6 +257,7 @@ function App() {
             <Route path="visitorlogbook" element={<VisitorLogbook />} />
             <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
             <Route path="adminreports" element={<AdminReports />} />
+            <Route path="adminInsights" element={<AdminInsights />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 
