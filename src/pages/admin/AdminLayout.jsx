@@ -30,7 +30,7 @@ function AdminLayout() {
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/admin" },
     { icon: <FaBook />, description: "User Details", route: "/admin/userdetails" },
 
-    { icon: <FaUsers />, description: "Staff Registration", route: "/admin/staffregistration" },
+    
     {
       icon: <FaChalkboardTeacher />,
       description: "Reports",
