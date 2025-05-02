@@ -23,6 +23,7 @@ import MainNavbar from "./components/home/MainNavbar";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
+import VisitorHistoryReport from "./pages/admin/VisitorHistoryReport";
 import AdminReports from "./pages/admin/AdminReports";
 import Settings from "./pages/admin/AdminSettings";
 
@@ -236,7 +237,7 @@ function App() {
         </Route>
 
        {/* Admin Routes */}
-       <Route path="/admin" element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             
             {/* 🔥 NEW User Details Routes */}
@@ -253,6 +254,7 @@ function App() {
             <Route path="userdetails/add-admin" element={<AddAdmin />} />
 
             <Route path="visitorlogbook" element={<VisitorLogbook />} />
+            <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
             <Route path="adminreports" element={<AdminReports />} />
             <Route path="settings" element={<Settings />} />
           </Route>
