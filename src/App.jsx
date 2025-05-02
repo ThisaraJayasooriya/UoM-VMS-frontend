@@ -13,7 +13,7 @@ import PrivacyPolicy from "./pages/common/PrivacyPolicy";
 import ForgotPassword from "./pages/common/ForgotPassword";
 import EmailSent from "./pages/common/ResetPWemail";
 import SMSSent from "./pages/common/ResetPWsms";
-import ResetPW from "./pages/common/ResetPW"; // Updated import to match file name
+import ResetPW from "./pages/common/ResetPW";
 import SuccessfulPWreset from "./pages/common/SuccessfulPWreset";
 
 // Home Components
@@ -25,6 +25,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
 import VisitorHistoryReport from "./pages/admin/VisitorHistoryReport";
 import AdminReports from "./pages/admin/AdminReports";
+import AdminInsights from "./pages/admin/AdminInsights.jsx";
 import Settings from "./pages/admin/AdminSettings";
 
 // 🔥 NEW User Details Pages
@@ -60,7 +61,7 @@ import VisitorDashboard from "./pages/visitor/VisitorDashboard.jsx";
 import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
 import UpcomingVisit from "./pages/visitor/AppointmentStatus.jsx";
-import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
+import VisitorFeedback from "./pages Analysis/visitor/VisitorFeedback.jsx";
 import VisitorProfile from "./pages/visitor/VisitorSettings.jsx"; 
 import AppointmentStatus from "./pages/visitor/AppointmentStatus.jsx";
 import HostAvailableTimeSlots from "./pages/visitor/HostAvailableTimeSlots.jsx";
@@ -256,6 +257,7 @@ function App() {
           <Route path="visitorlogbook" element={<VisitorLogbook />} />
           <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
           <Route path="adminreports" element={<AdminReports />} />
+          <Route path="adminInsights" element={<AdminInsights />} />
           <Route path="settings" element={<Settings />} />
         </Route>
 
@@ -283,7 +285,7 @@ function MainComponent() {
     "/signup",
     "/login",
     "/forgot-password",
-    "/reset-password/:token", // Updated to include :token
+    "/reset-password/:token",
     "/successful-reset",
     "/email-sent",
     "/sms-sent"
@@ -301,7 +303,7 @@ function MainComponent() {
         <Route path="signup" element={<SignUp />} />
         <Route path="login" element={<Login />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="reset-password/:token" element={<ResetPW />} /> {/* Updated to <ResetPW /> with :token */}
+        <Route path="reset-password/:token" element={<ResetPW />} />
         <Route path="successful-reset" element={<SuccessfulPWreset />} />
         <Route path="email-sent" element={<EmailSent />} />
         <Route path="sms-sent" element={<SMSSent />} />
