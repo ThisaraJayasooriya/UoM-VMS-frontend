@@ -8,23 +8,38 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Determine if input is email or phone number
-    const isEmail = contact.includes('@');
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Navigate to appropriate confirmation page
-      if (isEmail) {
-        navigate("/email-sent", { state: { email: contact } });
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ contact }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsLoading(false);
+        // Navigate based on input type (email or phone number)
+        const isEmail = contact.includes("@");
+        if (isEmail) {
+          navigate("/email-sent", { state: { email: contact } });
+        } else {
+          navigate("/sms-sent", { state: { phoneNumber: contact } });
+        }
       } else {
-        navigate("/sms-sent", { state: { phoneNumber: contact } });
+        throw new Error(data.message || "Failed to send reset link");
       }
-    }, 1500);
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Error:", error);
+      alert(error.message || "An error occurred. Please try again.");
+    }
   };
 
   return (
