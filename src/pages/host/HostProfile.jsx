@@ -4,7 +4,7 @@ import { FaUser, FaIdCard, FaEnvelope, FaPhone, FaUserGraduate, FaLandmark } fro
 const HostProfile = () => {
   return (
     <div className="pt-20 px-4 lg:px-20 min-h-screen">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Profile Card */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Profile Header */}
