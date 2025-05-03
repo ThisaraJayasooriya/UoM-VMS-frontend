@@ -61,7 +61,7 @@ import VisitorDashboard from "./pages/visitor/VisitorDashboard.jsx";
 import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
 import UpcomingVisit from "./pages/visitor/AppointmentStatus.jsx";
-import VisitorFeedback from "./pages Analysis/visitor/VisitorFeedback.jsx";
+import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
 import VisitorProfile from "./pages/visitor/VisitorSettings.jsx"; 
 import AppointmentStatus from "./pages/visitor/AppointmentStatus.jsx";
 import HostAvailableTimeSlots from "./pages/visitor/HostAvailableTimeSlots.jsx";
