@@ -142,7 +142,7 @@ function App() {
       
       if (token) {
         try {
-          const verifyUrl = `${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/verify`;
+          const verifyUrl = `${import.meta.env.VITE_API_BASE_URL}/api/auth/verify`;
           console.log('Fetching verify endpoint:', verifyUrl);
           const response = await fetch(verifyUrl, {
             headers: { 'Authorization': `Bearer ${token}` }

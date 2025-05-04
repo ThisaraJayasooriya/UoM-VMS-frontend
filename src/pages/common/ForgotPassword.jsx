@@ -13,7 +13,11 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/forgot-password", {
+      if (!import.meta.env.VITE_API_BASE_URL) {
+        throw new Error("VITE_API_BASE_URL is not defined in the environment variables");
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
