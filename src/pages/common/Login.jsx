@@ -14,10 +14,9 @@ const Login = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
 
-  // Check for existing valid token on component mount
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    const rememberMe = localStorage.getItem('authRemember') === 'true';
+    const rememberMeValue = localStorage.getItem('authRemember') === 'true';
 
     if (token) {
       fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify`, {
@@ -26,16 +25,15 @@ const Login = () => {
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            navigate('/visitor'); // Redirect if token is valid
-          } else if (!rememberMe) {
-            // Only clear if not in rememberMe mode
+            navigate('/visitor');
+          } else if (!rememberMeValue) {
             localStorage.removeItem('authToken');
             localStorage.removeItem('visitorData');
             localStorage.removeItem('authRemember');
           }
         })
         .catch(() => {
-          if (!rememberMe) {
+          if (!rememberMeValue) {
             localStorage.removeItem('authToken');
             localStorage.removeItem('visitorData');
             localStorage.removeItem('authRemember');
@@ -50,35 +48,36 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-  
+
     try {
+      if (!import.meta.env.VITE_API_BASE_URL) {
+        throw new Error("VITE_API_BASE_URL is not defined in the environment variables");
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, rememberMe }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.message || "Login failed. Please try again.");
       }
-  
+
       toast.success("🎉 Login successful! Redirecting...");
-  
+
       if (data.token) {
         localStorage.setItem("authToken", data.token);
-        // Store rememberMe status in localStorage
-        localStorage.setItem("authRemember", data.rememberMe ? "true" : "false");
-        
-        console.log('Token saved with rememberMe:', data.rememberMe);
-        
-        // Store visitor data
-        localStorage.setItem("visitorData", JSON.stringify(data.visitor));
+        localStorage.setItem("authRemember", rememberMe ? "true" : "false");
+        if (data.visitor) {
+          localStorage.setItem("visitorData", JSON.stringify(data.visitor));
+        }
+        console.log('Token saved with rememberMe:', rememberMe);
       }
-  
-      setTimeout(() => navigate("/visitor"), 2000);
-  
+
+      navigate("/visitor");
     } catch (error) {
       toast.error(`❌ ${error.message || 'Login failed. Please try again.'}`);
     } finally {
@@ -86,7 +85,6 @@ const Login = () => {
     }
   };
 
-  // Show loading state while checking auth
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#124E66] to-[#2E3944] flex items-center justify-center">
@@ -103,14 +101,12 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#124E66] to-[#2E3944] flex flex-col items-center justify-center relative p-4">
-      {/* V Logo at Top-Right */}
       <img
         src={VLogo}
         alt="V Logo"
         className="absolute top-6 right-6 w-16 h-8 object-contain"
       />
 
-      {/* Go Back Button */}
       <button
         onClick={() => navigate(-1)}
         className="absolute top-6 left-6 text-white flex items-center gap-2 hover:bg-white/10 transition-all duration-300 rounded-full px-4 py-2"
@@ -121,9 +117,7 @@ const Login = () => {
         <span className="font-medium">Back</span>
       </button>
 
-      {/* Login Card */}
       <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
-        {/* Card Header */}
         <div className="bg-[#212A31] py-6 px-8 text-center">
           <div className="flex justify-center mb-4">
             <img
@@ -136,9 +130,7 @@ const Login = () => {
           <p className="text-[#D3D9D2] mt-2">University of Moratuwa</p>
         </div>
 
-        {/* Card Body */}
         <form onSubmit={handleLogin} className="p-8 space-y-6">
-          {/* Username Field */}
           <div className="space-y-2">
             <label htmlFor="username" className="block text-sm font-medium text-[#2E3944]">
               Username
@@ -161,7 +153,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Password Field */}
           <div className="space-y-2">
             <label htmlFor="password" className="block text-sm font-medium text-[#2E3944]">
               Password
@@ -201,7 +192,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Remember Me & Forgot Password */}
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -224,7 +214,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Login Button */}
           <div>
             <button
               type="submit"
@@ -246,7 +235,6 @@ const Login = () => {
           </div>
         </form>
 
-        {/* Card Footer */}
         <div className="bg-[#F8F9FA] px-8 py-4 text-center border-t border-[#D3D9D2]">
           <p className="text-sm text-[#748D92]">
             Don't have an account?{' '}
@@ -257,7 +245,6 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Footer Note */}
       <p className="mt-8 text-center text-sm text-white/80">
         © {new Date().getFullYear()} University of Moratuwa. All rights reserved.
       </p>
