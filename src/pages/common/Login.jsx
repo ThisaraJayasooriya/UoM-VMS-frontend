@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import logo from "../../assets/logouom.png";
 import VLogo from "../../assets/v.png";
+import { useAuth } from "../../App";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -11,39 +12,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const rememberMeValue = localStorage.getItem("authRemember") === "true";
-
-    if (token) {
-      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            navigate(data.userType === "visitor" ? "/visitor" : `/staff/${data.role}`);
-          } else if (!rememberMeValue) {
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("userData");
-            localStorage.removeItem("authRemember");
-          }
-        })
-        .catch(() => {
-          if (!rememberMeValue) {
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("userData");
-            localStorage.removeItem("authRemember");
-          }
-        })
-        .finally(() => setCheckingAuth(false));
-    } else {
-      setCheckingAuth(false);
-    }
-  }, [navigate]);
+  const { checkingAuth, authState } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -54,7 +24,7 @@ const Login = () => {
         throw new Error("VITE_API_BASE_URL is not defined in the environment variables");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/login`, { // Updated endpoint
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, rememberMe }),
@@ -75,15 +45,60 @@ const Login = () => {
           localStorage.setItem("userData", JSON.stringify(data.user));
         }
         console.log("Token saved with rememberMe:", rememberMe);
-      }
 
-      navigate(data.redirect);
+        // Fallback navigation in case authState doesn't update in time
+        const tokenPayload = JSON.parse(atob(data.token.split('.')[1]));
+        console.log("Token payload:", tokenPayload);
+        if (tokenPayload.userType === "visitor") {
+          navigate("/visitor");
+        } else if (tokenPayload.userType === "staff") {
+          switch (tokenPayload.role.toLowerCase()) {
+            case "admin":
+              navigate("/admin"); // Navigate to /admin instead of /staff/admin
+              break;
+            case "host":
+              navigate("/host");
+              break;
+            case "security":
+              navigate("/security");
+              break;
+            default:
+              navigate("/login");
+          }
+        }
+      }
     } catch (error) {
       toast.error(`❌ ${error.message || "Login failed. Please try again."}`);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Navigate after login, but only when checkingAuth is false and authState is updated
+  useEffect(() => {
+    if (!checkingAuth && authState.isAuthenticated) {
+      console.log("Navigating after auth check:", authState);
+      if (authState.userType === "visitor") {
+        navigate("/visitor");
+      } else if (authState.userType === "staff") {
+        switch (authState.role.toLowerCase()) {
+          case "admin":
+            navigate("/admin"); // Navigate to /admin instead of /staff/admin
+            break;
+          case "host":
+            navigate("/host");
+            break;
+          case "security":
+            navigate("/security");
+            break;
+          default:
+            navigate("/login");
+        }
+      } else {
+        navigate("/login");
+      }
+    }
+  }, [checkingAuth, authState, navigate]);
 
   if (checkingAuth) {
     return (

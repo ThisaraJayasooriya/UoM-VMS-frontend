@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -73,6 +73,11 @@ import VisitorEditProfile from "./pages/visitor/VisitorEditProfile.jsx";
 import LoginPage from "./pages/LoginPage";
 import StaffDashboard from "./pages/StaffDashboard";
 
+// Create AuthContext to share authentication status
+const AuthContext = createContext();
+
+export const useAuth = () => useContext(AuthContext);
+
 // Debug Component
 const TokenDebugger = () => {
   useEffect(() => {
@@ -92,6 +97,8 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [authState, setAuthState] = useState({ isAuthenticated: false, userType: null, role: null });
+  const [token, setToken] = useState(localStorage.getItem("authToken")); // Track token changes
 
   // Monitor localStorage.removeItem calls
   useEffect(() => {
@@ -129,6 +136,8 @@ function App() {
             console.warn("UNEXPECTED TOKEN CLEARING DETECTED!");
           }
         }
+        // Update token state when it changes
+        setToken(e.newValue);
       }
     };
 
@@ -136,19 +145,19 @@ function App() {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // Token verification on app mount only
+  // Token verification when token changes
   useEffect(() => {
     const verifyToken = async () => {
-      const token = localStorage.getItem("authToken");
+      const currentToken = localStorage.getItem("authToken");
       const rememberMe = localStorage.getItem("authRemember") === "true";
-      console.log("Starting token verification:", { token, rememberMe });
+      console.log("Starting token verification:", { token: currentToken, rememberMe });
 
-      if (token) {
+      if (currentToken) {
         try {
           const verifyUrl = `${import.meta.env.VITE_API_BASE_URL}/api/auth/visitor/verify`;
           console.log("Verify URL being called:", verifyUrl);
           const response = await fetch(verifyUrl, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${currentToken}` },
           });
 
           console.log("Verify response status:", response.status);
@@ -163,6 +172,13 @@ function App() {
             console.log("Token verification successful, navigating based on user type and role");
             localStorage.setItem("userData", JSON.stringify(data.user));
             localStorage.setItem("rememberMe", data.rememberMe);
+
+            // Update auth state
+            setAuthState({
+              isAuthenticated: true,
+              userType: data.userType,
+              role: data.role,
+            });
 
             // Only navigate if not already on a valid route
             const currentPath = location.pathname;
@@ -197,6 +213,7 @@ function App() {
               localStorage.removeItem("userData");
               localStorage.removeItem("authRemember");
             }
+            setAuthState({ isAuthenticated: false, userType: null, role: null });
           }
         } catch (error) {
           console.error("Token verification error:", error.message);
@@ -207,16 +224,18 @@ function App() {
             localStorage.removeItem("userData");
             localStorage.removeItem("authRemember");
           }
+          setAuthState({ isAuthenticated: false, userType: null, role: null });
         }
       } else {
         console.log("No token found in localStorage");
+        setAuthState({ isAuthenticated: false, userType: null, role: null });
       }
       console.log("Finished token verification, setting checkingAuth to false");
       setCheckingAuth(false);
     };
 
     verifyToken();
-  }, []); // Empty dependency array to run only once on mount
+  }, [token, navigate, location.pathname]); // Re-run when token changes
 
   // Show loading state while checking auth
   if (checkingAuth) {
@@ -250,79 +269,81 @@ function App() {
   }
 
   return (
-    <div>
-      <TokenDebugger />
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
+    <AuthContext.Provider value={{ checkingAuth, authState }}>
+      <div>
+        <TokenDebugger />
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
 
-      <Routes>
-        {/* Common Routes */}
-        <Route path="/*" element={<MainComponent />} />
-        <Route path="/roles" element={<LoginPage />} />
+        <Routes>
+          {/* Common Routes */}
+          <Route path="/*" element={<MainComponent />} />
+          <Route path="/roles" element={<LoginPage />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="userdetails" element={<UserDetailsMain />}>
-            <Route path="visitor" element={<VisitorDetails />} />
-            <Route path="host" element={<HostDetails />} />
-            <Route path="security" element={<SecurityDetails />} />
-            <Route path="admin" element={<AdminDetails />} />
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="userdetails" element={<UserDetailsMain />}>
+              <Route path="visitor" element={<VisitorDetails />} />
+              <Route path="host" element={<HostDetails />} />
+              <Route path="security" element={<SecurityDetails />} />
+              <Route path="admin" element={<AdminDetails />} />
+            </Route>
+            <Route path="userdetails/add-visitor" element={<AddVisitor />} />
+            <Route path="userdetails/add-host" element={<AddHost />} />
+            <Route path="userdetails/add-security" element={<AddSecurity />} />
+            <Route path="userdetails/add-admin" element={<AddAdmin />} />
+            <Route path="visitorlogbook" element={<VisitorLogbook />} />
+            <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
+            <Route path="adminreports" element={<AdminReports />} />
+            <Route path="adminInsights" element={<AdminInsights />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
-          <Route path="userdetails/add-visitor" element={<AddVisitor />} />
-          <Route path="userdetails/add-host" element={<AddHost />} />
-          <Route path="userdetails/add-security" element={<AddSecurity />} />
-          <Route path="userdetails/add-admin" element={<AddAdmin />} />
-          <Route path="visitorlogbook" element={<VisitorLogbook />} />
-          <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
-          <Route path="adminreports" element={<AdminReports />} />
-          <Route path="adminInsights" element={<AdminInsights />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
 
-        {/* Staff Dashboard Route */}
-        <Route path="/staff/:role" element={<StaffDashboard />} />
+          {/* Staff Dashboard Route */}
+          <Route path="/staff/:role" element={<StaffDashboard />} />
 
-        {/* Host Routes */}
-        <Route path="/host" element={<HostLayout />}>
-          <Route index element={<HostDashboard />} />
-          <Route path="meeting" element={<MeetingRequests />} />
-          <Route path="profile" element={<HostProfile />} />
-          <Route path="visitlog" element={<VisitLog />} />
-          <Route path="appointments" element={<Appointments />} />
-          <Route path="appointmentdetails" element={<AppointmentDetails />} />
-        </Route>
+          {/* Host Routes */}
+          <Route path="/host" element={<HostLayout />}>
+            <Route index element={<HostDashboard />} />
+            <Route path="meeting" element={<MeetingRequests />} />
+            <Route path="profile" element={<HostProfile />} />
+            <Route path="visitlog" element={<VisitLog />} />
+            <Route path="appointments" element={<Appointments />} />
+            <Route path="appointmentdetails" element={<AppointmentDetails />} />
+          </Route>
 
-        {/* Security Routes */}
-        <Route path="/security" element={<SecurityLayout />}>
-          <Route index element={<SecurityDashboard />} />
-          <Route path="visitor" element={<VerifyVisitors />} />
-          <Route path="profile" element={<SecurityProfile />} />
-        </Route>
+          {/* Security Routes */}
+          <Route path="/security" element={<SecurityLayout />}>
+            <Route index element={<SecurityDashboard />} />
+            <Route path="visitor" element={<VerifyVisitors />} />
+            <Route path="profile" element={<SecurityProfile />} />
+          </Route>
 
-        {/* Visitor Routes */}
-        <Route path="/visitor" element={<VisitorLayout />}>
-          <Route index element={<VisitorDashboard />} />
-          <Route path="appointment" element={<VisitorAppointment />} />
-          <Route path="history" element={<Visithistory />} />
-          <Route path="Status" element={<AppointmentStatus />} />
-          <Route path="feedback" element={<VisitorFeedback />} />
-          <Route path="HostAvailableTime" element={<HostAvailableTimeSlots />} />
-          <Route path="settings" element={<VisitorSettings />} />
-          <Route path="editprofile" element={<VisitorEditProfile />} />
-        </Route>
-      </Routes>
-    </div>
+          {/* Visitor Routes */}
+          <Route path="/visitor" element={<VisitorLayout />}>
+            <Route index element={<VisitorDashboard />} />
+            <Route path="appointment" element={<VisitorAppointment />} />
+            <Route path="history" element={<Visithistory />} />
+            <Route path="Status" element={<AppointmentStatus />} />
+            <Route path="feedback" element={<VisitorFeedback />} />
+            <Route path="HostAvailableTime" element={<HostAvailableTimeSlots />} />
+            <Route path="settings" element={<VisitorSettings />} />
+            <Route path="editprofile" element={<VisitorEditProfile />} />
+          </Route>
+        </Routes>
+      </div>
+    </AuthContext.Provider>
   );
 }
 
