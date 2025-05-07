@@ -29,69 +29,49 @@ function AdminLayout() {
   const sidebarItems = [
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/admin" },
     { icon: <FaBook />, description: "User Details", route: "/admin/userdetails" },
-
-    
     {
       icon: <FaChalkboardTeacher />,
       description: "Reports",
-      route: "/admin/AdminReports",
+      route: "/admin/adminreports",
     },
-
     {
-        icon: <FaChartBar/>,
-        description: "Insights",
-        route: "/admin/adminInsights",
-      },
-
-    
+      icon: <FaChartBar />,
+      description: "Insights",
+      route: "/admin/adminInsights",
+    },
     { icon: <FaCog />, description: "Settings", route: "/admin/settings" },
   ];
 
-  const pageTitles = { //can remove
+  const pageTitles = {
     "/admin": "Dashboard",
     "/admin/userdetails": "User Details",
-    "/admin/AdminReports": "Reports",
+    "/admin/adminreports": "Reports",
     "/admin/adminInsights": "Insights",
     "/admin/settings": "Settings",
-    "/admin/VisitorLogbook": "Visitor Logbook",       
-    "/admin/VisitorHistoryReport": "Visitor History Report"  
+    "/admin/visitorlogbook": "Visitor Logbook",
+    "/admin/visitorhistoryreport": "Visitor History Report"
   };
-   
-   
+
   // Dynamic page title based on route
   const getPageTitle = () => {
     const path = location.pathname;
+    console.log("Current path for title evaluation:", path);
     if (path.includes("/admin/userdetails/visitor")) return "Visitor Details";
     if (path.includes("/admin/userdetails/host")) return "Host Details";
     if (path.includes("/admin/userdetails/security")) return "Security Details";
     if (path.includes("/admin/userdetails/admin")) return "Admin Details";
-    if (path.includes("/admin/userdetails")) return "User Details"; // Default if inside userdetails
-    if (path.includes("/admin/AdminReports")) return "Reports";
+    if (path.includes("/admin/userdetails")) return "User Details";
+    if (path.includes("/admin/adminreports")) return "Reports";
     if (path.includes("/admin/visitorlogbook")) return "Visitor Logbook";
     if (path.includes("/admin/visitorhistoryreport")) return "Visitor History Report";
     if (path.includes("/admin/adminInsights")) return "Insights";
     if (path.includes("/admin/settings")) return "Settings";
-    return "Dashboard"; // fallback
+    return "Dashboard";
   };
 
   return (
-    <div className="h-screen w-full bg-white relative">
-      {isSidebarVisible && (
-        <div
-          className="fixed inset-0 bg-opacity-50 z-10"
-          onClick={hideSidebar}
-        ></div>
-      )}
-      <div className={`transition-all duration-300 ${isSidebarVisible ? "blur-xs pointer-events-none" : ""}`}>
-        <Headerbar
-          toggleSidebar={toggleSidebar}
-          userName="Nick"
-          userRole="Admin account"
-          pageTitle={getPageTitle()} // <-- dynamic page title
-          pageSubtitle="Admin"
-        />
-        <Outlet />
-      </div>
+    <div className="flex h-screen w-full bg-white relative">
+      {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 transform ${
           isSidebarVisible ? "translate-x-0" : "-translate-x-full"
@@ -101,10 +81,34 @@ function AdminLayout() {
           items={sidebarItems}
           hide={hideSidebar}
           onItemClick={(route) => {
+            console.log("Navigating to:", route);
             navigate(route);
             hideSidebar();
           }}
         />
+      </div>
+
+      {/* Overlay when sidebar is visible */}
+      {isSidebarVisible && (
+        <div
+          className="fixed inset-0 bg-opacity-50 z-10"
+          onClick={hideSidebar}
+        ></div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        <Headerbar
+          toggleSidebar={toggleSidebar}
+          userName="Nick"
+          userRole="Admin account"
+          pageTitle={getPageTitle()}
+          pageSubtitle="Admin"
+        />
+        <main className="flex-1">
+          <Outlet />
+          {console.log("Outlet rendered for path:", location.pathname)}
+        </main>
       </div>
     </div>
   );
