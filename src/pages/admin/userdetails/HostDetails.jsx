@@ -94,7 +94,7 @@ const HostDetails = () => {
   };
 
   return (
-    <div className="pt-20 px-4 lg:px-20">
+    <div className="pt-20 px-4 lg:px-2">
       <div className="flex justify-between items-center mb-6">
         <input
           type="text"
@@ -113,11 +113,11 @@ const HostDetails = () => {
 
       <div className="overflow-x-auto bg-white p-6 rounded-xl shadow-2xl">
         <h3 className="text-xl font-semibold mb-4 text-[#124E66]">Host Details</h3>
-        <table className="min-w-full text-sm text-left text-gray-800">
+        <table className="w-full min-w-[1200px] text-sm text-left text-gray-800">
           <thead className="bg-blue-100 text-blue-900 uppercase text-xs tracking-wider">
             <tr>
               {[
-                "#", "User ID", "Name", "Email", "Phone", "NIC/Passport", "Faculty", "Department", "Registered Date", "Actions"
+                "#", "User ID", "Name", "Username", "Email", "Phone", "NIC/Passport", "Faculty", "Department", "Registered Date", "Actions"
               ].map((heading, idx) => (
                 <th key={idx} className="py-3 px-4 whitespace-nowrap">{heading}</th>
               ))}
@@ -131,6 +131,7 @@ const HostDetails = () => {
                   <td className="py-3 px-4 whitespace-nowrap">{globalIndex}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{host.userID || "-"}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{host.name || "-"}</td>
+                  <td className="py-3 px-4 whitespace-nowrap">{host.username || "-"}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{formatEmail(host.email)}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{formatPhone(host.phone)}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{host.nicNumber || "-"}</td>
@@ -157,7 +158,6 @@ const HostDetails = () => {
           </tbody>
         </table>
 
-        {/* Pagination + Go Back */}
         <div className="flex justify-between items-center mt-6">
           <button
             onClick={() => window.history.back()}
@@ -165,20 +165,11 @@ const HostDetails = () => {
           >
             ← Go Back
           </button>
-
           <div className="space-x-4">
-            <button
-              onClick={goToPrevPage}
-              disabled={currentPage === 1}
-              className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-            >
+            <button onClick={goToPrevPage} disabled={currentPage === 1} className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50">
               Previous
             </button>
-            <button
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-            >
+            <button onClick={goToNextPage} disabled={currentPage === totalPages} className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50">
               Next
             </button>
           </div>
@@ -189,7 +180,7 @@ const HostDetails = () => {
       {newHost && (
         <ModalForm
           title="Add New Host"
-          fields={["userID", "name", "email", "phone", "password", "nicNumber", "faculty", "department"]}
+          fields={["userID", "name", "username", "email", "phone", "password", "nicNumber", "faculty", "department"]}
           data={newHost}
           setData={setNewHost}
           onSubmit={handleAddSubmit}
@@ -201,7 +192,7 @@ const HostDetails = () => {
       {editHost && (
         <ModalForm
           title="Edit Host"
-          fields={["userID", "name", "email", "phone", "nicNumber", "faculty", "department"]}
+          fields={["userID", "name", "username", "email", "phone", "nicNumber", "faculty", "department"]}
           data={editHost}
           setData={setEditHost}
           onSubmit={handleEditSubmit}
@@ -212,7 +203,7 @@ const HostDetails = () => {
   );
 };
 
-// ModalForm component
+// ModalForm
 const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   const [errors, setErrors] = useState({});
 
@@ -223,14 +214,12 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
 
     fields.forEach((field) => {
       const value = data[field] || "";
-
-      if (["userID", "name", "email", "phone", "faculty", "department"].includes(field)) {
-        if (!value.trim()) {
-          tempErrors[field] = "This field is required.";
-        }
+      if (["userID", "name", "username", "email", "phone", "faculty", "department"].includes(field) && !value.trim()) {
+        tempErrors[field] = "This field is required.";
       }
       if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
       if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
+      if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
       if (field === "phone" && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
       if (field === "email" && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";
     });
@@ -257,9 +246,7 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
                 placeholder={`Enter ${field}`}
                 onChange={(e) => setData((prev) => ({ ...prev, [field]: e.target.value }))}
                 className={`w-full p-3 border rounded-lg ${
-                  errors[field]
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-blue-500"
+                  errors[field] ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-blue-500"
                 } focus:outline-none focus:ring-2`}
               />
               {errors[field] && <p className="text-red-500 text-sm mt-1">{errors[field]}</p>}

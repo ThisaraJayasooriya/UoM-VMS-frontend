@@ -37,7 +37,6 @@ import SecurityDetails from "./pages/admin/userdetails/SecurityDetails";
 import AdminDetails from "./pages/admin/userdetails/AdminDetails";
 
 // Add User Pages
-import AddVisitor from "./pages/admin/adduser/AddVisitor";
 import AddHost from "./pages/admin/adduser/AddHost";
 import AddSecurity from "./pages/admin/adduser/AddSecurity";
 import AddAdmin from "./pages/admin/adduser/AddAdmin";
@@ -64,7 +63,6 @@ import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
 import AppointmentStatus from "./pages/visitor/AppointmentStatus.jsx";
 import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
-import VisitorProfile from "./pages/visitor/VisitorSettings.jsx";
 import HostAvailableTimeSlots from "./pages/visitor/HostAvailableTimeSlots.jsx";
 import VisitorSettings from "./pages/visitor/VisitorSettings.jsx";
 import VisitorEditProfile from "./pages/visitor/VisitorEditProfile.jsx";
@@ -299,7 +297,6 @@ function App() {
               <Route path="security" element={<SecurityDetails />} />
               <Route path="admin" element={<AdminDetails />} />
             </Route>
-            <Route path="userdetails/add-visitor" element={<AddVisitor />} />
             <Route path="userdetails/add-host" element={<AddHost />} />
             <Route path="userdetails/add-security" element={<AddSecurity />} />
             <Route path="userdetails/add-admin" element={<AddAdmin />} />

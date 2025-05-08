@@ -1,5 +1,4 @@
 import { FaArrowLeft } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
 import logo from "../../assets/Logo.png";
 import { useNavigate } from "react-router-dom";
 
@@ -28,22 +27,13 @@ const Sidebar = ({ items, hide, onItemClick }) => {
       <nav className="flex-1">
         <ul>
           {items.map((item, index) => (
-            <li key={index}>
-              <NavLink
-                to={item.route}
-                onClick={() => onItemClick(item.route)}
-                className={({ isActive }) =>
-                  `p-4 flex items-center space-x-2 rounded-lg mx-2 cursor-pointer ${
-                    isActive
-                      ? "bg-blue3 text-black"
-                      : "hover:bg-blue3 hover:text-black"
-                  }`
-                }
-                end={index === 0} // Apply exact match only to the first item ("Dashboard")
-              >
-                {item.icon}
-                <span>{item.description}</span>
-              </NavLink>
+            <li
+              key={index}
+              className="p-4 flex items-center space-x-2 hover:bg-blue3 rounded-lg mx-2 cursor-pointer hover:text-black"
+              onClick={() => onItemClick(item.route)}
+            >
+              {item.icon}
+              <span>{item.description}</span>
             </li>
           ))}
         </ul>

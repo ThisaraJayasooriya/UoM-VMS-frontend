@@ -94,7 +94,7 @@ const AdminDetails = () => {
   };
 
   return (
-    <div className="pt-20 px-4 lg:px-20">
+    <div className="pt-20 px-4 lg:px-2">
       <div className="flex justify-between items-center mb-6">
         <input
           type="text"
@@ -113,10 +113,10 @@ const AdminDetails = () => {
 
       <div className="overflow-x-auto bg-white p-6 rounded-xl shadow-2xl">
         <h3 className="text-xl font-semibold mb-4 text-blue-800">Admin Details</h3>
-        <table className="min-w-full text-sm text-left text-gray-800">
+        <table className="w-full min-w-[1200px] text-sm text-left text-gray-800">
           <thead className="bg-blue-100 text-blue-900 uppercase text-xs tracking-wider">
             <tr>
-              {["#", "User ID", "Name", "Email", "Phone", "NIC/Passport", "Registered Date", "Actions"].map((heading, idx) => (
+              {["#", "User ID", "Username", "Name", "Email", "Phone", "NIC/Passport", "Registered Date", "Actions"].map((heading, idx) => (
                 <th key={idx} className="py-3 px-4 whitespace-nowrap">{heading}</th>
               ))}
             </tr>
@@ -128,6 +128,7 @@ const AdminDetails = () => {
                 <tr key={admin._id} className="border-t hover:bg-blue-50">
                   <td className="py-3 px-4 whitespace-nowrap">{globalIndex}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{admin.userID || "-"}</td>
+                  <td className="py-3 px-4 whitespace-nowrap">{admin.username || "-"}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{admin.name || "-"}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{formatEmail(admin.email)}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{formatPhone(admin.phone)}</td>
@@ -185,7 +186,7 @@ const AdminDetails = () => {
       {newAdmin && (
         <ModalForm
           title="Add New Admin"
-          fields={["userID", "name", "email", "phone", "password", "nicNumber"]}
+          fields={["userID", "username", "name", "email", "phone", "password", "nicNumber"]}
           data={newAdmin}
           setData={setNewAdmin}
           onSubmit={handleAddSubmit}
@@ -197,7 +198,7 @@ const AdminDetails = () => {
       {editAdmin && (
         <ModalForm
           title="Edit Admin"
-          fields={["userID", "name", "email", "phone", "nicNumber"]}
+          fields={["userID", "username", "name", "email", "phone", "nicNumber"]}
           data={editAdmin}
           setData={setEditAdmin}
           onSubmit={handleEditSubmit}
@@ -215,18 +216,19 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   const validate = () => {
     let tempErrors = {};
     const phoneRegex = /^[0-9]{9}$/;
-    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    const emailRegex = /^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
     fields.forEach((field) => {
       const value = data[field] || "";
 
-      if (["userID", "name", "email", "phone"].includes(field)) {
+      if (["userID", "username", "name", "email", "phone"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
 
       if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
+      if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
       if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
       if (field === "phone" && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
       if (field === "email" && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";

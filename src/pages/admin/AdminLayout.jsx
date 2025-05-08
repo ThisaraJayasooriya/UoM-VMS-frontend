@@ -71,7 +71,25 @@ function AdminLayout() {
 
   return (
     <div className="flex h-screen w-full bg-white relative">
-      {/* Sidebar */}
+      {isSidebarVisible && (
+        <div
+          className="fixed inset-0 bg-opacity-50 z-10"
+          onClick={hideSidebar}
+        ></div>
+      )}
+      <div className={`flex-1 flex flex-col w-full h-full transition-all duration-300 ${isSidebarVisible ? "blur-xs pointer-events-none" : ""}`}>
+        <Headerbar
+          toggleSidebar={toggleSidebar}
+          userName="Nick"
+          userRole="Admin account"
+          pageTitle={getPageTitle()}
+          pageSubtitle="Admin"
+        />
+        <main className="flex-1 min-h-0">
+          <Outlet />
+          {console.log("Outlet rendered for path:", location.pathname)}
+        </main>
+      </div>
       <div
         className={`fixed inset-y-0 left-0 transform ${
           isSidebarVisible ? "translate-x-0" : "-translate-x-full"
@@ -86,29 +104,6 @@ function AdminLayout() {
             hideSidebar();
           }}
         />
-      </div>
-
-      {/* Overlay when sidebar is visible */}
-      {isSidebarVisible && (
-        <div
-          className="fixed inset-0 bg-opacity-50 z-10"
-          onClick={hideSidebar}
-        ></div>
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <Headerbar
-          toggleSidebar={toggleSidebar}
-          userName="Nick"
-          userRole="Admin account"
-          pageTitle={getPageTitle()}
-          pageSubtitle="Admin"
-        />
-        <main className="flex-1">
-          <Outlet />
-          {console.log("Outlet rendered for path:", location.pathname)}
-        </main>
       </div>
     </div>
   );
