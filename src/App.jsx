@@ -36,7 +36,6 @@ import SecurityDetails from "./pages/admin/userdetails/SecurityDetails";
 import AdminDetails from "./pages/admin/userdetails/AdminDetails";
 
 // 🔥 NEW Add User Pages
-import AddVisitor from "./pages/admin/adduser/AddVisitor";
 import AddHost from "./pages/admin/adduser/AddHost";
 import AddSecurity from "./pages/admin/adduser/AddSecurity";
 import AddAdmin from "./pages/admin/adduser/AddAdmin";
@@ -249,7 +248,6 @@ function App() {
           <Route path="userdetails/admin" element={<AdminDetails />} />
 
           {/* 🔥 NEW Add User Routes */}
-          <Route path="userdetails/add-visitor" element={<AddVisitor />} />
           <Route path="userdetails/add-host" element={<AddHost />} />
           <Route path="userdetails/add-security" element={<AddSecurity />} />
           <Route path="userdetails/add-admin" element={<AddAdmin />} />

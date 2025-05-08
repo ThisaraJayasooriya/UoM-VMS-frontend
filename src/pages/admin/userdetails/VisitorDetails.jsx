@@ -19,8 +19,8 @@ const VisitorDetails = () => {
     fetchVisitors();
   }, []);
 
-  const filteredVisitors = visitorList.filter((visitor) =>
-    visitor.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredVisitors = visitorList.filter((v) =>
+    v.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const indexOfLastRecord = currentPage * recordsPerPage;
@@ -43,11 +43,6 @@ const VisitorDetails = () => {
       return `+94 ${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5)}`;
     }
     return phone;
-  };
-
-  const formatEmail = (email) => {
-    if (!email) return "-";
-    return email.toLowerCase();
   };
 
   const handleAddSubmit = async () => {
@@ -95,7 +90,6 @@ const VisitorDetails = () => {
 
   return (
     <div className="pt-20 px-4 lg:px-20">
-
       <div className="flex justify-between items-center mb-6">
         <input
           type="text"
@@ -104,12 +98,6 @@ const VisitorDetails = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-64 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         />
-        <button
-          onClick={() => setNewVisitor({})}
-          className="bg-[#124E66] text-white px-6 py-3 rounded-lg hover:bg-[#0e3a4f]"
-        >
-          + Add New Visitor
-        </button>
       </div>
 
       <div className="overflow-x-auto bg-white p-6 rounded-xl shadow-2xl">
@@ -120,34 +108,36 @@ const VisitorDetails = () => {
               <th className="py-3 px-4">#</th>
               <th className="py-3 px-4">User ID</th>
               <th className="py-3 px-4">Name</th>
+              <th className="py-3 px-4">Username</th>
               <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">NIC/Passport</th>
               <th className="py-3 px-4">Phone</th>
+              <th className="py-3 px-4">NIC/Passport</th>
               <th className="py-3 px-4">Registered Date</th>
               <th className="py-3 px-4">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {currentRecords.map((visitor, idx) => {
+            {currentRecords.map((v, idx) => {
               const globalIndex = indexOfFirstRecord + idx + 1;
               return (
-                <tr key={visitor._id} className="border-t hover:bg-blue-50">
+                <tr key={v._id} className="border-t hover:bg-blue-50">
                   <td className="py-3 px-4">{globalIndex}</td>
-                  <td className="py-3 px-4">{visitor.userID || "-"}</td>
-                  <td className="py-3 px-4">{visitor.name || "-"}</td>
-                  <td className="py-3 px-4">{formatEmail(visitor.email)}</td>
-                  <td className="py-3 px-4">{visitor.nicNumber || "-"}</td>
-                  <td className="py-3 px-4">{formatPhone(visitor.phone)}</td>
-                  <td className="py-3 px-4">{visitor.registeredDate || "-"}</td>
+                  <td className="py-3 px-4">{v.userID || "-"}</td>
+                  <td className="py-3 px-4">{v.name || "-"}</td>
+                  <td className="py-3 px-4">{v.username || "-"}</td>
+                  <td className="py-3 px-4">{v.email || "-"}</td>
+                  <td className="py-3 px-4">{formatPhone(v.phone)}</td>
+                  <td className="py-3 px-4">{v.nicNumber || "-"}</td>
+                  <td className="py-3 px-4">{v.registeredDate || "-"}</td>
                   <td className="py-3 px-4 space-x-2">
                     <button
-                      onClick={() => setEditVisitor(visitor)}
+                      onClick={() => setEditVisitor(v)}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(visitor._id)}
+                      onClick={() => handleDelete(v._id)}
                       className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                     >
                       Delete
@@ -158,45 +148,40 @@ const VisitorDetails = () => {
             })}
           </tbody>
         </table>
-        {/* Pagination and Go Back Controls */}
+
+        {/* Pagination and Go Back */}
         <div className="flex justify-between items-center mt-6">
-        
-        {/* Go Back Button (left side) */}
-        <button
+          <button
             onClick={() => window.history.back()}
             className="bg-[#124E66] hover:bg-[#0e3a4f] text-white font-semibold px-6 py-2 rounded-lg shadow-md transition"
-        >
+          >
             ← Go Back
-        </button>
+          </button>
 
-        {/* Previous and Next Buttons (right side) */}
-        <div className="space-x-4">
+          <div className="space-x-4">
             <button
-            onClick={goToPrevPage}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+              onClick={goToPrevPage}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
             >
-            Previous
+              Previous
             </button>
             <button
-            onClick={goToNextPage}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
             >
-            Next
+              Next
             </button>
+          </div>
         </div>
-
-        </div>
-
       </div>
-
 
       {/* Add Modal */}
       {newVisitor && (
         <ModalForm
           title="Add New Visitor"
-          fields={["userID", "name", "email", "nicNumber", "phone", "password"]}
+          fields={["userID", "name", "username", "email", "phone", "password", "nicNumber"]}
           data={newVisitor}
           setData={setNewVisitor}
           onSubmit={handleAddSubmit}
@@ -208,7 +193,7 @@ const VisitorDetails = () => {
       {editVisitor && (
         <ModalForm
           title="Edit Visitor"
-          fields={["userID", "name", "email", "nicNumber", "phone"]}
+          fields={["userID", "name", "username", "email", "phone", "nicNumber"]}
           data={editVisitor}
           setData={setEditVisitor}
           onSubmit={handleEditSubmit}
@@ -230,24 +215,14 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
     fields.forEach((field) => {
       const value = data[field] || "";
 
-      if (["userID", "name", "email", "phone"].includes(field)) {
-        if (!value.trim()) {
-          tempErrors[field] = "This field is required";
-        }
+      if (["userID", "name", "username", "email", "phone"].includes(field)) {
+        if (!value.trim()) tempErrors[field] = "This field is required";
       }
 
-      if (field === "userID" && value.length < 3) {
-        tempErrors[field] = "User ID must be at least 3 characters.";
-      }
-      if (field === "name" && value.length < 3) {
-        tempErrors[field] = "Name must be at least 3 characters.";
-      }
-      if (field === "phone" && !phoneRegex.test(value)) {
-        tempErrors[field] = "Phone number must be exactly 9 digits.";
-      }
-      if (field === "email" && !emailRegex.test(value)) {
-        tempErrors[field] = "Please enter a valid email address.";
-      }
+      if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
+      if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
+      if (field === "phone" && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
+      if (field === "email" && !emailRegex.test(value)) tempErrors[field] = "Enter a valid email address.";
     });
 
     setErrors(tempErrors);
@@ -256,9 +231,7 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validate()) {
-      onSubmit();
-    }
+    if (validate()) onSubmit();
   };
 
   return (
@@ -279,9 +252,7 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
                     : "border-gray-300 focus:ring-blue-500"
                 } focus:outline-none focus:ring-2`}
               />
-              {errors[field] && (
-                <p className="text-red-500 text-sm mt-1">{errors[field]}</p>
-              )}
+              {errors[field] && <p className="text-red-500 text-sm mt-1">{errors[field]}</p>}
             </div>
           ))}
           <div className="flex justify-end gap-4 mt-6">

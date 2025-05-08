@@ -116,14 +116,11 @@ const SecurityDetails = () => {
         <table className="min-w-full text-sm text-left text-gray-800">
           <thead className="bg-blue-100 text-blue-900 uppercase text-xs tracking-wider">
             <tr>
-              <th className="py-3 px-4">#</th>
-              <th className="py-3 px-4">User ID</th>
-              <th className="py-3 px-4">Name</th>
-              <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Phone</th>
-              <th className="py-3 px-4">NIC/Passport</th>
-              <th className="py-3 px-4">Registered Date</th>
-              <th className="py-3 px-4">Actions</th>
+              {["#", "User ID", "Name", "Username", "Email", "Phone", "NIC/Passport", "Registered Date", "Actions"].map(
+                (heading, idx) => (
+                  <th key={idx} className="py-3 px-4">{heading}</th>
+                )
+              )}
             </tr>
           </thead>
           <tbody>
@@ -134,6 +131,7 @@ const SecurityDetails = () => {
                   <td className="py-3 px-4">{globalIndex}</td>
                   <td className="py-3 px-4">{sec.userID || "-"}</td>
                   <td className="py-3 px-4">{sec.name || "-"}</td>
+                  <td className="py-3 px-4">{sec.username || "-"}</td>
                   <td className="py-3 px-4">{formatEmail(sec.email)}</td>
                   <td className="py-3 px-4">{formatPhone(sec.phone)}</td>
                   <td className="py-3 px-4">{sec.nicNumber || "-"}</td>
@@ -158,17 +156,13 @@ const SecurityDetails = () => {
           </tbody>
         </table>
 
-        {/* Pagination and Go Back */}
         <div className="flex justify-between items-center mt-6">
-          {/* Go Back Button */}
           <button
             onClick={() => window.history.back()}
             className="bg-[#124E66] hover:bg-[#0e3a4f] text-white font-semibold px-6 py-2 rounded-lg shadow-md transition"
           >
             ← Go Back
           </button>
-
-          {/* Pagination Buttons */}
           <div className="space-x-4">
             <button
               onClick={goToPrevPage}
@@ -186,26 +180,22 @@ const SecurityDetails = () => {
             </button>
           </div>
         </div>
-
       </div>
 
-      {/* Add Modal */}
       {newSecurity && (
         <ModalForm
           title="Add New Security"
-          fields={["userID", "name", "email", "phone", "password", "nicNumber"]}
+          fields={["userID", "name", "username", "email", "phone", "password", "nicNumber"]}
           data={newSecurity}
           setData={setNewSecurity}
           onSubmit={handleAddSubmit}
           onClose={() => setNewSecurity(null)}
         />
       )}
-
-      {/* Edit Modal */}
       {editSecurity && (
         <ModalForm
           title="Edit Security"
-          fields={["userID", "name", "email", "phone", "nicNumber"]}
+          fields={["userID", "name", "username", "email", "phone", "nicNumber"]}
           data={editSecurity}
           setData={setEditSecurity}
           onSubmit={handleEditSubmit}
@@ -227,24 +217,15 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
     fields.forEach((field) => {
       const value = data[field] || "";
 
-      if (["userID", "name", "email", "phone"].includes(field)) {
+      if (["userID", "name", "username", "email", "phone"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
-
-      if (field === "userID" && value.length < 3) {
-        tempErrors[field] = "User ID must be at least 3 characters.";
-      }
-      if (field === "name" && value.length < 3) {
-        tempErrors[field] = "Name must be at least 3 characters.";
-      }
-      if (field === "phone" && !phoneRegex.test(value)) {
-        tempErrors[field] = "Phone number must be exactly 9 digits.";
-      }
-      if (field === "email" && !emailRegex.test(value)) {
-        tempErrors[field] = "Please enter a valid email address.";
-      }
+      if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
+      if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
+      if (field === "phone" && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
+      if (field === "email" && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";
     });
 
     setErrors(tempErrors);
@@ -271,14 +252,10 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
                 placeholder={`Enter ${field}`}
                 onChange={(e) => setData((prev) => ({ ...prev, [field]: e.target.value }))}
                 className={`w-full p-3 border rounded-lg ${
-                  errors[field]
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-blue-500"
+                  errors[field] ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-blue-500"
                 } focus:outline-none focus:ring-2`}
               />
-              {errors[field] && (
-                <p className="text-red-500 text-sm mt-1">{errors[field]}</p>
-              )}
+              {errors[field] && <p className="text-red-500 text-sm mt-1">{errors[field]}</p>}
             </div>
           ))}
           <div className="flex justify-end gap-4 mt-6">
