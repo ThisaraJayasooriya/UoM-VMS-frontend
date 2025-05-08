@@ -48,7 +48,6 @@ import HostDashboard from "./pages/host/HostDashboard";
 import HostProfile from "./pages/host/HostProfile";
 import VisitLog from "./pages/host/VisitLog.jsx";
 import Appointments from "./pages/host/Appointments.jsx";
-import HostAvailableTimeSlots from "./pages/host/HostAvailableTimeSlots.jsx";
 import AppointmentDetails from "./pages/host/AppointmentDetails.jsx";
 
 // Security Pages
@@ -64,7 +63,6 @@ import VisitorAppointment from "./pages/visitor/VisitorAppointment.jsx";
 import Visithistory from "./pages/visitor/Visithistory.jsx";
 import AppointmentStatus from "./pages/visitor/AppointmentStatus.jsx";
 import VisitorFeedback from "./pages/visitor/VisitorFeedback.jsx";
-import VisitorProfile from "./pages/visitor/VisitorSettings.jsx";
 import HostAvailableTimeSlots from "./pages/visitor/HostAvailableTimeSlots.jsx";
 import VisitorSettings from "./pages/visitor/VisitorSettings.jsx";
 import VisitorEditProfile from "./pages/visitor/VisitorEditProfile.jsx";

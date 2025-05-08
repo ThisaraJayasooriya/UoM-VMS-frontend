@@ -89,7 +89,7 @@ const VisitorDetails = () => {
   };
 
   return (
-    <div className="pt-20 px-4 lg:px-20">
+    <div className="pt-20 px-4 lg:px-2">
       <div className="flex justify-between items-center mb-6">
         <input
           type="text"
@@ -102,7 +102,7 @@ const VisitorDetails = () => {
 
       <div className="overflow-x-auto bg-white p-6 rounded-xl shadow-2xl">
         <h3 className="text-xl font-semibold mb-4 text-blue-800">Visitor Details</h3>
-        <table className="min-w-full text-sm text-left text-gray-800">
+        <table className="w-full min-w-[1200px] text-sm text-left text-gray-800">
           <thead className="bg-blue-100 text-blue-900 uppercase text-xs tracking-wider">
             <tr>
               <th className="py-3 px-4">#</th>
