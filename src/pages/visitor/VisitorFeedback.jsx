@@ -25,9 +25,23 @@ const VisitorFeedbackForm = () => {
     setFormData(prev => ({ ...prev, isSubmitting: true, submissionStatus: null }));
 
     try {
-      // Simulate API call (replace with actual MERN backend call)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      const response = await fetch('http://localhost:5000/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          rating: formData.rating,
+          experience: formData.experience,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit feedback');
+      }
+
       // Reset form after successful submission
       setFormData({
         name: '',
@@ -58,7 +72,7 @@ const VisitorFeedbackForm = () => {
   };
 
   return (
-    <div className="flex-1 overflow-auto pt-20"> {/* Changed to work with layout */}
+    <div className="flex-1 overflow-auto pt-20">
       <div className="max-w-2xl mx-auto p-6">
         {/* Submission Status Message */}
         {formData.submissionStatus === 'success' && (
@@ -190,9 +204,6 @@ const VisitorFeedbackForm = () => {
             </div>
           </form>
         </div>
-
-       
-        
       </div>
     </div>
   );
