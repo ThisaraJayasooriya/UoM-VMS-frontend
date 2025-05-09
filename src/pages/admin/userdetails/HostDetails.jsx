@@ -113,13 +113,13 @@ const HostDetails = () => {
 
       <div className="overflow-x-auto bg-white p-6 rounded-xl shadow-2xl">
         <h3 className="text-xl font-semibold mb-4 text-[#124E66]">Host Details</h3>
-        <table className="w-full min-w-[1200px] text-sm text-left text-gray-800">
+        <table className="w-full max-w-full text-sm text-left text-gray-800">
           <thead className="bg-blue-100 text-blue-900 uppercase text-xs tracking-wider">
             <tr>
               {[
                 "#", "User ID", "Name", "Username", "Email", "Phone", "NIC/Passport", "Faculty", "Department", "Registered Date", "Actions"
               ].map((heading, idx) => (
-                <th key={idx} className="py-3 px-4 whitespace-nowrap">{heading}</th>
+                <th key={idx} className="py-3 px-2 whitespace-nowrap w-[80px] text-ellipsis overflow-hidden">{heading}</th>
               ))}
             </tr>
           </thead>
@@ -128,26 +128,26 @@ const HostDetails = () => {
               const globalIndex = indexOfFirstRecord + idx + 1;
               return (
                 <tr key={host._id} className="border-t hover:bg-blue-50">
-                  <td className="py-3 px-4 whitespace-nowrap">{globalIndex}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{host.userID || "-"}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{host.name || "-"}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{host.username || "-"}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{formatEmail(host.email)}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{formatPhone(host.phone)}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{host.nicNumber || "-"}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{host.faculty || "-"}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{host.department || "-"}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{host.registeredDate || "-"}</td>
-                  <td className="py-3 px-4 whitespace-nowrap space-x-2">
+                  <td className="py-2 px-2 whitespace-nowrap w-[80px] text-ellipsis overflow-hidden">{globalIndex}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[80px] text-ellipsis overflow-hidden">{host.userID || "-"}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[100px] text-ellipsis overflow-hidden">{host.name || "-"}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[100px] text-ellipsis overflow-hidden">{host.username || "-"}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[150px] text-ellipsis overflow-hidden">{formatEmail(host.email)}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[120px] text-ellipsis overflow-hidden">{formatPhone(host.phone)}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[120px] text-ellipsis overflow-hidden">{host.nicNumber || "-"}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[100px] text-ellipsis overflow-hidden">{host.faculty || "-"}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[120px] text-ellipsis overflow-hidden">{host.department || "-"}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[150px] text-ellipsis overflow-hidden">{host.registeredDate || "-"}</td>
+                  <td className="py-2 px-2 whitespace-nowrap w-[120px] space-x-2">
                     <button
                       onClick={() => setEditHost(host)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(host._id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
                     >
                       Delete
                     </button>
