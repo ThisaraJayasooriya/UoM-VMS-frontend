@@ -11,7 +11,11 @@ function SecurityLayout() {
 
   const sidebarItems = [
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/security" },
-    { icon: <FaCheck />, description: "Verify Visitors", route: "/security/visitor" },
+    {
+      icon: <FaCheck />,
+      description: "Verify Visitors",
+      route: "/security/visitor",
+    },
     { icon: <FaUser />, description: "Profile", route: "/security/profile" },
   ];
 
@@ -52,16 +56,22 @@ function SecurityLayout() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <Headerbar
-          toggleSidebar={() => setSidebarVisible(!isSidebarVisible)}
-          userName="Kevin"
-          userRole="Staff account"
-          pageTitle={getPageTitle()}
-          pageSubtitle="Security"
-        />
-        <main className="flex-1">
-          <Outlet />
-        </main>
+        <div
+          className={`transition-all duration-300 ${
+            isSidebarVisible ? "blur-xs pointer-events-none" : ""
+          }`}
+        >
+          <Headerbar
+            toggleSidebar={() => setSidebarVisible(!isSidebarVisible)}
+            userName="Kevin"
+            userRole="Staff account"
+            pageTitle={getPageTitle()}
+            pageSubtitle="Security"
+          />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </div>
   );
