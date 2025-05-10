@@ -1,5 +1,5 @@
-import { Outlet, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Sidebar from "../../components/common/Sidebar";
 import Headerbar from "../../components/common/Headerbar";
 import {
@@ -10,14 +10,22 @@ import {
   FaUsers,
   FaCalendarPlus,
 } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
 
 function HostLayout() {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
+  const [userName, setUserName] = useState(""); // 🔹 new state for username
 
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state || {};
+
+  // 🔹 Load userName from localStorage on mount
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
+    if (storedUser && storedUser.username) {
+      setUserName(storedUser.username);
+    }
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarVisible(!isSidebarVisible);
@@ -34,26 +42,24 @@ function HostLayout() {
       description: "Appointment Details",
       route: "/host/appointmentdetails",
     },
-
     { icon: <FaUsers />, description: "Visit Log", route: "/host/visitlog" },
-
     { icon: <FaCog />, description: "Profile", route: "/host/profile" },
   ];
 
-   // Function to get current page title based on route
-   const getCurrentPageTitle = () => {
-    const currentItem = sidebarItems.find(item => 
-      location.pathname === item.route || 
-      (item.route !== '/host' && location.pathname.startsWith(item.route))
+  const getCurrentPageTitle = () => {
+    const currentItem = sidebarItems.find(
+      (item) =>
+        location.pathname === item.route ||
+        (item.route !== "/host" && location.pathname.startsWith(item.route))
     );
-    return currentItem?.description || 'Appointment Details';
+    return currentItem?.description || "Appointment Details";
   };
 
   return (
     <div className="h-screen w-full bg-white relative">
       {isSidebarVisible && (
         <div
-          className="fixed inset-0  bg-opacity-50 z-10"
+          className="fixed inset-0 bg-opacity-50 z-10"
           onClick={hideSidebar}
         ></div>
       )}
@@ -64,9 +70,9 @@ function HostLayout() {
       >
         <Headerbar
           toggleSidebar={toggleSidebar}
-          userName="john"
+          userName={userName || "Host"} // 🔹 use dynamic username
           userRole="Staff account"
-          type= {state.name}
+          type={state.name}
           pageTitle={getCurrentPageTitle()}
           pageSubtitle="Host"
         />

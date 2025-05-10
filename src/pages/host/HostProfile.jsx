@@ -1,7 +1,22 @@
-import { FaUser, FaIdCard, FaEnvelope, FaPhone, FaUserGraduate, FaLandmark } from "react-icons/fa";
-
+import {
+  FaUser,
+  FaIdCard,
+  FaEnvelope,
+  FaPhone,
+  FaUserGraduate,
+  FaLandmark,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const HostProfile = () => {
+  const navigate = useNavigate();
+  const logout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authRemember");
+    localStorage.removeItem("rememberMe");
+    localStorage.removeItem("userData");
+    navigate("/login"); // redirect to login page
+  };
   return (
     <div className="pt-20 px-4 lg:px-20 min-h-screen">
       <div className="max-w-5xl mx-auto">
@@ -76,7 +91,6 @@ const HostProfile = () => {
 
             {/* Additional Information Section */}
             <div className="mt-8">
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-sm font-medium text-[#748D92]">Status</h4>
@@ -88,7 +102,10 @@ const HostProfile = () => {
 
           {/* Footer Actions */}
           <div className="bg-[#F8FAF9] px-6 py-4 border-t border-[#D3D9D2] flex justify-end">
-            <button className="bg-[#748D92] text-white px-4 py-2 rounded-md hover:bg-[#5A7176] transition-colors duration-200">
+            <button
+              className="bg-[#748D92] text-white px-4 py-2 rounded-md hover:bg-[#5A7176] transition-colors duration-200"
+              onClick={logout}
+            >
               Log Out
             </button>
           </div>

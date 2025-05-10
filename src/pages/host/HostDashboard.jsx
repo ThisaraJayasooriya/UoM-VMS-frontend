@@ -1,12 +1,22 @@
 import { FaUsers, FaUserPlus, FaSignInAlt, FaSignOutAlt,FaClipboardList } from "react-icons/fa";
 import DashboardCard from "../../components/common/DashboardCard";
 import HostCalendar from "../../components/host/HostCalendar";
+import { useState, useEffect } from "react";
 
 
 function HostDashboard() {
+  const [userName, setUserName] = useState(""); // 🔹 new state for username
+
+   // 🔹 Load userName from localStorage on mount
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
+    if (storedUser && storedUser.username) {
+      setUserName(storedUser.username);
+    }
+  }, []);
 return (
     <div className="pt-20 px-4 lg:px-20">
-        <h1 className="text-2xl font-bold mb-5 text-center lg:text-left">Hi, John! 👋</h1>
+        <h1 className="text-2xl font-bold mb-5 text-center lg:text-left">Hi, {userName}! 👋</h1>
         <div className="flex flex-col lg:flex-row lg:space-x-20 space-y-4 lg:space-y-0">
         <div className="mb-4 lg:mb-0">
           <DashboardCard icon={<FaClipboardList />} title="Total Meeting Requests" count={5} textcolor="text-blue-600"/>
