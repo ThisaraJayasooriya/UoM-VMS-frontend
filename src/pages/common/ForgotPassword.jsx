@@ -84,13 +84,13 @@ const ForgotPassword = () => {
         {/* Card Body */}
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <p className="text-[#2E3944] text-center">
-            Enter your registered email or phone number below to receive password reset instructions.
+            Enter your registered email below to receive password reset instructions.
           </p>
 
           {/* Contact Field */}
           <div className="space-y-2">
             <label htmlFor="contact" className="block text-sm font-medium text-[#2E3944]">
-              Email Address or Phone Number
+              Email Address
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

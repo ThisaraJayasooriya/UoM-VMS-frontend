@@ -145,24 +145,13 @@ const About = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#212A31] text-white py-12 mt-16">
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-6 md:mb-0">
-              <h4 className="text-xl font-bold mb-2">Visitor Management System</h4>
-              <p>University of Moratuwa</p>
-            </div>
-            <div className="flex space-x-6">
-              <a href="#" className="hover:text-[#D3D9D2] transition">Privacy Policy</a>
-              <a href="#" className="hover:text-[#D3D9D2] transition">Terms of Service</a>
-              <a href="#" className="hover:text-[#D3D9D2] transition">Contact Us</a>
-            </div>
-          </div>
-          <div className="border-t border-[#37474F] mt-8 pt-8 text-center">
-            <p>&copy; 2025 Visitor Management System. All rights reserved.</p>
+        <div className="text-center text-gray-600 mt-10 mb-6">
+          <div className="border-t border-gray-300 pt-6">
+            <p className="text-lg">
+              © 2025 Visitor Management System - University of Moratuwa. All rights reserved.
+            </p>
           </div>
         </div>
-      </footer>
     </div>
   );
 };
