@@ -1,12 +1,35 @@
-import React, { useState } from "react"; // make sure to import your API
+import React, { useState, useEffect } from "react"; // make sure to import your API
 import { useNavigate } from "react-router-dom";
-import {makeAppointment} from '../../services/appoinment.api.js'; // Adjust the import path as necessary
+import {makeAppointment, getAllHosts } from '../../services/appoinment.api.js'; // Adjust the import path as necessary
 
 function VisitorAppointment() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+   const [hosts, setHosts] = useState([]);
+  const [hostId, sethostId] = useState("");
+
+  useEffect(() => {
+    const loadHosts = async () => {
+      try {
+        const data = await getAllHosts();
+        setHosts(data);
+      } catch (error) {
+        console.error("Failed to load hosts:", error);
+      }
+    };
+    loadHosts();
+  }, []);
+   const [visitorId, setvisitorId] = useState(""); // 🔹 new state for username
+  
+     // 🔹 Load userName from localStorage on mount
+    useEffect(() => {
+      const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
+      if (storedUser && storedUser.id) {
+        setvisitorId(storedUser.id);
+      }
+    }, []);
+
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
   const [contact, setContact] = useState("");
-  const [host, setHost] = useState("");
   const [vehicleRequired, setVehicleRequired] = useState(false);
   const [vehicle, setVehicle] = useState("");
   const [category, setCategory] = useState("");
@@ -18,10 +41,11 @@ function VisitorAppointment() {
     e.preventDefault(); // Prevent the default form submission
 
     const appointmentData = {
-      firstName,
-      lastName,
+      visitorId,
+      firstname,
+      lastname,
       contact,
-      host,
+      hostId,
       vehicle,
       category,
       reason,
@@ -47,15 +71,15 @@ function VisitorAppointment() {
             <input
               type="text"
               placeholder="First Name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={firstname}
+              onChange={(e) => setFirstname(e.target.value)}
               className="p-3 rounded-lg bg-gray-200 outline-none flex-1"
             />
             <input
               type="text"
               placeholder="Last Name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              value={lastname}
+              onChange={(e) => setLastname(e.target.value)}
               className="p-3 rounded-lg bg-gray-200 outline-none flex-1"
             />
           </div>
@@ -71,14 +95,16 @@ function VisitorAppointment() {
 
           {/* Host */}
           <select
-            value={host}
-            onChange={(e) => setHost(e.target.value)}
+            onChange={(e) => sethostId(e.target.value)}
+             value={hostId}
             className="text-gray-500 p-3 rounded-lg bg-gray-200 outline-none w-full"
           >
-            <option value="">Host</option>
-            <option value="Host 1">Host 1</option>
-            <option value="Host 2">Host 2</option>
-            <option value="Host 3">Host 3</option>
+            <option value="">Select a Host</option>
+      {hosts.map((host) => (
+        <option key={host._id} value={host._id}>
+          {host.name}
+        </option>
+      ))}
           </select>
 
           {/* Vehicle Entry */}
