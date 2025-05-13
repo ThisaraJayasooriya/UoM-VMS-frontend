@@ -10,13 +10,21 @@ const HostCalendar = () => {
   const [events, setEvents] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [duration, setDuration] = useState(30);
-  const [timeSlots, setTimeSlots] = useState([
-    { date: "", startTime: "" }
-  ]);
-  const hostId = "65eeabcd1234ef567890abcd"; // Replace with actual host ID
+  const [timeSlots, setTimeSlots] = useState([{ date: "", startTime: "" }]);
+  const [hostId, setHostId] = useState("");
 
   useEffect(() => {
-    fetchTimeSlots();
+    console.log("hostId changed:", hostId);
+    if (hostId) {
+      fetchTimeSlots();
+    }
+  }, [hostId]);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
+    if (storedUser && storedUser.id) {
+      setHostId(storedUser.id);
+    }
   }, []);
 
   // Fetch existing time slots from the backend
@@ -25,11 +33,11 @@ const HostCalendar = () => {
       const data = await getTimeSlots(hostId);
       const formattedEvents = data.map((slot) => ({
         id: slot._id,
-        title: slot.status === "available" ? "Available" : "Booked", 
+        title: slot.status === "available" ? "Available" : "Booked",
         start: `${slot.date}T${slot.startTime}`,
         end: `${slot.date}T${slot.endTime}`,
-        backgroundColor: slot.status === "available" ? "green" : "red", 
-        borderColor: slot.status === "available" ? "green" : "red", 
+        backgroundColor: slot.status === "available" ? "green" : "red",
+        borderColor: slot.status === "available" ? "green" : "red",
       }));
       setEvents(formattedEvents);
     } catch (error) {
@@ -40,15 +48,15 @@ const HostCalendar = () => {
   // Calculate end time based on start time and duration
   const calculateEndTime = (startTime) => {
     if (!startTime) return "";
-    
-    const [hours, minutes] = startTime.split(':').map(Number);
+
+    const [hours, minutes] = startTime.split(":").map(Number);
     const startDate = new Date();
     startDate.setHours(hours, minutes, 0);
-    
+
     const endDate = new Date(startDate.getTime() + duration * 60000);
-    const endHours = endDate.getHours().toString().padStart(2, '0');
-    const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
-    
+    const endHours = endDate.getHours().toString().padStart(2, "0");
+    const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
+
     return `${endHours}:${endMinutes}`;
   };
 
@@ -82,9 +90,7 @@ const HostCalendar = () => {
   // Save all time slots to the backend
   const saveAllSlots = async () => {
     // Validate all slots
-    const validSlots = timeSlots.filter(slot => 
-      slot.date && slot.startTime
-    );
+    const validSlots = timeSlots.filter((slot) => slot.date && slot.startTime);
 
     if (validSlots.length === 0) {
       console.error("No valid time slots to save");
@@ -97,10 +103,10 @@ const HostCalendar = () => {
         const endTime = calculateEndTime(slot.startTime);
         await addTimeSlots(hostId, slot.date, slot.startTime, endTime);
       }
-      
+
       fetchTimeSlots(); // Refresh calendar after adding
       setIsPopupOpen(false);
-      
+
       // Reset to a single empty slot
       setTimeSlots([{ date: "", startTime: "" }]);
     } catch (error) {
@@ -110,7 +116,11 @@ const HostCalendar = () => {
 
   return (
     <div className={`p-4 ${isPopupOpen ? "overflow-hidden" : ""}`}>
-      <div className={`relative ${isPopupOpen ? "blur-sm pointer-events-none" : ""}`}>
+      <div
+        className={`relative ${
+          isPopupOpen ? "blur-sm pointer-events-none" : ""
+        }`}
+      >
         <button
           onClick={() => setIsPopupOpen(true)}
           className="mb-4 px-4 py-2 bg-blue text-white font-semibold rounded hover:bg-darkblue transition duration-300 cursor-pointer"
@@ -136,7 +146,9 @@ const HostCalendar = () => {
           <div className="absolute inset-0 bg-opacity-50 backdrop-blur-sm"></div>
 
           <div className="relative bg-white p-6 rounded-lg w-120 z-10 shadow-lg border-black border-solid border-1 max-h-90vh overflow-y-auto">
-            <h3 className="text-2xl font-bold mb-4">Bookable Appointment Schedule</h3>
+            <h3 className="text-2xl font-bold mb-4">
+              Bookable Appointment Schedule
+            </h3>
 
             <div className="mb-4">
               <div className="flex items-center">
@@ -145,7 +157,9 @@ const HostCalendar = () => {
                 </div>
                 <h4 className="font-semibold text-lg">Appointment duration</h4>
               </div>
-              <p className="text-gray-500 ml-10">How long should each appointment last?</p>
+              <p className="text-gray-500 ml-10">
+                How long should each appointment last?
+              </p>
               <div className="ml-10 mt-2">
                 <select
                   value={duration}
@@ -168,11 +182,16 @@ const HostCalendar = () => {
                 </div>
                 <h4 className="font-semibold text-lg">Availability</h4>
               </div>
-              <p className="text-gray-500 ml-10">Set when you're available for appointments.</p>
+              <p className="text-gray-500 ml-10">
+                Set when you're available for appointments.
+              </p>
             </div>
 
             {timeSlots.map((slot, index) => (
-              <div key={index} className="ml-10 mb-4 flex items-center space-x-2">
+              <div
+                key={index}
+                className="ml-10 mb-4 flex items-center space-x-2"
+              >
                 <input
                   type="date"
                   placeholder="Select date"
@@ -187,8 +206,7 @@ const HostCalendar = () => {
                   onChange={(e) => handleStartTimeChange(index, e.target.value)}
                   className="p-2 border rounded bg-gray-100"
                 />
-                
-                
+
                 {timeSlots.length > 1 && (
                   <button
                     onClick={() => removeTimeSlotRow(index)}
@@ -202,7 +220,7 @@ const HostCalendar = () => {
             ))}
 
             <div className="ml-10 mb-4">
-              <button 
+              <button
                 onClick={addNewTimeSlotRow}
                 className="border border-blue text-blue px-4 py-2 rounded hover:bg-blue-50 transition"
               >
@@ -211,14 +229,14 @@ const HostCalendar = () => {
             </div>
 
             <div className="flex justify-end space-x-4 mt-6">
-              <button 
-                onClick={() => setIsPopupOpen(false)} 
+              <button
+                onClick={() => setIsPopupOpen(false)}
                 className="px-6 py-2 bg-gray-300 rounded hover:bg-gray-400 transition cursor-pointer"
               >
                 Cancel
               </button>
-              <button 
-                onClick={saveAllSlots} 
+              <button
+                onClick={saveAllSlots}
                 className="px-6 py-2 bg-blue text-white rounded hover:bg-darkblue transition cursor-pointer"
               >
                 Save
