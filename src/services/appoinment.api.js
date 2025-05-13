@@ -20,3 +20,19 @@ export const makeAppointment = async (appointmentData) => {
     throw error;
   }
 };
+
+
+// Function to get all hosts
+export const getAllHosts = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/gethosts`, {
+      headers: {
+        "Content-Type": "application/json", // Optional with Axios
+      },
+    });
+    return response.data; // Returns array of host objects
+  } catch (error) {
+    console.error("Error fetching hosts:", error);
+    throw error;
+  }
+};
