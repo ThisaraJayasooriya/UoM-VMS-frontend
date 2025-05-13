@@ -62,7 +62,7 @@ const ContactUs = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-[#2E3944]">Email</h3>
-                  <p className="text-[#748D92] mt-1">info@uom.lk</p>
+                  <p className="text-[#748D92] mt-1">uomvms@gmail.com</p>
                 </div>
               </div>
 
@@ -130,58 +130,12 @@ const ContactUs = () => {
           </div>
         </div>
 
-        {/* Contact Form Section */}
-        <div className="mt-16 bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-[#212A31] text-white p-6">
-            <h2 className="text-2xl font-bold">Send Us a Message</h2>
-          </div>
-          <div className="p-6 md:p-8">
-            <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="name" className="block text-[#2E3944] font-medium mb-2">Full Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  className="w-full px-4 py-2 border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
-                  placeholder="Your name"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-[#2E3944] font-medium mb-2">Email Address</label>
-                <input
-                  type="email"
-                  id="email"
-                  className="w-full px-4 py-2 border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
-                  placeholder="your.email@example.com"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="subject" className="block text-[#2E3944] font-medium mb-2">Subject</label>
-                <input
-                  type="text"
-                  id="subject"
-                  className="w-full px-4 py-2 border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
-                  placeholder="Subject of your message"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="message" className="block text-[#2E3944] font-medium mb-2">Message</label>
-                <textarea
-                  id="message"
-                  rows="4"
-                  className="w-full px-4 py-2 border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
-                  placeholder="Your message here..."
-                ></textarea>
-              </div>
-              <div className="md:col-span-2">
-                <button
-                  type="submit"
-                  className="bg-[#124E66] hover:bg-[#2E3944] text-white font-medium py-3 px-6 rounded-lg transition duration-300"
-                >
-                  Send Message
-                </button>
-              </div>
-            </form>
+       {/* Footer */}
+        <div className="text-center text-gray-600 mt-10 mb-6">
+          <div className="border-t border-gray-300 pt-6">
+            <p className="text-lg">
+              © 2025 Visitor Management System - University of Moratuwa. All rights reserved.
+            </p>
           </div>
         </div>
       </div>

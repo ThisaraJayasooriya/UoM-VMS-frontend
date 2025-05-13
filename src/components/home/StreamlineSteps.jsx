@@ -10,7 +10,7 @@ const steps = [
   {
     icon: <FaEnvelope className="text-3xl text-[#124666]" />,
     title: "Receive Confirmation",
-    description: "Get a unique confirmation code via SMS or email.",
+    description: "Get a unique confirmation code via email.",
   },
   {
     icon: <FaUserCheck className="text-3xl text-[#124666]" />,
