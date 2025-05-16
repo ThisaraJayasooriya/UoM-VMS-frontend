@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchPendingAppointments } from "../../services/appointmentService"; // ✅ Adjust path
+import { fetchPendingAppointments, updateAppointmentStatus } from "../../services/appointmentService"; // ✅ Adjust path
 import { FaTimes } from "react-icons/fa";
 import { CgMenuLeftAlt } from "react-icons/cg";
 import { LuContact } from "react-icons/lu";
@@ -31,6 +31,7 @@ const MeetingRequests = () => {
         const data = await fetchPendingAppointments(hostId);
         const formatted = data.map((a) => ({
           id: a._id,
+          aId: a.appointmentId,
           title: a.reason,
           visitorName: a.firstname + " " + a.lastname,
           phone: a.contact || "N/A",
@@ -59,9 +60,22 @@ const MeetingRequests = () => {
     setIsPopupOpen(true);
   };
 
-  const handleAccept = (data) => {
-    console.log("Accepted:", data);
-    setIsPopupOpen(false);
+   const handleAccept = async (data) => {
+    try {
+      await updateAppointmentStatus(data.id, {
+        status: "accepted",
+        date: data.date,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        responseType: data.responseType,
+      });
+
+      setMeetingRequests((prev) => prev.filter((item) => item.id !== data.id));
+      setIsPopupOpen(false);
+    } catch (error) {
+      console.error("Failed to accept appointment:", error);
+      alert("Error accepting appointment. Please try again.");
+    }
   };
 
   const handleReject = (id) => {
@@ -90,7 +104,7 @@ const MeetingRequests = () => {
               className="bg-blue2 text-white rounded-2xl px-6 py-3 flex justify-between w-200 cursor-pointer hover:bg-customgray transition duration-300"
               onClick={() => handleButtonClick(request)}
             >
-              <span className="text-sm">{request.id}</span>
+              <span className="text-sm">{request.aId}</span>
               <span className="font-semibold mx-3 flex items-center text-2xl">{request.title}</span>
               <span className="text-sm text-black">{request.timeAgo}</span>
             </button>
@@ -105,7 +119,7 @@ const MeetingRequests = () => {
             <button onClick={() => setIsPopupOpen(false)} className="absolute top-2 right-2 text-white px-4 py-2   rounded hover:bg-gray-300 transition duration-300 cursor-pointer">
               <FaTimes className="text-black" />
             </button>
-            <h3 className="text-2xl font-bold mb-4 text-center">Meeting Details ({selectedMeeting.id})</h3>
+            <h3 className="text-2xl font-bold mb-4 text-center">Meeting Details ({selectedMeeting.aId})</h3>
             <div className="flex flex-col gap-5">
               <div className="flex gap-4 ml-12 items-center">
                 <CgMenuLeftAlt className="text-2xl" />
