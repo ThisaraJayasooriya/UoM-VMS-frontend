@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { FaTachometerAlt, FaUser, FaCheck } from "react-icons/fa";
 import Sidebar from "../../components/common/Sidebar";
@@ -6,6 +6,17 @@ import Headerbar from "../../components/common/Headerbar";
 
 function SecurityLayout() {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
+   const [userName, setUserName] = useState(""); // 🔹 new state for username
+
+   // 🔹 Load userName from localStorage on mount
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
+    if (storedUser && storedUser.username) {
+      setUserName(storedUser.username);
+    }
+  }, []);
+
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -63,7 +74,7 @@ function SecurityLayout() {
         >
           <Headerbar
             toggleSidebar={() => setSidebarVisible(!isSidebarVisible)}
-            userName="Kevin"
+            userName={userName || "Host"} // 🔹 use dynamic username
             userRole="Staff account"
             pageTitle={getPageTitle()}
             pageSubtitle="Security"
