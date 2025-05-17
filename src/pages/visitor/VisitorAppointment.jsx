@@ -55,7 +55,15 @@ function VisitorAppointment() {
       const result = await makeAppointment(appointmentData);
       console.log("Appointment submitted:", result);
       alert("Appointment submitted successfully!");
-      // Optional: reset form here
+    
+       setFirstname("");
+      setLastname("");
+      setContact("");
+      setVehicleRequired(false);
+      setVehicle("");
+      setCategory("");
+      setReason("");
+
     } catch (err) {
       console.error("Error submitting appointment:", err);
       alert("Failed to submit appointment.");
@@ -167,7 +175,7 @@ function VisitorAppointment() {
           <div className="mt-4 flex justify-end">
             <button
               type="submit"
-              className="bg-blue text-white py-2 px-6 rounded-lg hover:bg-darkblue"
+              className="bg-blue2text-white py-2 px-6 rounded-lg hover:bg-darkblue"
             >
               Submit
             </button>
