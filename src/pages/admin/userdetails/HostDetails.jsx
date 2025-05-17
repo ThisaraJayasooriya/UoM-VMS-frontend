@@ -94,7 +94,7 @@ const HostDetails = () => {
   };
 
   return (
-    <div className="pt-20 px-4 lg:px-2">
+    <div className="pt-5 px-4 lg:px-2">
       <div className="flex justify-between items-center mb-6">
         <input
           type="text"
@@ -141,13 +141,13 @@ const HostDetails = () => {
                   <td className="py-2 px-2 whitespace-nowrap w-[120px] space-x-2">
                     <button
                       onClick={() => setEditHost(host)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs"
+                      className="bg-[#1d4756] hover:bg-[#5d8696] text-white px-3 py-1 rounded"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(host._id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                      className="bg-[#800000] hover:bg-[#660000] text-white px-3 py-1 rounded"
                     >
                       Delete
                     </button>
@@ -262,7 +262,7 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
             </button>
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition"
+              className="bg-[#124E66] hover:bg-[#0F4D66] text-white font-semibold px-6 py-2 rounded-lg transition font-montserrat"
             >
               Save
             </button>
