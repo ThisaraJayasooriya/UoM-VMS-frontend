@@ -4,3 +4,8 @@ export const fetchPendingAppointments = async (hostId) => {
   const res = await axiosInstance.get(`/appointments/host/${hostId}/pending`);
   return res.data;
 };
+
+export const updateAppointmentStatus = async (id, updateData) => {
+  const res = await axiosInstance.put(`appointments/status/${id}`, updateData);
+  return res.data;
+};
