@@ -1,6 +1,16 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Outlet } from "react-router-dom";
+import { 
+  FiUsers, 
+  FiShield, 
+  FiHome, 
+  FiUserCheck,
+  FiUserPlus,
+  FiKey,
+  FiSettings,
+  FiClipboard
+} from "react-icons/fi";
 
 const UserDetailsMain = () => {
   const navigate = useNavigate();
@@ -8,60 +18,75 @@ const UserDetailsMain = () => {
 
   const cards = [
     {
-      title: "Visitor Details",
-      description: "View, add, edit and manage visitors",
-      color: "bg-blue-50 border-blue-200 hover:bg-blue-100",
+      title: "Visitors",
+      description: "Manage visitor accounts and permissions",
+      icon: <FiUsers className="text-3xl" />,
+      secondaryIcon: <FiUserPlus className="absolute -right-2 -bottom-2 text-xl bg-[#124E66] p-1 rounded-full" />,
       route: "/admin/userdetails/visitor",
     },
     {
-      title: "Host Details",
-      description: "View, add, edit and manage hosts",
-      color: "bg-green-50 border-green-200 hover:bg-green-100",
+      title: "Hosts",
+      description: "Manage host accounts and properties",
+      icon: <FiHome className="text-3xl" />,
+      secondaryIcon: <FiKey className="absolute -right-2 -bottom-2 text-xl bg-[#124E66] p-1 rounded-full" />,
       route: "/admin/userdetails/host",
     },
     {
-      title: "Security Details",
-      description: "View, add, edit and manage security users",
-      color: "bg-yellow-50 border-yellow-200 hover:bg-yellow-100",
+      title: "Security",
+      description: "Manage security personnel access",
+      icon: <FiShield className="text-3xl" />,
+      secondaryIcon: <FiSettings className="absolute -right-2 -bottom-2 text-xl bg-[#124E66] p-1 rounded-full" />,
       route: "/admin/userdetails/security",
     },
     {
-      title: "Admin Details",
-      description: "View, add, edit and manage admins",
-      color: "bg-red-50 border-red-200 hover:bg-red-100",
+      title: "Admins",
+      description: "Manage administrator privileges",
+      icon: <FiUserCheck className="text-3xl" />,
+      secondaryIcon: <FiClipboard className="absolute -right-2 -bottom-2 text-xl bg-[#124E66] p-1 rounded-full" />,
       route: "/admin/userdetails/admin",
     },
   ];
 
-  // Check if we're on the exact /admin/userdetails path (no nested route)
   const isBasePath = location.pathname === "/admin/userdetails";
 
   return (
-    <div className="pt-24 px-6 md:px-20">
-      {/* Show title and cards only on the base /admin/userdetails path */}
+    <div className="pt-25 px-4 lg:px-2">
       {isBasePath && (
         <>
-          <h2 className="text-4xl font-extrabold text-center mb-12 text-[#124E66] tracking-wide">
-            User Details Management
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-[#212A31] mb-2">User Management Portal</h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Centralized dashboard for managing all user accounts and access privileges
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {cards.map((card, idx) => (
               <div
                 key={idx}
                 onClick={() => navigate(card.route)}
-                className={`border ${card.color} rounded-2xl p-8 shadow-md hover:shadow-lg transition-all transform hover:scale-105 cursor-pointer`}
+                className="bg-gradient-to-br from-[#212A31] to-[#124E66] rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group border border-[#2E6B82]"
               >
-                <div className="flex flex-col justify-center items-center">
-                  <h3 className="text-2xl font-bold mb-2 text-gray-700">{card.title}</h3>
-                  <p className="text-center text-gray-500">{card.description}</p>
+                <div className="flex flex-col items-center text-center text-white h-full">
+                  <div className="relative mb-6">
+                    <div className="bg-[#124E66] p-4 rounded-full group-hover:bg-[#2E6B82] transition-all">
+                      {card.icon}
+                    </div>
+                    {card.secondaryIcon}
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">{card.title}</h3>
+                  <p className="text-blue-200 mb-6">{card.description}</p>
+                  <div className="w-full mt-auto">
+                    <div className="w-full py-2 text-blue-100 group-hover:text-white font-medium rounded-lg transition-colors">
+                      View Details →
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </>
       )}
-
-      {/* Render nested routes */}
       <Outlet />
     </div>
   );
