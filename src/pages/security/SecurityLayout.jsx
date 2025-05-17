@@ -74,7 +74,7 @@ function SecurityLayout() {
         >
           <Headerbar
             toggleSidebar={() => setSidebarVisible(!isSidebarVisible)}
-            userName={userName || "Host"} // 🔹 use dynamic username
+            userName={userName || "Security"} // 🔹 use dynamic username
             userRole="Staff account"
             pageTitle={getPageTitle()}
             pageSubtitle="Security"
