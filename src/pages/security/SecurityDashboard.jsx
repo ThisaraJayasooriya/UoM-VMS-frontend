@@ -27,6 +27,7 @@ const DashboardCard = ({ icon: Icon, title, count, bgColor, iconBgColor }) => (
 );
 
 const SecurityDashboard = () => {
+  const [userName, setUserName] = useState(""); // 🔹 Get user's name from localStorage
   const [stats, setStats] = useState([
     { icon: FaUsers, title: "Total Visitors", count: 25 },
     { icon: FaUserPlus, title: "Expected Visitors", count: 5 },
@@ -35,14 +36,20 @@ const SecurityDashboard = () => {
   ]);
 
   useEffect(() => {
+    // 🔹 Fetch username from localStorage
+    const storedUser = JSON.parse(localStorage.getItem("userData"));
+    if (storedUser?.username) {
+      setUserName(storedUser.username);
+    }
+
+    // 🔹 Fetch check-in/out stats
     const fetchStats = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/security/stats"); // change the port if needed
+        const response = await fetch("http://localhost:5000/api/security/stats");
         const data = await response.json();
-
         setStats((prevStats) => [
-          prevStats[0], // Total Visitors (static)
-          prevStats[1], // Expected Visitors (static)
+          prevStats[0],
+          prevStats[1],
           { ...prevStats[2], count: data.totalCheckedIn },
           { ...prevStats[3], count: data.totalCheckedOut },
         ]);
@@ -66,7 +73,7 @@ const SecurityDashboard = () => {
             style={{ backgroundColor: colors.blue }}
           ></div>
           <h1 className="text-2xl font-bold" style={{ color: colors.darkblue }}>
-            Hi, Kevin! 👋
+            Hi, {userName || "there"}! 👋
           </h1>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 place-items-center flex-1">
