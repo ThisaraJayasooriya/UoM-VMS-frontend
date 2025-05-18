@@ -36,3 +36,14 @@ export const getAllHosts = async () => {
     throw error;
   }
 };
+
+export const getAcceptedAppointment = async (visitorId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/acceptedAppointment/${visitorId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching accepted appointment:", error);
+    throw error;
+  }
+};
+
