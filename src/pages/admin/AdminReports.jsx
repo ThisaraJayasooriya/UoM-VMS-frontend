@@ -2,6 +2,7 @@ import React from "react";
 import { 
   FaBook,
   FaHistory,
+  FaStar,
   FaArrowRight
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -15,14 +16,21 @@ const AdminReports = () => {
       description: "Access and manage all visitor entries with detailed records",
       icon: <FaBook className="text-indigo-500 text-2xl" />,
       bgColor: "bg-gradient-to-br from-indigo-50 to-indigo-100",
-      path: "/admin/visitorlogbook" // Updated to match your route
+      path: "/admin/visitorlogbook"
     },
     {
       title: "Visitor History Report",
       description: "Generate comprehensive historical visitor analytics",
       icon: <FaHistory className="text-purple-500 text-2xl" />,
       bgColor: "bg-gradient-to-br from-purple-50 to-purple-100",
-      path: "/admin/visitorhistoryreport" // Updated to match your route
+      path: "/admin/visitorhistoryreport"
+    },
+    {
+      title: "Visitors' Feedback Review",
+      description: "View and analyze visitor feedback and ratings",
+      icon: <FaStar className="text-yellow-500 text-2xl" />,
+      bgColor: "bg-gradient-to-br from-yellow-50 to-yellow-100",
+      path: "/admin/visitorfeedbackreview"
     }
   ];
 
