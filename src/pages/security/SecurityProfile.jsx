@@ -8,7 +8,6 @@ const SecurityProfile = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const id = localStorage.getItem("id"); // or use context/auth if applicable
 
  useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
