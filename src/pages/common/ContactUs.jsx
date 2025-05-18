@@ -5,7 +5,6 @@ import {
   FaEnvelope,
   FaClock,
   FaFacebook,
-  FaTwitter,
   FaLinkedin,
   FaYoutube,
 } from "react-icons/fa";
@@ -109,16 +108,13 @@ const ContactUs = () => {
               </div>
               <div className="p-6">
                 <div className="flex justify-center space-x-6">
-                  <a href="#" className="bg-[#124E66] text-white p-3 rounded-full hover:bg-[#2E3944] transition">
+                  <a href="https://web.facebook.com/mrt.ac.lk?_rdc=1&_rdr#" className="bg-[#124E66] text-white p-3 rounded-full hover:bg-[#2E3944] transition">
                     <FaFacebook className="text-xl" />
                   </a>
-                  <a href="#" className="bg-[#124E66] text-white p-3 rounded-full hover:bg-[#2E3944] transition">
-                    <FaTwitter className="text-xl" />
-                  </a>
-                  <a href="#" className="bg-[#124E66] text-white p-3 rounded-full hover:bg-[#2E3944] transition">
+                  <a href="https://lk.linkedin.com/school/university-of-moratuwa/" className="bg-[#124E66] text-white p-3 rounded-full hover:bg-[#2E3944] transition">
                     <FaLinkedin className="text-xl" />
                   </a>
-                  <a href="#" className="bg-[#124E66] text-white p-3 rounded-full hover:bg-[#2E3944] transition">
+                  <a href="https://www.youtube.com/c/UniversityofMoratuwa" className="bg-[#124E66] text-white p-3 rounded-full hover:bg-[#2E3944] transition">
                     <FaYoutube className="text-xl" />
                   </a>
                 </div>

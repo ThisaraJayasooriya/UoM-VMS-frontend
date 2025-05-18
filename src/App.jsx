@@ -25,6 +25,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import VisitorLogbook from "./pages/admin/VisitorLogbook";
 import VisitorHistoryReport from "./pages/admin/VisitorHistoryReport";
+import VisitorFeedbackReview from "./pages/admin/VisitorFeedbackReview.jsx";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminInsights from "./pages/admin/AdminInsights.jsx";
 import Settings from "./pages/admin/AdminSettings";
@@ -302,6 +303,7 @@ function App() {
             <Route path="userdetails/add-admin" element={<AddAdmin />} />
             <Route path="visitorlogbook" element={<VisitorLogbook />} />
             <Route path="visitorhistoryreport" element={<VisitorHistoryReport />} />
+            <Route path="visitorfeedbackreview" element={<VisitorFeedbackReview />} />
             <Route path="adminreports" element={<AdminReports />} />
             <Route path="adminInsights" element={<AdminInsights />} />
             <Route path="settings" element={<Settings />} />
