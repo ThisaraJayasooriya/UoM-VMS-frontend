@@ -8,7 +8,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { fetchHostProfile } from "../../services/userProfileService"; 
+import { fetchUserProfile } from "../../services/userProfileService"; 
 
 const HostProfile = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const HostProfile = () => {
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
     if (userData?.id) {
-      fetchHostProfile(userData.id)
+      fetchUserProfile(userData.id)
         .then((data) => setProfile(data))
         .catch((err) => {
           console.error("Error loading profile", err);
