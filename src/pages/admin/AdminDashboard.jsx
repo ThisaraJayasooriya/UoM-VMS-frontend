@@ -7,7 +7,8 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaChartLine,
-  FaUserEdit
+  FaUserEdit,
+  FaLaptop
 } from "react-icons/fa";
 
 const AdminDashboard = () => {
@@ -69,9 +70,6 @@ const AdminDashboard = () => {
       changeColor: "text-white",
       icon: <FaUsers className="text-[#124E66] text-2xl" />,
       bgColor: "bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))]"
-
-
-
     },
     {
       title: "Checked-In",
@@ -80,7 +78,6 @@ const AdminDashboard = () => {
       changeColor: "text-white",
       icon: <FaUserCheck className="text-[#124E66] text-2xl" />,
       bgColor: "bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))]"
-
     },
     {
       title: "Checked-Out",
@@ -89,14 +86,45 @@ const AdminDashboard = () => {
       changeColor: "text-white",
       icon: <FaUserTimes className="text-[#124E66] text-2xl" />,
       bgColor: "bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))]"
-
+    },
+    {
+      title: "Active Sessions",
+      value: 14,
+      change: "+3%",
+      changeColor: "text-white",
+      icon: <FaLaptop className="text-[#124E66] text-2xl" />,
+      bgColor: "bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))]"
     }
   ];
 
+  // Heatmap data
+  const heatmapData = [
+    { time: "8 AM", value: 5, intensity: "low" },
+    { time: "9 AM", value: 12, intensity: "medium" },
+    { time: "10 AM", value: 18, intensity: "high" },
+    { time: "11 AM", value: 15, intensity: "medium" },
+    { time: "12 PM", value: 10, intensity: "medium" },
+    { time: "1 PM", value: 8, intensity: "low" },
+    { time: "2 PM", value: 14, intensity: "medium" },
+    { time: "3 PM", value: 20, intensity: "high" },
+    { time: "4 PM", value: 12, intensity: "medium" },
+    { time: "5 PM", value: 6, intensity: "low" }
+  ];
+
+  // Function to determine heatmap cell color based on intensity
+  const getHeatmapColor = (intensity) => {
+    switch(intensity) {
+      case "low": return "bg-[#124E66] bg-opacity-30";
+      case "medium": return "bg-[#124E66] bg-opacity-60";
+      case "high": return "bg-[#124E66]";
+      default: return "bg-[#124E66] bg-opacity-30";
+    }
+  };
+
   return (
-    <div className="pt-20 px-4 lg:px-10 ">
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div className="pt-20 px-4 lg:px-10">
+      {/* Stat Cards - Now with 4 cards including Active Sessions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, index) => (
           <div
             key={index}
@@ -171,12 +199,34 @@ const AdminDashboard = () => {
 
       {/* Extra Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        {/* Heatmap Section */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66]">
-          <h3 className="text-lg font-semibold text-[#212A31] mb-4">Visitor Trends</h3>
-          <div className="h-64 bg-gradient-to-br from-[#212A31] to-[#124E66] rounded-lg flex items-center justify-center border border-[#124E66]">
-            <p className="text-white">Chart visualization would go here</p>
+          <h3 className="text-lg font-semibold text-[#212A31] mb-4">Visitor Heatmap (Today)</h3>
+          <div className="h-64">
+            <div className="h-full flex flex-col">
+              <div className="flex-1 grid grid-cols-10 gap-1">
+                {heatmapData.map((item, index) => (
+                  <div 
+                    key={index} 
+                    className={`${getHeatmapColor(item.intensity)} rounded-sm flex items-end justify-center`}
+                    title={`${item.time}: ${item.value} visitors`}
+                  >
+                    <span className="text-white text-xs opacity-0 hover:opacity-100 transition-opacity">
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-2 text-xs text-[#212A31]">
+                {heatmapData.map((item, index) => (
+                  <span key={index} className="w-full text-center">{item.time}</span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
+        
+        {/* Quick Actions */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66]">
           <h3 className="text-lg font-semibold text-[#212A31] mb-4">Quick Actions</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -191,6 +241,10 @@ const AdminDashboard = () => {
             <button className="p-4 bg-[#124E66] hover:bg-[#212A31] rounded-lg text-white flex flex-col items-center transition-colors border border-[#124E66]">
               <FaUsers className="text-xl mb-2" />
               <span>Visitors</span>
+            </button>
+            <button className="p-4 bg-[#124E66] hover:bg-[#212A31] rounded-lg text-white flex flex-col items-center transition-colors border border-[#124E66]">
+              <FaLaptop className="text-xl mb-2" />
+              <span>Sessions</span>
             </button>
           </div>
         </div>
