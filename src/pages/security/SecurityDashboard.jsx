@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaUsers, FaUserPlus, FaArrowDown, FaArrowUp } from "react-icons/fa";
 
 const colors = {
@@ -27,19 +27,54 @@ const DashboardCard = ({ icon: Icon, title, count, bgColor, iconBgColor }) => (
 );
 
 const SecurityDashboard = () => {
-  const stats = [
+  const [userName, setUserName] = useState(""); // 🔹 Get user's name from localStorage
+  const [stats, setStats] = useState([
     { icon: FaUsers, title: "Total Visitors", count: 25 },
     { icon: FaUserPlus, title: "Expected Visitors", count: 5 },
-    { icon: FaArrowDown, title: "Total Checked-in", count: 10 },
-    { icon: FaArrowUp, title: "Total Checked-out", count: 7 },
-  ];
+    { icon: FaArrowDown, title: "Total Checked-in", count: 0 },
+    { icon: FaArrowUp, title: "Total Checked-out", count: 0 },
+  ]);
+
+  useEffect(() => {
+    // 🔹 Fetch username from localStorage
+    const storedUser = JSON.parse(localStorage.getItem("userData"));
+    if (storedUser?.username) {
+      setUserName(storedUser.username);
+    }
+
+    // 🔹 Fetch check-in/out stats
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/security/stats");
+        const data = await response.json();
+        setStats((prevStats) => [
+          prevStats[0],
+          prevStats[1],
+          { ...prevStats[2], count: data.totalCheckedIn },
+          { ...prevStats[3], count: data.totalCheckedOut },
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch visitor stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="pt-20 px-4 lg:px-20 flex justify-center">
-      <section className="rounded-2xl shadow-lg w-full max-w-5xl p-8 flex flex-col" style={{ backgroundColor: colors.blue3 }}>
+      <section
+        className="rounded-2xl shadow-lg w-full max-w-5xl p-8 flex flex-col"
+        style={{ backgroundColor: colors.blue3 }}
+      >
         <div className="flex items-center mb-8">
-          <div className="w-1 h-8 rounded mr-3" style={{ backgroundColor: colors.blue }}></div>
-          <h1 className="text-2xl font-bold" style={{ color: colors.darkblue }}>Hi, Kevin! 👋</h1>
+          <div
+            className="w-1 h-8 rounded mr-3"
+            style={{ backgroundColor: colors.blue }}
+          ></div>
+          <h1 className="text-2xl font-bold" style={{ color: colors.darkblue }}>
+            Hi, {userName || "there"}! 👋
+          </h1>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 place-items-center flex-1">
           {stats.map(({ icon, title, count }) => (
