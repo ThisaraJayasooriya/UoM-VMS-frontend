@@ -57,8 +57,8 @@ function AdminLayout() {
     "/admin/adminInsights": "Insights",
     "/admin/settings": "Settings",
     "/admin/visitorlogbook": "Visitor Logbook",
-    "/admin/visitorhistoryreport": "Visitor History Report"
-    
+    "/admin/visitorhistoryreport": "Visitor History Report", 
+    "/admin/visitorfeedbackreview": "Visitor Feedback Review"
   };
 
   // Dynamic page title based on route
@@ -74,6 +74,7 @@ function AdminLayout() {
     if (path.includes("/admin/adminreports")) return "Reports";
     if (path.includes("/admin/visitorlogbook")) return "Visitor Logbook";
     if (path.includes("/admin/visitorhistoryreport")) return "Visitor History Report";
+    if (path.includes("/admin/visitorfeedbackreview")) return "Visitors' Feedback Review";
     if (path.includes("/admin/adminInsights")) return "Insights";
     if (path.includes("/admin/settings")) return "Settings";
     return "Dashboard";

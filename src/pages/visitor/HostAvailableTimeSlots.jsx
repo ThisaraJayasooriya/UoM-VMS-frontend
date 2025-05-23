@@ -1,48 +1,65 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getAcceptedAppointment } from "../../services/appoinment.api";
 
 function HostAvailableTimeSlots() {
-  const availableSlots = [
-    {
-      id: 1,
-      date: "3 Mar 2025",
-      time: "9:00am",
-      duration: "30 min",
-    },
-  ];
+  const [appointment, setAppointment] = useState(null);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData"));
+    if (storedUser && storedUser.id) {
+      fetchAppointment(storedUser.id);
+    }
+  }, []);
+
+  const fetchAppointment = async (visitorId) => {
+    try {
+      const data = await getAcceptedAppointment(visitorId);
+      setAppointment(data.response);
+    } catch (error) {
+      console.error("Error loading appointment", error);
+    }
+  };
+
+  const handleAccept = () => {
+    alert("Appointment Accepted!");
+  };
+
+  const handleRebook = () => {
+    alert("Redirecting to Rebook Page...");
+  };
 
   return (
-    <div className="min-h-screen  p-8 mt-20">
-      <div className="max-w-4xl mx-auto">
-       
-
-        {/* Available Slots */}
-        <div className="bg-green-50 p-6 rounded-lg shadow-md mt-">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Host Available Time</h2>
-          <div className="grid grid-cols-4 gap-4 items-center text-center">
-            <p className="font-medium text-gray-600">Date</p>
-            <p className="font-medium text-gray-600">Time</p>
-            <p className="font-medium text-gray-600">Duration</p>
-            <p className="font-medium text-gray-600">Actions</p>
-          </div>
-          {availableSlots.map((slot) => (
-            <div
-              key={slot.id}
-              className="grid grid-cols-4 gap-4 items-center text-center mt-4"
-            >
-              <p className="bg-gray-200 text-gray-800 py-2 rounded-lg">{slot.date}</p>
-              <p className="bg-gray-200 text-gray-800 py-2 rounded-lg">{slot.time}</p>
-              <p className="bg-gray-200 text-gray-800 py-2 rounded-lg">{slot.duration}</p>
-              <div className="flex justify-center gap-2">
-                <button className="px-4 py-2 bg-[#124E66] text-white rounded-lg hover:bg-[#0e3b4d]"> 
-                  Select
-                </button>
-                <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                  Rebook
-                </button>
-              </div>
+    <div className="min-h-screen pt-28 bg-white px-4 mt-10">
+      <div className="max-w-md mx-auto">
+        {appointment ? (
+          <div className="bg-white shadow-md rounded-lg p-6 border border-green-300 text-gray-700">
+            <div className="mb-4">
+              <p><span className="font-semibold">📅 Date:</span> {appointment.date}</p>
+              <p><span className="font-semibold">🕒 Start Time:</span> {appointment.startTime}</p>
+              <p><span className="font-semibold">⏰ End Time:</span> {appointment.endTime}</p>
             </div>
-          ))}
-        </div>
+
+            {/* Buttons side by side */}
+            <div className="flex justify-center gap-4 mt-4 ">
+              <button
+                onClick={handleAccept}
+                className="bg-green-500 text-white px-5 py-2 rounded hover:bg-green-600 transition"
+              >
+                Accept
+              </button>
+              <button
+                onClick={handleRebook}
+                className="bg-yellow-500 text-white px-5 py-2 rounded hover:bg-yellow-600 transition"
+              >
+                Rebook
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-gray-600 text-lg">
+            No accepted appointment found.
+          </p>
+        )}
       </div>
     </div>
   );

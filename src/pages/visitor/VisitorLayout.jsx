@@ -1,17 +1,26 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import Sidebar from "../../components/common/Sidebar";
 import Headerbar from "../../components/common/Headerbar";
 import { FaTachometerAlt, FaUser,FaCog } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 
+
 function VisitorLayout() {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state || {};
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
+    if (storedUser && storedUser.username) {
+      setUserName(storedUser.username);
+    }
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarVisible(!isSidebarVisible);
@@ -56,8 +65,8 @@ function VisitorLayout() {
       >
         <Headerbar
           toggleSidebar={toggleSidebar}
-          userName="john"
-          userRole="Staff account"
+          userName={userName || "Visitor"} 
+          userRole="Visitor account"
           type= {state.name}
           pageTitle={getCurrentPageTitle()}
           pageSubtitle="Visitor"
@@ -86,3 +95,4 @@ function VisitorLayout() {
 }
 
 export default VisitorLayout;
+
