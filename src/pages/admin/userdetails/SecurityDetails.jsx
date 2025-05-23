@@ -1,18 +1,26 @@
 import React, { useEffect, useState } from "react";
+import { FiSearch, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight, FiArrowLeft, FiPlus } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const SecurityDetails = () => {
   const [securityList, setSecurityList] = useState([]);
-  const [newSecurity, setNewSecurity] = useState(null);
   const [editSecurity, setEditSecurity] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 5;
+  const navigate = useNavigate();
 
-  const fetchSecurity = () => {
-    fetch("http://localhost:5000/api/staff/security")
-      .then((res) => res.json())
-      .then((data) => setSecurityList(data))
-      .catch((err) => console.error("Fetch error:", err));
+  const fetchSecurity = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/staff/security");
+      if (!res.ok) throw new Error("Failed to fetch security users");
+      const data = await res.json();
+      setSecurityList(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      toast.error("Failed to load security users");
+    }
   };
 
   useEffect(() => {
@@ -50,152 +58,178 @@ const SecurityDetails = () => {
     return email.toLowerCase();
   };
 
-  const handleAddSubmit = async () => {
-    const res = await fetch("http://localhost:5000/api/staff/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...newSecurity, role: "security", registeredDate: new Date().toLocaleString() }),
-    });
-    if (res.ok) {
-      alert("Security added successfully!");
-      setNewSecurity(null);
-      fetchSecurity();
-      setCurrentPage(1);
-    } else {
-      alert("Failed to add security");
-    }
-  };
-
   const handleEditSubmit = async () => {
-    const res = await fetch(`http://localhost:5000/api/staff/${editSecurity._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editSecurity),
-    });
-    if (res.ok) {
-      alert("Security updated successfully!");
-      setEditSecurity(null);
-      fetchSecurity();
-    } else {
-      alert("Failed to update security");
+    try {
+      const res = await fetch(`http://localhost:5000/api/staff/${editSecurity._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editSecurity),
+      });
+      if (res.ok) {
+        toast.success("Security updated successfully!");
+        setEditSecurity(null);
+        fetchSecurity();
+      } else {
+        throw new Error("Failed to update security");
+      }
+    } catch (err) {
+      console.error("Edit error:", err);
+      toast.error("Failed to update security");
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this security user?")) return;
-    const res = await fetch(`http://localhost:5000/api/staff/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      alert("Security deleted successfully!");
-      fetchSecurity();
-      setCurrentPage(1);
-    } else {
-      alert("Failed to delete security");
+    try {
+      const res = await fetch(`http://localhost:5000/api/staff/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Security deleted successfully!");
+        fetchSecurity();
+        setCurrentPage(1);
+      } else {
+        throw new Error("Failed to delete security");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      toast.error("Failed to delete security");
+    }
+  };
+
+  const handleAddNewSecurity = () => {
+    console.log("Navigating to Add Security form");
+    try {
+      navigate("/admin/userdetails/add-security");
+    } catch (err) {
+      console.error("Navigation error:", err);
+      toast.error("Failed to navigate to Add Security form");
     }
   };
 
   return (
-    <div className="pt-5 px-4 lg:px-2">
-      <div className="flex justify-between items-center mb-6">
-        <input
-          type="text"
-          placeholder="Search security by name"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-64 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          onClick={() => setNewSecurity({})}
-          className="bg-[#124E66] text-white px-6 py-3 rounded-lg hover:bg-[#0e3a4f]"
-        >
-          + Add New Security
-        </button>
-      </div>
-
-      <div className="overflow-x-auto bg-white p-6 rounded-xl shadow-2xl">
-        <h3 className="text-xl font-semibold mb-4 text-blue-800">Security Details</h3>
-        <table className="w-full min-w-[1200px] text-sm text-left text-gray-800">
-          <thead className="bg-blue-100 text-blue-900 uppercase text-xs tracking-wider">
-            <tr>
-              {["#", "User ID", "Name", "Username", "Email", "Phone", "NIC/Passport", "Registered Date", "Actions"].map(
-                (heading, idx) => (
-                  <th key={idx} className="py-3 px-4">{heading}</th>
-                )
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {currentRecords.map((sec, idx) => {
-              const globalIndex = indexOfFirstRecord + idx + 1;
-              return (
-                <tr key={sec._id} className="border-t hover:bg-blue-50">
-                  <td className="py-3 px-4">{globalIndex}</td>
-                  <td className="py-3 px-4">{sec.userID || "-"}</td>
-                  <td className="py-3 px-4">{sec.name || "-"}</td>
-                  <td className="py-3 px-4">{sec.username || "-"}</td>
-                  <td className="py-3 px-4">{formatEmail(sec.email)}</td>
-                  <td className="py-3 px-4">{formatPhone(sec.phone)}</td>
-                  <td className="py-3 px-4">{sec.nicNumber || "-"}</td>
-                  <td className="py-3 px-4">{sec.registeredDate || "-"}</td>
-                  <td className="py-3 px-4 space-x-2">
-                    <button
-                      onClick={() => setEditSecurity(sec)}
-                      className="bg-[#1d4756] hover:bg-[#5d8696] text-white px-3 py-1 rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(sec._id)}
-                      className="bg-[#800000] hover:bg-[#660000] text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-
-        <div className="flex justify-between items-center mt-6">
+    <div className="pt-5 px-4 lg:px-2 min-h-screen bg-[#FFFFFF]">
+      <div className="max-w-full mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <div className="relative w-full sm:w-80">
+            <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#6B7280]" />
+            <input
+              type="text"
+              placeholder="Search security by name"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-[#E5E7EB] rounded-xl bg-[#FFFFFF] shadow-sm focus:ring-2 focus:ring-[#3B82F6] focus:border-[#3B82F6] focus:outline-none transition duration-200 hover:shadow-md"
+              aria-label="Search security by name"
+            />
+          </div>
           <button
-            onClick={() => window.history.back()}
-            className="bg-[#124E66] hover:bg-[#0e3a4f] text-white font-semibold px-6 py-2 rounded-lg shadow-md transition"
+            onClick={handleAddNewSecurity}
+            className="flex items-center gap-2 bg-[#124E66] text-[#FFFFFF] px-4 py-2 rounded-lg hover:bg-[#0e3a4f] transition shadow-sm hover:shadow-md"
+            aria-label="Add New Security"
           >
-            ← Go Back
+            <FiPlus /> Add New Security
           </button>
-          <div className="space-x-4">
+        </div>
+
+        <div className="bg-[#D5D8DC] p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold mb-4 text-[#1F2937]">Security Details Management</h3>
+          <table className="w-full text-sm text-left text-[#374151]">
+            <thead className="bg-[#B0B7BD] text-[#212A31] uppercase text-xs tracking-wider">
+              <tr>
+                {["#", "User ID", "Username", "Name", "Email", "Phone", "NIC/Passport", "Registered Date", "Actions"].map((heading, idx) => (
+                  <th
+                    key={idx}
+                    className="py-2 px-2 font-medium whitespace-nowrap"
+                    style={{
+                      width: idx === 0 ? "5%" : idx === 8 ? "10%" : `${90 / 8}%`, // Distribute 90% width across 8 columns (excluding # and Actions)
+                    }}
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {currentRecords.map((sec, idx) => {
+                const globalIndex = indexOfFirstRecord + idx + 1;
+                return (
+                  <tr key={sec._id} className="bg-[#E8EAEC] border-t border-[#C4C9CE] hover:bg-[#C4C9CE] transition">
+                    <td className="py-2 px-2 whitespace-nowrap">{globalIndex}</td>
+                    <td className="py-2 px-2 whitespace-nowrap">{sec.userID || "-"}</td>
+                    <td className="py-2 px-2 whitespace-nowrap">{sec.username || "-"}</td>
+                    <td className="py-2 px-2 whitespace-nowrap">{sec.name || "-"}</td>
+                    <td className="py-2 px-2 whitespace-nowrap">{formatEmail(sec.email)}</td>
+                    <td className="py-2 px-2 whitespace-nowrap">{formatPhone(sec.phone)}</td>
+                    <td className="py-2 px-2 whitespace-nowrap">{sec.nicNumber || "-"}</td>
+                    <td className="py-2 px-2 whitespace-nowrap">{sec.registeredDate || "-"}</td>
+                    <td className="py-2 px-2 whitespace-nowrap space-x-2">
+                      <button
+                        onClick={() => setEditSecurity(sec)}
+                        className="p-2 bg-[#1d4756] hover:bg-[#5d8696] text-[#FFFFFF] rounded-full transition"
+                        title="Edit"
+                        aria-label="Edit security"
+                      >
+                        <FiEdit2 className="text-lg" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(sec._id)}
+                        className="p-2 bg-[#4d0202] hover:bg-[#d18282] text-[#FFFFFF] rounded-full transition"
+                        title="Delete"
+                        aria-label="Delete security"
+                      >
+                        <FiTrash2 className="text-lg" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="flex justify-between items-center mt-6">
             <button
-              onClick={goToPrevPage}
-              disabled={currentPage === 1}
-              className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+              onClick={() => window.history.back()}
+              className="flex items-center gap-2 bg-[#124E66] hover:bg-[#0e3a4f] text-[#FFFFFF] font-semibold px-4 py-2 rounded-lg shadow-md transition"
+              aria-label="Go Back"
             >
-              Previous
+              <FiArrowLeft /> Go Back
             </button>
-            <button
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-            >
-              Next
-            </button>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goToPrevPage}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded-full bg-[#E5E7EB] text-[#374151] hover:bg-[#D1D5DB] disabled:opacity-50 transition"
+                aria-label="Previous Page"
+              >
+                <FiChevronLeft className="text-lg" />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1 rounded-full ${currentPage === i + 1 ? "bg-[#B9B9B9] text-[#FFFFFF]" : "bg-[#E5E7EB] text-[#374151] hover:bg-[#D1D5DB]"} transition`}
+                  aria-label={`Page ${i + 1}`}
+                  aria-current={currentPage === i + 1 ? "page" : undefined}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded-full bg-[#E5E7EB] text-[#374151] hover:bg-[#D1D5DB] disabled:opacity-50 transition"
+                aria-label="Next Page"
+              >
+                <FiChevronRight className="text-lg" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {newSecurity && (
-        <ModalForm
-          title="Add New Security"
-          fields={["userID", "name", "username", "email", "phone", "password", "nicNumber"]}
-          data={newSecurity}
-          setData={setNewSecurity}
-          onSubmit={handleAddSubmit}
-          onClose={() => setNewSecurity(null)}
-        />
-      )}
       {editSecurity && (
-        <ModalForm
+        <EditSecurityForm
           title="Edit Security"
-          fields={["userID", "name", "username", "email", "phone", "nicNumber"]}
+          fields={["userID", "username", "name", "email", "phone", "nicNumber"]}
           data={editSecurity}
           setData={setEditSecurity}
           onSubmit={handleEditSubmit}
@@ -206,71 +240,100 @@ const SecurityDetails = () => {
   );
 };
 
-const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
-  const [errors, setErrors] = useState({});
+const validateForm = (fields, data) => {
+  let tempErrors = {};
+  const phoneRegex = /^[0-9]{9}$/;
+  const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
-  const validate = () => {
-    let tempErrors = {};
-    const phoneRegex = /^[0-9]{9}$/;
-    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  fields.forEach((field) => {
+    const value = data[field] || "";
 
-    fields.forEach((field) => {
-      const value = data[field] || "";
-
-      if (["userID", "name", "username", "email", "phone"].includes(field)) {
-        if (!value.trim()) {
-          tempErrors[field] = "This field is required";
-        }
+    if (["userID", "username", "name", "email", "phone"].includes(field)) {
+      if (!value.trim()) {
+        tempErrors[field] = "This field is required";
       }
-      if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
-      if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
-      if (field === "phone" && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
-      if (field === "email" && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";
-    });
+    }
 
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
+    if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
+    if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
+    if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
+    if (field === "phone" && value && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
+    if (field === "email" && value && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";
+  });
+
+  return tempErrors;
+};
+
+const EditSecurityForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
+  const [errors, setErrors] = useState({});
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validate()) {
+    const tempErrors = validateForm(fields, data);
+    setErrors(tempErrors);
+    if (Object.keys(tempErrors).length === 0) {
       onSubmit();
     }
   };
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center">{title}</h2>
-        <form onSubmit={handleSubmit}>
-          {fields.map((field) => (
-            <div key={field} className="mb-4">
-              <input
-                name={field}
-                value={data[field] || ""}
-                placeholder={`Enter ${field}`}
-                onChange={(e) => setData((prev) => ({ ...prev, [field]: e.target.value }))}
-                className={`w-full p-3 border rounded-lg ${
-                  errors[field] ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-blue-500"
-                } focus:outline-none focus:ring-2`}
-              />
-              {errors[field] && <p className="text-red-500 text-sm mt-1">{errors[field]}</p>}
-            </div>
-          ))}
-          <div className="flex justify-end gap-4 mt-6">
+    <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
+      <div className="bg-[#FFFFFF] w-full max-w-2xl rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-[#4B5563] px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-[#FFFFFF]">{title}</h2>
+          <button
+            onClick={onClose}
+            className="text-[#FFFFFF] text-2xl hover:opacity-80 transition"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 bg-[#F9FAFB]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {fields.map((field) => (
+              <div key={field}>
+                <label className="block mb-1 text-sm font-medium text-[#4B5563] capitalize">
+                  {field}
+                </label>
+                <input
+                  type="text"
+                  name={field}
+                  value={data[field] || ""}
+                  placeholder={`Enter ${field}`}
+                  onChange={(e) => setData((prev) => ({ ...prev, [field]: e.target.value }))}
+                  className={`w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 ${
+                    errors[field]
+                      ? "border-[#EF4444] focus:ring-[#F87171]"
+                      : "border-[#E5E7EB] focus:ring-[#6B7280]"
+                  } transition duration-200 bg-[#FFFFFF]`}
+                  aria-required="true"
+                  aria-invalid={!!errors[field]}
+                  aria-describedby={errors[field] ? `error-${field}` : undefined}
+                />
+                {errors[field] && (
+                  <p id={`error-${field}`} className="text-[#EF4444] text-sm mt-1">{errors[field]}</p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-400 hover:bg-gray-500 text-white font-semibold px-5 py-2 rounded-lg transition"
+              className="px-5 py-2 bg-[#D1D5DB] text-[#374151] rounded-md hover:bg-[#9CA3AF] transition duration-200"
+              aria-label="Cancel"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-[#124E66] hover:bg-[#0F4D66] text-white font-semibold px-6 py-2 rounded-lg transition font-montserrat"
+              className="px-5 py-2 bg-[#4B5563] text-[#FFFFFF] rounded-md hover:bg-[#374151] transition duration-200 shadow-sm"
+              aria-label="Save Changes"
             >
-              Save
+              Save Changes
             </button>
           </div>
         </form>

@@ -11,6 +11,7 @@ import {
   FaUsers,
   FaBook,
   FaChartBar,
+  FaUserTimes
 } from "react-icons/fa";
 
 function AdminLayout() {
@@ -29,6 +30,12 @@ function AdminLayout() {
   const sidebarItems = [
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/admin" },
     { icon: <FaBook />, description: "User Details", route: "/admin/userdetails" },
+
+    { 
+    icon: <FaUserTimes />, 
+    description: "Access Control", 
+    route: "/admin/access-control" 
+    },
     {
       icon: <FaChalkboardTeacher />,
       description: "Reports",
@@ -45,11 +52,12 @@ function AdminLayout() {
   const pageTitles = {
     "/admin": "Dashboard",
     "/admin/userdetails": "User Details",
+    "/admin/access-control": "Access Control",
     "/admin/adminreports": "Reports",
     "/admin/adminInsights": "Insights",
     "/admin/settings": "Settings",
     "/admin/visitorlogbook": "Visitor Logbook",
-    "/admin/visitorhistoryreport": "Visitor History Report",
+    "/admin/visitorhistoryreport": "Visitor History Report", 
     "/admin/visitorfeedbackreview": "Visitor Feedback Review"
   };
 
@@ -62,6 +70,7 @@ function AdminLayout() {
     if (path.includes("/admin/userdetails/security")) return "Security Details";
     if (path.includes("/admin/userdetails/admin")) return "Admin Details";
     if (path.includes("/admin/userdetails")) return "User Details";
+    if (path.includes("/admin/access-control")) return "Access Control";
     if (path.includes("/admin/adminreports")) return "Reports";
     if (path.includes("/admin/visitorlogbook")) return "Visitor Logbook";
     if (path.includes("/admin/visitorhistoryreport")) return "Visitor History Report";

@@ -29,6 +29,7 @@ import VisitorFeedbackReview from "./pages/admin/VisitorFeedbackReview.jsx";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminInsights from "./pages/admin/AdminInsights.jsx";
 import Settings from "./pages/admin/AdminSettings";
+import AccessControl from './pages/admin/AccessControl';
 
 // User Details Pages
 import UserDetailsMain from "./pages/admin/userdetails/UserDetailsMain";
@@ -299,6 +300,7 @@ function App() {
               <Route path="admin" element={<AdminDetails />} />
             </Route>
             <Route path="userdetails/add-host" element={<AddHost />} />
+            <Route path="access-control" element={<AccessControl />} />
             <Route path="userdetails/add-security" element={<AddSecurity />} />
             <Route path="userdetails/add-admin" element={<AddAdmin />} />
             <Route path="visitorlogbook" element={<VisitorLogbook />} />
