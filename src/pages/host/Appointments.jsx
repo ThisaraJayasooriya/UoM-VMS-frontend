@@ -3,51 +3,64 @@ import { FaTimes } from "react-icons/fa";
 import { CgMenuLeftAlt } from "react-icons/cg";
 import { LuContact } from "react-icons/lu";
 import { FaPenToSquare } from "react-icons/fa6";
+import { fetchConfirmedAppointments } from "../../services/appointmentService";
 
-import React from "react";
+function formatTo12Hour(time24) {
+  const [hourStr, minuteStr] = time24.split(":");
+  const hour = parseInt(hourStr, 10);
+  const minute = parseInt(minuteStr, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+
 
 export default function Appointments() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null); // State to store the selected appointment details
+  const [appointments, setAppointments] = useState([]);
+   const [hostId, setHostId] = useState("");
 
-  const appointments = [
-    {
-      id: "A0001",
-      date: "3 Mar 2025",
-      time: "9:00am - 9:30am",
-      phone: "0113567854",
-      email: "john@gmail.com",
-      visitorName: "John Wick",
-      title: "Team Meeting",
-    },
-    {
-      id: "A0002",
-      date: "4 Mar 2025",
-      time: "9:00am - 9:30am",
-      phone: "0113567854",
-      email: "john@gmail.com",
-      visitorName: "John Wick",
-      title: "Team Meeting",
-    },
-    {
-      id: "A0003",
-      date: "5 Mar 2025",
-      time: "9:00am - 9:30am",
-      phone: "0113567854",
-      email: "john@gmail.com",
-      visitorName: "John Wick",
-      title: "Team Meeting",
-    },
-    {
-      id: "A0004",
-      date: "6 Mar 2025",
-      time: "9:00am - 9:30am",
-      phone: "0113567854",
-      email: "john@gmail.com",
-      visitorName: "John Wick",
-      title: "Team Meeting",
-    },
-  ];
+   useEffect(() => {
+         const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
+         if (storedUser && storedUser.id) {
+           setHostId(storedUser.id);
+         }
+       }, []);
+   
+     useEffect(() => {
+       const loadRequests = async () => {
+         try {
+           const data = await fetchConfirmedAppointments(hostId);
+           const formatted = data.map((a) => ({
+             id: a._id,
+             aId: a.appointmentId,
+             title: a.reason,
+             visitorName: a.firstname + " " + a.lastname,
+             phone: a.contact || "N/A",
+             date: formatDate(a.response.date),
+             time:`${formatTo12Hour(a.response.startTime)} - ${formatTo12Hour(a.response.endTime)}`
+           }));
+           setAppointments(formatted);
+         } catch (error) {
+           console.error("Failed to fetch meeting requests:", error);
+         }
+       };
+   
+       if (hostId) loadRequests();
+     }, [hostId]);
+
+
 
   const handleButtonClick = (appointment) => {
     setSelectedAppointment(appointment); // Set the selected meeting details
@@ -79,7 +92,7 @@ export default function Appointments() {
             <tbody className="divide-y divide-gray-200">
               {appointments.map((appointment) => (
                 <tr key={appointment.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-semibold">{appointment.id}</td>
+                  <td className="px-6 py-4 font-semibold">{appointment.aId}</td>
                   <td className="px-6 py-4">{appointment.date}</td>
                   <td className="px-6 py-4">{appointment.time}</td>
                   <td className="px-6 py-4">
@@ -113,7 +126,7 @@ export default function Appointments() {
                   </h3>
                   <div className="flex flex-col gap-5 ">
                     <div className=" gap-4 ml-12 items-center">
-                        <p className="text-2xl">({selectedAppointment.id})</p>
+                        <p className="text-2xl">({selectedAppointment.aId})</p>
                         <p>{selectedAppointment.date}, {selectedAppointment.time}</p>
                     </div>
                     <div className="flex gap-4 ml-12 items-center">
