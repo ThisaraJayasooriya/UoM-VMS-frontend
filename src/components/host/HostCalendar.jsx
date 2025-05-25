@@ -127,8 +127,8 @@ const HostCalendar = () => {
         >
           Add Time Slots
         </button>
-
-        <FullCalendar
+        <div className="overflow-auto max-w-full max-h-[700px] text-sm">
+            <FullCalendar
           plugins={[timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
           events={events}
@@ -139,6 +139,9 @@ const HostCalendar = () => {
           )}
           height="auto"
         />
+
+        </div>
+        
       </div>
 
       {isPopupOpen && (
