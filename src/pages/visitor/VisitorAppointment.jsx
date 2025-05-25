@@ -175,7 +175,7 @@ function VisitorAppointment() {
           <div className="mt-4 flex justify-end">
             <button
               type="submit"
-              className="bg-blue2text-white py-2 px-6 rounded-lg hover:bg-darkblue"
+              className="bg-blue2 text-white py-2 px-6 rounded-lg hover:bg-darkblue"
             >
               Submit
             </button>
