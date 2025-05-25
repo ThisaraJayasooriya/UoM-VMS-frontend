@@ -47,3 +47,25 @@ export const getAcceptedAppointment = async (visitorId) => {
   }
 };
 
+export const confirmAppointment = async (appointmentId) => {
+  console.log("Appointment confirmed:", appointmentId);
+  try {
+    const response = await axios.put(`${API_BASE_URL}/confirmAppointment/${appointmentId}`);
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error("Error confirming appointment:", error);
+    throw error;
+  } 
+  };
+
+export const rejectAppointment = async (appointmentId) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/rejectappointments/${appointmentId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error rejecting appointment:", error);
+    throw error;
+  }
+};
+
