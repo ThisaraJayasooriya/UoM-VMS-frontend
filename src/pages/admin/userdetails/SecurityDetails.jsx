@@ -129,7 +129,7 @@ const SecurityDetails = () => {
           </button>
         </div>
 
-        <div className="bg-[#D5D8DC] p-6 rounded-xl shadow-lg">
+        <div className="bg-[#D5D8DC] p-6 rounded-xl shadow-lg overflow-x-auto">
           <h3 className="text-xl font-semibold mb-4 text-[#1F2937]">Security Details Management</h3>
           <table className="w-full text-sm text-left text-[#374151]">
             <thead className="bg-[#B0B7BD] text-[#212A31] uppercase text-xs tracking-wider">

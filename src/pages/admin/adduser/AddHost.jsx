@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const AddHost = () => {
+  // State for form input fields
   const [host, setHost] = useState({
     userID: "",
     username: "",
@@ -20,6 +21,7 @@ const AddHost = () => {
 
   const fields = ["userID", "username", "name", "email", "phone", "password", "nicNumber", "faculty", "department"];
 
+   // Form validation function
   const validateForm = (data) => {
     let tempErrors = {};
     const phoneRegex = /^[0-9]{9}$/;
@@ -29,12 +31,14 @@ const AddHost = () => {
     fields.forEach((field) => {
       const value = data[field] || "";
 
+       // Check required fields
       if (["userID", "username", "name", "email", "phone", "password", "faculty", "department"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
 
+      // Additional field-specific validations
       if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
       if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
       if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
@@ -53,6 +57,8 @@ const AddHost = () => {
     const tempErrors = validateForm(host);
     setErrors(tempErrors);
 
+
+  // If no validation errors, proceed to submit data
     if (Object.keys(tempErrors).length === 0) {
       setIsLoading(true);
       try {
@@ -64,6 +70,7 @@ const AddHost = () => {
 
         const data = await res.json();
 
+        // Check for successful response
         if (res.ok && data.success) {
           if (data.message.includes("email sent") || !data.message.includes("failed to send")) {
             toast.success("Host registered and email sent successfully!");
@@ -89,7 +96,8 @@ const AddHost = () => {
     setHost((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "", general: "" }));
   };
-
+ 
+   // Cancel and go back to host list
   const handleCancel = () => {
     navigate("/admin/userdetails/host");
   };
@@ -97,6 +105,7 @@ const AddHost = () => {
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
       <div className="bg-[#FFFFFF] w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden">
+        {/* Header Section */}
         <div className="bg-gradient-to-r from-[#124E66] to-[#1d4756] px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-[#FFFFFF]">Add New Host</h2>
           <button
@@ -108,6 +117,7 @@ const AddHost = () => {
           </button>
         </div>
 
+        {/* Form Section */}
         <form
           onSubmit={handleSubmit}
           className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]"
@@ -148,7 +158,7 @@ const AddHost = () => {
               {errors.general}
             </div>
           )}
-
+          {/* Action Buttons */}
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
             <button
               type="button"

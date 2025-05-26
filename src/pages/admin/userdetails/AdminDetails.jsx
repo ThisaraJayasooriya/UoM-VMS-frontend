@@ -3,6 +3,7 @@ import { FiSearch, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight, FiArrowLeft
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
+//Main Component Definition
 const AdminDetails = () => {
   const [adminList, setAdminList] = useState([]);
   const [editAdmin, setEditAdmin] = useState(null);
@@ -11,6 +12,7 @@ const AdminDetails = () => {
   const recordsPerPage = 5;
   const navigate = useNavigate();
 
+  //Data Fetching
   const fetchAdmins = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/staff/admin");
@@ -27,6 +29,7 @@ const AdminDetails = () => {
     fetchAdmins();
   }, []);
 
+// Data Filtering and Pagination
   const filteredAdmins = adminList.filter((admin) =>
     admin.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -44,20 +47,23 @@ const AdminDetails = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
+  // Phone Number Formatting
   const formatPhone = (phone) => {
     if (!phone) return "-";
-    const cleaned = phone.replace(/\D/g, "");
+    const cleaned = phone.replace(/\D/g, ""); //Removes all non-digit characters
     if (cleaned.length === 9) {
       return `+94 ${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5)}`;
     }
     return phone;
   };
-
+ 
+  // Email Formatting
   const formatEmail = (email) => {
     if (!email) return "-";
     return email.toLowerCase();
   };
 
+  // Edit Admin Submission Handler
   const handleEditSubmit = async () => {
     try {
       const res = await fetch(`http://localhost:5000/api/staff/${editAdmin._id}`, {
@@ -65,10 +71,11 @@ const AdminDetails = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editAdmin),
       });
+
       if (res.ok) {
         toast.success("Admin updated successfully!");
         setEditAdmin(null);
-        fetchAdmins();
+        fetchAdmins(); 
       } else {
         throw new Error("Failed to update admin");
       }
@@ -78,9 +85,11 @@ const AdminDetails = () => {
     }
   };
 
+  // Handling the Delete Action
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this admin?")) return;
     try {
+
       const res = await fetch(`http://localhost:5000/api/staff/${id}`, { method: "DELETE" });
       if (res.ok) {
         toast.success("Admin deleted successfully!");
@@ -95,6 +104,7 @@ const AdminDetails = () => {
     }
   };
 
+  // Adding a New Admin
   const handleAddNewAdmin = () => {
     console.log("Navigating to Add Admin form");
     try {
@@ -108,6 +118,8 @@ const AdminDetails = () => {
   return (
     <div className="pt-5 px-4 lg:px-2 min-h-screen bg-[#FFFFFF]">
       <div className="max-w-full mx-auto">
+
+        {/* Search input and Add New Admin button */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <div className="relative w-full sm:w-80">
             <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#6B7280]" />
@@ -120,15 +132,17 @@ const AdminDetails = () => {
               aria-label="Search admins by name"
             />
           </div>
+
+          {/* Button to navigate to the Add Admin form */}
           <button
             onClick={handleAddNewAdmin}
             className="flex items-center gap-2 bg-[#124E66] text-[#FFFFFF] px-4 py-2 rounded-lg hover:bg-[#0e3a4f] transition shadow-sm hover:shadow-md"
-            aria-label="Add New Admin"
-          >
+            aria-label="Add New Admin">
             <FiPlus /> Add New Admin
           </button>
         </div>
 
+        {/* Admin Details Table */}
         <div className="bg-[#D5D8DC] p-6 rounded-xl shadow-lg overflow-x-auto">
           <h3 className="text-xl font-semibold mb-4 text-[#1F2937]">Admin Details Management</h3>
           <table className="w-full text-sm text-left text-[#374151]">
@@ -153,6 +167,8 @@ const AdminDetails = () => {
                     <td className="py-3 px-4 whitespace-nowrap">{admin.nicNumber || "-"}</td>
                     <td className="py-3 px-4 whitespace-nowrap">{admin.registeredDate || "-"}</td>
                     <td className="py-3 px-4 whitespace-nowrap space-x-2">
+
+                       {/* Edit and Delete buttons */}
                       <button
                         onClick={() => setEditAdmin(admin)}
                         className="p-2 bg-[#1d4756] hover:bg-[#5d8696] text-[#FFFFFF] rounded-full transition"
@@ -185,6 +201,7 @@ const AdminDetails = () => {
               <FiArrowLeft /> Go Back
             </button>
 
+            {/* Pagination Controls */}
             <div className="flex items-center gap-2">
               <button
                 onClick={goToPrevPage}
@@ -218,6 +235,7 @@ const AdminDetails = () => {
         </div>
       </div>
 
+      {/* Edit Admin Form Modal */}
       {editAdmin && (
         <EditAdminForm
           title="Edit Admin"
@@ -232,7 +250,6 @@ const AdminDetails = () => {
   );
 };
 
-// EditAdminForm Component: Modernized form for editing an admin
 const EditAdminForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   const [errors, setErrors] = useState({});
 
