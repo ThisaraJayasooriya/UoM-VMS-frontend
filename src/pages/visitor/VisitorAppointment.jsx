@@ -5,6 +5,7 @@ import {makeAppointment, getAllHosts } from '../../services/appoinment.api.js'; 
 function VisitorAppointment() {
    const [hosts, setHosts] = useState([]);
   const [hostId, sethostId] = useState("");
+  
 
   useEffect(() => {
     const loadHosts = async () => {

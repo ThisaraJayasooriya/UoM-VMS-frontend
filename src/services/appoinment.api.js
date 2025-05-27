@@ -69,3 +69,14 @@ export const rejectAppointment = async (appointmentId) => {
   }
 };
 
+export const getAppointmentStatus = async (visitorId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/appointmentStatus/${visitorId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching confirmed appointments:", error);
+    throw error;
+  }
+};
+
+
