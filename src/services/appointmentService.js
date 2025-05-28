@@ -14,3 +14,13 @@ export const fetchConfirmedAppointments = async (hostId) => {
   const res = await axiosInstance.get(`/appointments/host/${hostId}/confirmed`);
   return res.data;
 };
+
+export const fetchPendingAppointmentsCount = async (hostId) => {
+  const res = await axiosInstance.get(`/appointments/host/${hostId}/pendingcount`);
+  return res.data;
+};
+
+export const fetchAcceptedAppointmentsCount = async (hostId) => {
+  const res = await axiosInstance.get(`/appointments/host/${hostId}/confirmedcount`);
+  return res.data;
+};
