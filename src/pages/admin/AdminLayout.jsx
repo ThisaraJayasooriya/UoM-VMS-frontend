@@ -8,7 +8,6 @@ import {
   FaUser,
   FaChalkboardTeacher,
   FaCog,
-  FaUsers,
   FaBook,
   FaChartBar,
   FaUserTimes
@@ -19,6 +18,7 @@ function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Toggle sidebar visibility
   const toggleSidebar = () => {
     setSidebarVisible(!isSidebarVisible);
   };
@@ -26,7 +26,7 @@ function AdminLayout() {
   const hideSidebar = () => {
     setSidebarVisible(false);
   };
-
+ // Sidebar menu items with icons, labels, and routes
   const sidebarItems = [
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/admin" },
     { icon: <FaBook />, description: "User Details", route: "/admin/userdetails" },
@@ -49,7 +49,7 @@ function AdminLayout() {
     { icon: <FaCog />, description: "Settings", route: "/admin/settings" },
   ];
 
-  const pageTitles = {
+  /*const pageTitles = {
     "/admin": "Dashboard",
     "/admin/userdetails": "User Details",
     "/admin/access-control": "Access Control",
@@ -59,7 +59,7 @@ function AdminLayout() {
     "/admin/visitorlogbook": "Visitor Logbook",
     "/admin/visitorhistoryreport": "Visitor History Report", 
     "/admin/visitorfeedbackreview": "Visitor Feedback Review"
-  };
+  };*/
 
   // Dynamic page title based on route
   const getPageTitle = () => {
@@ -81,7 +81,9 @@ function AdminLayout() {
   };
 
   return (
+  
     <div className="flex h-screen w-full bg-white relative">
+        {/* Overlay behind sidebar (when open) */}
       {isSidebarVisible && (
         <div
           className="fixed inset-0 bg-opacity-50 z-10"
@@ -89,11 +91,12 @@ function AdminLayout() {
         ></div>
       )}
       <div className={`flex-1 flex flex-col w-full h-full transition-all duration-300 ${isSidebarVisible ? "blur-xs pointer-events-none" : ""}`}>
+        {/* Header bar with page title, user info, and sidebar toggle */}
         <Headerbar
           toggleSidebar={toggleSidebar}
           userName="Nick"
           userRole="Admin account"
-          pageTitle={getPageTitle()}
+          pageTitle={getPageTitle()}   // Dynamic title
           pageSubtitle="Admin"
         />
         <main className="flex-1 min-h-0">

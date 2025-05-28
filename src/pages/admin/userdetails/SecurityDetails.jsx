@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const SecurityDetails = () => {
+  // State variables for managing security details
   const [securityList, setSecurityList] = useState([]);
   const [editSecurity, setEditSecurity] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");

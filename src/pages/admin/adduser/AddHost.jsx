@@ -62,6 +62,7 @@ const AddHost = () => {
     if (Object.keys(tempErrors).length === 0) {
       setIsLoading(true);
       try {
+        // Send POST request to register host
         const res = await fetch("http://localhost:5000/api/staff/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

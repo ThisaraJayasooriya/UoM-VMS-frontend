@@ -58,6 +58,7 @@ const AddAdmin = () => {
     if (Object.keys(tempErrors).length === 0) {
       setIsLoading(true);
       try {
+        // Send POST request to register admin
         const res = await fetch("http://localhost:5000/api/staff/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
