@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const AddAdmin = () => {
+   // Form state for admin details
   const [admin, setAdmin] = useState({
     userID: "",
     username: "",
@@ -20,10 +21,12 @@ const AddAdmin = () => {
 
   const validateForm = (data) => {
     let tempErrors = {};
+    // Regex patterns
     const phoneRegex = /^[0-9]{9}$/;
     const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
     const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
+    // Validate each field
     fields.forEach((field) => {
       const value = data[field] || "";
 
@@ -48,12 +51,14 @@ const AddAdmin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validate form before submitting
     const tempErrors = validateForm(admin);
     setErrors(tempErrors);
 
     if (Object.keys(tempErrors).length === 0) {
       setIsLoading(true);
       try {
+        // Send POST request to register admin
         const res = await fetch("http://localhost:5000/api/staff/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -62,6 +67,7 @@ const AddAdmin = () => {
 
         const data = await res.json();
 
+        // Check if the response is successful
         if (res.ok && data.success) {
           if (data.message.includes("email sent") || !data.message.includes("failed to send")) {
             toast.success("Admin registered and email sent successfully!");
@@ -106,11 +112,13 @@ const AddAdmin = () => {
           </button>
         </div>
 
+        {/* Form body */}
         <form
           onSubmit={handleSubmit}
           className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             {/* Dynamically render inputs for each field */}
             {fields.map((field) => (
               <div key={field}>
                 <label className="block mb-1 text-sm font-medium text-[#374151] capitalize">
@@ -146,7 +154,7 @@ const AddAdmin = () => {
               {errors.general}
             </div>
           )}
-
+           {/* Action buttons */}
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
             <button
               type="button"

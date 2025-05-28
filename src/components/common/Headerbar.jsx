@@ -11,7 +11,7 @@ function Headerbar({ toggleSidebar, userName, userRole, pageTitle, pageSubtitle,
         </div>
 
         <div className="flex items-center space-x-6">
-          <FaEnvelope className="text-lg cursor-pointer" />
+
           <div className="relative">
             <FaBell className="text-lg cursor-pointer" />
             {/* Notification Dot */}

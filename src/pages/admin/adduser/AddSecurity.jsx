@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const AddSecurity = () => {
+  // Form state for security details
   const [security, setSecurity] = useState({
     userID: "",
     username: "",
@@ -12,6 +13,7 @@ const AddSecurity = () => {
     password: "",
     nicNumber: "",
   });
+  // State for form validation errors and loading state
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,6 +21,7 @@ const AddSecurity = () => {
   const fields = ["userID", "username", "name", "email", "phone", "password", "nicNumber"];
 
   const validateForm = (data) => {
+    // Initialize an object to hold validation errors
     let tempErrors = {};
     const phoneRegex = /^[0-9]{9}$/;
     const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
@@ -27,6 +30,7 @@ const AddSecurity = () => {
     fields.forEach((field) => {
       const value = data[field] || "";
 
+      // Check if the field is required and not empty
       if (["userID", "username", "name", "email", "phone", "password"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
@@ -46,6 +50,7 @@ const AddSecurity = () => {
     return tempErrors;
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const tempErrors = validateForm(security);
@@ -54,6 +59,7 @@ const AddSecurity = () => {
     if (Object.keys(tempErrors).length === 0) {
       setIsLoading(true);
       try {
+        // Send POST request to register security
         const res = await fetch("http://localhost:5000/api/staff/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -62,6 +68,7 @@ const AddSecurity = () => {
 
         const data = await res.json();
 
+        // Check if the response is successful
         if (res.ok && data.success) {
           if (data.message.includes("email sent") || !data.message.includes("failed to send")) {
             toast.success("Security registered and email sent successfully!");
@@ -83,6 +90,7 @@ const AddSecurity = () => {
   };
 
   const handleChange = (e) => {
+    // Update the security state with the new value
     const { name, value } = e.target;
     setSecurity((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "", general: "" }));
@@ -95,6 +103,7 @@ const AddSecurity = () => {
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
       <div className="bg-[#FFFFFF] w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden">
+        {/* Modal header */}
         <div className="bg-gradient-to-r from-[#124E66] to-[#1d4756] px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-[#FFFFFF]">Add New Security</h2>
           <button
@@ -105,12 +114,13 @@ const AddSecurity = () => {
             ×
           </button>
         </div>
-
+         {/* Form body */}
         <form
           onSubmit={handleSubmit}
           className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             {/* Dynamically render inputs for each field */}
             {fields.map((field) => (
               <div key={field}>
                 <label className="block mb-1 text-sm font-medium text-[#374151] capitalize">
@@ -132,6 +142,7 @@ const AddSecurity = () => {
                   aria-describedby={errors[field] ? `error-${field}` : undefined}
                   disabled={isLoading}
                 />
+                 {/* Field-level error message */}
                 {errors[field] && (
                   <p id={`error-${field}`} className="text-[#EF4444] text-sm mt-1">
                     {errors[field]}
@@ -147,6 +158,7 @@ const AddSecurity = () => {
             </div>
           )}
 
+          {/* Action buttons */}
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
             <button
               type="button"
