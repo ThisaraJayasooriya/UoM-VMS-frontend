@@ -17,12 +17,12 @@ function HostDashboard() {
 return (
     <div className="pt-20 px-4 lg:px-20">
         <h1 className="text-2xl font-bold mb-5 text-center lg:text-left">Hi, {userName}! 👋</h1>
-        <div className="flex flex-col lg:flex-row lg:space-x-20 space-y-4 lg:space-y-0">
+        <div className="flex flex-col  justify-center lg:flex-row lg:space-x-50 space-y-4 lg:space-y-0">
         <div className="mb-4 lg:mb-0">
-          <DashboardCard icon={<FaClipboardList />} title="Total Meeting Requests" count={5} textcolor="text-blue-600"/>
+          <DashboardCard icon={<FaClipboardList />} title="Total Meeting Requests" count={5} textcolor="text-white"/>
         </div>
         <div className="mb-4 lg:mb-0">
-          <DashboardCard icon={<FaUsers />} title="Total Appointments" count={25} textcolor="text-green-600" />
+          <DashboardCard icon={<FaUsers />} title="Total Appointments" count={25} textcolor="text-white" />
         </div>
         </div>
 
