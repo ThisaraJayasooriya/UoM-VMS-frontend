@@ -108,7 +108,7 @@ const Signup = () => {
       }
     }
   };
-
+  // Validate form data before submission 
   const validateForm = () => {
     let isValid = true;
     const newErrors = {

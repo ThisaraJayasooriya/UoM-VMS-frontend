@@ -54,7 +54,7 @@ const Login = () => {
         } else if (tokenPayload.userType === "staff") {
           switch (tokenPayload.role.toLowerCase()) {
             case "admin":
-              navigate("/admin"); // Navigate to /admin instead of /staff/admin
+              navigate("/admin"); 
               break;
             case "host":
               navigate("/host");
