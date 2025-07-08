@@ -15,9 +15,11 @@ const AdminDetails = () => {
   //Data Fetching
   const fetchAdmins = async () => {
     try {
+      // Fetching admin data from the API
       const res = await fetch("http://localhost:5000/api/staff/admin");
       if (!res.ok) throw new Error("Failed to fetch admins");
       const data = await res.json();
+      // Updates the adminList state with the fetched data
       setAdminList(data);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -26,10 +28,10 @@ const AdminDetails = () => {
   };
 
   useEffect(() => {
-    fetchAdmins();
+    fetchAdmins();   //runs the code when component mounts
   }, []);
 
-// Data Filtering and Pagination
+// Data Filtering and Pagination logic
   const filteredAdmins = adminList.filter((admin) =>
     admin.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -47,7 +49,7 @@ const AdminDetails = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
-  // Phone Number Formatting
+  // Phone Number Formatting function to display
   const formatPhone = (phone) => {
     if (!phone) return "-";
     const cleaned = phone.replace(/\D/g, ""); //Removes all non-digit characters
@@ -57,7 +59,7 @@ const AdminDetails = () => {
     return phone;
   };
  
-  // Email Formatting
+  // Email Formatting function to display
   const formatEmail = (email) => {
     if (!email) return "-";
     return email.toLowerCase();
@@ -70,6 +72,7 @@ const AdminDetails = () => {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editAdmin),
+        // Sends a PUT request to update the admin with the specified ID, sending the updated editAdmin data
       });
 
       if (res.ok) {
@@ -93,8 +96,8 @@ const AdminDetails = () => {
       const res = await fetch(`http://localhost:5000/api/staff/${id}`, { method: "DELETE" });
       if (res.ok) {
         toast.success("Admin deleted successfully!");
-        fetchAdmins();
-        setCurrentPage(1);
+        fetchAdmins(); // Refetches the admin list to reflect the deletion
+        setCurrentPage(1);// Resets to the first page to avoid pagination issues
       } else {
         throw new Error("Failed to delete admin");
       }
@@ -152,12 +155,15 @@ const AdminDetails = () => {
                   <th key={idx} className="py-3 px-4 font-medium whitespace-nowrap">{heading}</th>
                 ))}
               </tr>
+              {/* Renders table headers dynamically. */}
             </thead>
             <tbody>
               {currentRecords.map((admin, idx) => {
                 const globalIndex = indexOfFirstRecord + idx + 1;
                 return (
                   <tr key={admin._id} className="bg-[#E8EAEC] border-t border-[#C4C9CE] hover:bg-[#C4C9CE] transition">
+                    {/* Table row for each admin, with hover effect. */}
+
                     <td className="py-3 px-4 whitespace-nowrap">{globalIndex}</td>
                     <td className="py-3 px-4 whitespace-nowrap">{admin.userID || "-"}</td>
                     <td className="py-3 px-4 whitespace-nowrap">{admin.username || "-"}</td>
@@ -168,7 +174,7 @@ const AdminDetails = () => {
                     <td className="py-3 px-4 whitespace-nowrap">{admin.registeredDate || "-"}</td>
                     <td className="py-3 px-4 whitespace-nowrap space-x-2">
 
-                       {/* Edit and Delete buttons */}
+                       {/* Edit and Delete buttons in the table */}
                       <button
                         onClick={() => setEditAdmin(admin)}
                         className="p-2 bg-[#1d4756] hover:bg-[#5d8696] text-[#FFFFFF] rounded-full transition"
@@ -284,7 +290,7 @@ const EditAdminForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
     if (Object.keys(tempErrors).length === 0) {
       onSubmit();
     }
-  };
+  };// Handles form submission, validates the form, and calls the onSubmit prop if there are no errors
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
@@ -300,7 +306,7 @@ const EditAdminForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 bg-[#F9FAFB]">
+        <form onSubmit={handleSubmit} className="p-6 bg-[#F9FAFB]">{/* Form with a light gray background. */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map((field) => (
               <div key={field}>
@@ -325,6 +331,7 @@ const EditAdminForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
                 {errors[field] && (
                   <p id={`error-${field}`} className="text-[#EF4444] text-sm mt-1">{errors[field]}</p>
                 )}
+                {/* Displays validation error messages if any. */}
               </div>
             ))}
           </div>

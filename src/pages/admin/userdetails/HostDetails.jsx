@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const HostDetails = () => {
+  // State variables
   const [hostList, setHostList] = useState([]);
   const [editHost, setEditHost] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -13,6 +14,7 @@ const HostDetails = () => {
 
   const fetchHosts = async () => {
     try {
+      // Fetch host data from the API
       const res = await fetch("http://localhost:5000/api/staff/host");
       if (!res.ok) throw new Error("Failed to fetch hosts");
       const data = await res.json();
@@ -22,7 +24,7 @@ const HostDetails = () => {
       toast.error("Failed to load hosts");
     }
   };
-
+// Fetch hosts when the component mounts
   useEffect(() => {
     fetchHosts();
   }, []);
@@ -30,7 +32,7 @@ const HostDetails = () => {
   const filteredHosts = hostList.filter((host) =>
     host.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+// Pagination logic
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = filteredHosts.slice(indexOfFirstRecord, indexOfLastRecord);
@@ -43,7 +45,7 @@ const HostDetails = () => {
   const goToPrevPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
-
+  // Helper functions to format phone and email
   const formatPhone = (phone) => {
     if (!phone) return "-";
     const cleaned = phone.replace(/\D/g, "");
@@ -57,7 +59,7 @@ const HostDetails = () => {
     if (!email) return "-";
     return email.toLowerCase();
   };
-
+// Function to handle form submission for editing a host
   const handleEditSubmit = async () => {
     try {
       const res = await fetch(`http://localhost:5000/api/staff/${editHost._id}`, {
@@ -77,7 +79,7 @@ const HostDetails = () => {
       toast.error("Failed to update host");
     }
   };
-
+// Function to handle deletion of a host
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this host?")) return;
     try {
@@ -94,7 +96,7 @@ const HostDetails = () => {
       toast.error("Failed to delete host");
     }
   };
-
+// Function to handle navigation to the Add Host form
   const handleAddNewHost = () => {
     console.log("Navigating to Add Host form");
     try {
@@ -106,11 +108,13 @@ const HostDetails = () => {
   };
 
   return (
+    // Main component rendering
     <div className="pt-5 px-4 lg:px-2 min-h-screen bg-[#FFFFFF]">
       <div className="max-w-full mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <div className="relative w-full sm:w-80">
             <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#6B7280]" />
+            {/* Search input for filtering hosts*/}
             <input
               type="text"
               placeholder="Search host by name"
@@ -120,6 +124,7 @@ const HostDetails = () => {
               aria-label="Search hosts by name"
             />
           </div>
+          {/* Button to add a new host */}
           <button
             onClick={handleAddNewHost}
             className="flex items-center gap-2 bg-[#124E66] text-[#FFFFFF] px-4 py-2 rounded-lg hover:bg-[#0e3a4f] transition shadow-sm hover:shadow-md"
@@ -128,7 +133,7 @@ const HostDetails = () => {
             <FiPlus /> Add New Host
           </button>
         </div>
-
+        {/* Host details table */}
         <div className="bg-[#D5D8DC] p-6 rounded-xl shadow-lg overflow-x-auto">
           <h3 className="text-xl font-semibold mb-4 text-[#1F2937]">Host Details Management</h3>
           <table className="w-full text-sm text-left text-[#374151]">
@@ -165,6 +170,7 @@ const HostDetails = () => {
                     <td className="py-2 px-2 whitespace-nowrap">{host.department || "-"}</td>
                     <td className="py-2 px-2 whitespace-nowrap">{host.registeredDate || "-"}</td>
                     <td className="py-2 px-2 whitespace-nowrap space-x-2">
+                      {/* Action buttons for editing and deleting hosts */}
                       <button
                         onClick={() => setEditHost(host)}
                         className="p-2 bg-[#1d4756] hover:bg-[#5d8696] text-[#FFFFFF] rounded-full transition"
@@ -187,7 +193,7 @@ const HostDetails = () => {
               })}
             </tbody>
           </table>
-
+          {/* Pagination controls */}
           <div className="flex justify-between items-center mt-6">
             <button
               onClick={() => window.history.back()}
@@ -229,7 +235,7 @@ const HostDetails = () => {
           </div>
         </div>
       </div>
-
+      {/* Edit Host Form Modal */}
       {editHost && (
         <EditHostForm
           title="Edit Host"
@@ -243,7 +249,7 @@ const HostDetails = () => {
     </div>
   );
 };
-
+{/* Form validation logic */}
 const validateForm = (fields, data) => {
   let tempErrors = {};
   const phoneRegex = /^[0-9]{9}$/;
@@ -257,7 +263,7 @@ const validateForm = (fields, data) => {
         tempErrors[field] = "This field is required";
       }
     }
-
+{/* Check for specific field validations */}
     if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
     if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
     if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
@@ -267,12 +273,12 @@ const validateForm = (fields, data) => {
 
   return tempErrors;
 };
-
+{/* Edit Host Form component for editing host details */}
 const EditHostForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   const [errors, setErrors] = useState({});
-
+  // Validate form fields when data changes
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
     const tempErrors = validateForm(fields, data);
     setErrors(tempErrors);
     if (Object.keys(tempErrors).length === 0) {
@@ -281,6 +287,7 @@ const EditHostForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   };
 
   return (
+    // Modal for editing host details
     <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
       <div className="bg-[#FFFFFF] w-full max-w-2xl rounded-xl shadow-lg overflow-hidden">
         <div className="bg-[#4B5563] px-6 py-4 flex items-center justify-between">
@@ -296,6 +303,7 @@ const EditHostForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
 
         <form onSubmit={handleSubmit} className="p-6 bg-[#F9FAFB]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Render input fields dynamically based on provided fields */}
             {fields.map((field) => (
               <div key={field}>
                 <label className="block mb-1 text-sm font-medium text-[#4B5563] capitalize">
@@ -322,7 +330,7 @@ const EditHostForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
               </div>
             ))}
           </div>
-
+          {/* Action buttons for saving or canceling changes */}
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
             <button
               type="button"

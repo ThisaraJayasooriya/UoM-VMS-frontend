@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const AddAdmin = () => {
-   // Form state for admin details
+  // Manage form state for admin details
   const [admin, setAdmin] = useState({
     userID: "",
     username: "",
@@ -17,57 +17,69 @@ const AddAdmin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const fields = ["userID", "username", "name", "email", "phone", "password", "nicNumber"];
+  // Define the fields to be rendered and validated
+  const fields = ["userID", "username", "name", "email", "phone", "password", "confirmpassword", "nicNumber"];
 
+  // Function to validate form input values
   const validateForm = (data) => {
     let tempErrors = {};
-    // Regex patterns
+
     const phoneRegex = /^[0-9]{9}$/;
     const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
     const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
-    // Validate each field
+    // Loop through fields and validate
     fields.forEach((field) => {
       const value = data[field] || "";
 
+      // Check required fields
       if (["userID", "username", "name", "email", "phone", "password"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
 
-      if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
-      if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
-      if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
-      if (field === "phone" && value && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
-      if (field === "email" && value && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";
-      if (field === "password" && value && !strongPasswordRegex.test(value)) {
-        tempErrors[field] = "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.";
-      }
+      // Specific validations
+       if (!admin.userID?.trim()) tempErrors.userID = "User ID is required";
+        if (!admin.username?.trim()) tempErrors.username = "Username is required";
+        if (!admin.name?.trim()) tempErrors.name = "Name is required";
+        if (!admin.email?.trim()) tempErrors.email = "Email is required";
+        if (!admin.phone?.trim()) tempErrors.phone = "Phone is required";
+        if (!admin.password?.trim()) tempErrors.password = "Password is required";
+        
+        if (!admin.nicNumber?.trim()) tempErrors.nicNumber = "Nic Number is required";
+        setErrors(tempErrors);
+        return Object.keys(tempErrors).length === 0;
     });
 
     return tempErrors;
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validate form before submitting
+
+    // Validate before sending
     const tempErrors = validateForm(admin);
     setErrors(tempErrors);
 
     if (Object.keys(tempErrors).length === 0) {
       setIsLoading(true);
       try {
-        // Send POST request to register admin
+        // Send POST request to backend API
         const res = await fetch("http://localhost:5000/api/staff/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...admin, role: "admin", registeredDate: new Date().toLocaleString() }),
+          body: JSON.stringify({
+            ...admin,
+            role: "admin", // Set role as admin 
+            registeredDate: new Date().toLocaleString(),
+          }),
         });
 
         const data = await res.json();
 
-        // Check if the response is successful
+        // Success or failure handling
         if (res.ok && data.success) {
           if (data.message.includes("email sent") || !data.message.includes("failed to send")) {
             toast.success("Admin registered and email sent successfully!");
@@ -88,12 +100,14 @@ const AddAdmin = () => {
     }
   };
 
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setAdmin((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "", general: "" }));
   };
 
+  // Cancel and navigate back
   const handleCancel = () => {
     navigate("/admin/userdetails/admin");
   };
@@ -101,6 +115,7 @@ const AddAdmin = () => {
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
       <div className="bg-[#FFFFFF] w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden">
+        {/* Header */}
         <div className="bg-gradient-to-r from-[#124E66] to-[#1d4756] px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-[#FFFFFF]">Add New Admin</h2>
           <button
@@ -117,15 +132,15 @@ const AddAdmin = () => {
           onSubmit={handleSubmit}
           className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]"
         >
+          {/* Render each form input */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             {/* Dynamically render inputs for each field */}
             {fields.map((field) => (
               <div key={field}>
                 <label className="block mb-1 text-sm font-medium text-[#374151] capitalize">
                   {field} <span className="text-[#EF4444]">*</span>
                 </label>
                 <input
-                  type={field === "password" ? "password" : "text"}
+                  type={field === "password" || "confirmpassword"? "password" : "text"}
                   name={field}
                   value={admin[field] || ""}
                   placeholder={`Enter ${field}`}
@@ -149,12 +164,14 @@ const AddAdmin = () => {
             ))}
           </div>
 
+          {/* General error display */}
           {errors.general && (
             <div className="col-span-full text-[#EF4444] text-sm mt-4 text-center">
               {errors.general}
             </div>
           )}
-           {/* Action buttons */}
+
+          {/* Action buttons */}
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
             <button
               type="button"

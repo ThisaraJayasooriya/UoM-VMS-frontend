@@ -14,6 +14,7 @@ const SecurityDetails = () => {
 
   const fetchSecurity = async () => {
     try {
+      // Fetch security users from the API
       const res = await fetch("http://localhost:5000/api/staff/security");
       if (!res.ok) throw new Error("Failed to fetch security users");
       const data = await res.json();
@@ -24,6 +25,7 @@ const SecurityDetails = () => {
     }
   };
 
+  // Fetch security details on component mount
   useEffect(() => {
     fetchSecurity();
   }, []);
@@ -31,7 +33,7 @@ const SecurityDetails = () => {
   const filteredSecurity = securityList.filter((sec) =>
     sec.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+// Pagination logic
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = filteredSecurity.slice(indexOfFirstRecord, indexOfLastRecord);
@@ -45,6 +47,7 @@ const SecurityDetails = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
+  // Helper functions to format phone and email
   const formatPhone = (phone) => {
     if (!phone) return "-";
     const cleaned = phone.replace(/\D/g, "");
@@ -59,9 +62,10 @@ const SecurityDetails = () => {
     return email.toLowerCase();
   };
 
+  // Function to handle submission of edited security user
   const handleEditSubmit = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/staff/${editSecurity._id}`, {
+      const res = await fetch(`http://localhost:5000/api/staff/${editSecurity._id}`, { 
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editSecurity),
@@ -79,6 +83,7 @@ const SecurityDetails = () => {
     }
   };
 
+  // Function to handle deletion of a security user
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this security user?")) return;
     try {
@@ -96,6 +101,7 @@ const SecurityDetails = () => {
     }
   };
 
+  // Function to handle navigation to Add Security form
   const handleAddNewSecurity = () => {
     console.log("Navigating to Add Security form");
     try {
@@ -107,11 +113,13 @@ const SecurityDetails = () => {
   };
 
   return (
+    // Main component rendering security details management UI
     <div className="pt-5 px-4 lg:px-2 min-h-screen bg-[#FFFFFF]">
       <div className="max-w-full mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <div className="relative w-full sm:w-80">
             <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#6B7280]" />
+            {/* Search input for filtering security users */}
             <input
               type="text"
               placeholder="Search security by name"
@@ -121,6 +129,7 @@ const SecurityDetails = () => {
               aria-label="Search security by name"
             />
           </div>
+          {/* Button to add new security user */}
           <button
             onClick={handleAddNewSecurity}
             className="flex items-center gap-2 bg-[#124E66] text-[#FFFFFF] px-4 py-2 rounded-lg hover:bg-[#0e3a4f] transition shadow-sm hover:shadow-md"
@@ -130,6 +139,7 @@ const SecurityDetails = () => {
           </button>
         </div>
 
+        {/* Security details table */}
         <div className="bg-[#D5D8DC] p-6 rounded-xl shadow-lg overflow-x-auto">
           <h3 className="text-xl font-semibold mb-4 text-[#1F2937]">Security Details Management</h3>
           <table className="w-full text-sm text-left text-[#374151]">
@@ -148,6 +158,7 @@ const SecurityDetails = () => {
                 ))}
               </tr>
             </thead>
+          
             <tbody>
               {currentRecords.map((sec, idx) => {
                 const globalIndex = indexOfFirstRecord + idx + 1;
@@ -162,6 +173,8 @@ const SecurityDetails = () => {
                     <td className="py-2 px-2 whitespace-nowrap">{sec.nicNumber || "-"}</td>
                     <td className="py-2 px-2 whitespace-nowrap">{sec.registeredDate || "-"}</td>
                     <td className="py-2 px-2 whitespace-nowrap space-x-2">
+
+                      {/* Action buttons for editing and deleting security user */}
                       <button
                         onClick={() => setEditSecurity(sec)}
                         className="p-2 bg-[#1d4756] hover:bg-[#5d8696] text-[#FFFFFF] rounded-full transition"
@@ -194,6 +207,7 @@ const SecurityDetails = () => {
               <FiArrowLeft /> Go Back
             </button>
 
+            {/* Pagination controls */}
             <div className="flex items-center gap-2">
               <button
                 onClick={goToPrevPage}
@@ -227,6 +241,7 @@ const SecurityDetails = () => {
         </div>
       </div>
 
+      {/* Edit Security Form Modal */}
       {editSecurity && (
         <EditSecurityForm
           title="Edit Security"
@@ -264,10 +279,10 @@ const validateForm = (fields, data) => {
 
   return tempErrors;
 };
-
+{/* Edit Security Form Component */}
 const EditSecurityForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   const [errors, setErrors] = useState({});
-
+{/* Validate form fields on mount and when data changes */}
   const handleSubmit = (e) => {
     e.preventDefault();
     const tempErrors = validateForm(fields, data);

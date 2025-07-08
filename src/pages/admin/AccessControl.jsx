@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { FaUserTimes, FaUserCheck, FaSearch, FaBan, FaCheck } from 'react-icons/fa';
 
 const AccessControl = () => {
-  const [blockedUsers, setBlockedUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  // State management for blocked users and UI
+  const [blockedUsers, setBlockedUsers] = useState([]); // Stores blocked users data
+  const [searchTerm, setSearchTerm] = useState(''); // Search input value
+  const [isLoading, setIsLoading] = useState(true); // Loading state
 
+  // Fetch blocked users on component mount
   useEffect(() => {
     const fetchBlockedUsers = async () => {
       try {
-        // Simulate API call
+        // Simulate API call with timeout
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Mock data
+        // Mock data 
         const mockData = [
           { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Visitor', blockedOn: '2023-05-15', reason: 'Multiple failed login attempts' },
           { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Host', blockedOn: '2023-05-10', reason: 'Suspicious activity' },
@@ -30,10 +32,12 @@ const AccessControl = () => {
     fetchBlockedUsers();
   }, []);
 
+  // Handle unblocking a user
   const handleUnblockUser = (userId) => {
     setBlockedUsers(blockedUsers.filter(user => user.id !== userId));
   };
 
+  // Filter users based on search term
   const filteredUsers = blockedUsers.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -41,14 +45,16 @@ const AccessControl = () => {
 
   return (
     <div className="p-24">
+      {/* Blocked Users List Section */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66] mb-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-[#212A31]">Blocked Users</h2>
+          {/* Search Input */}
           <div className="relative w-64">
             <input
               type="text"
               placeholder="Search users..."
-              className="w-full pl-10 pr-4 py-2 border border-[#124E66] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
+              className="w-full pl-10 pr-4 py-2 border border-[#124E66] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#000000]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -56,11 +62,14 @@ const AccessControl = () => {
           </div>
         </div>
 
+        {/* Loading State */}
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#124E66]"></div>
           </div>
-        ) : filteredUsers.length === 0 ? (
+        ) : 
+        /* Empty State */
+        filteredUsers.length === 0 ? (
           <div className="text-center py-10">
             <FaUserCheck className="mx-auto text-4xl text-[#124E66] mb-4" />
             <p className="text-lg text-[#212A31]">No blocked users found</p>
@@ -74,10 +83,10 @@ const AccessControl = () => {
             )}
           </div>
         ) : (
+          /* Users Table */
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-[#D3D9D2]">
               <thead className="bg-[#124E66]">
-
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#ffffff] uppercase tracking-wider">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#ffffff] uppercase tracking-wider">Email</th>
@@ -88,7 +97,6 @@ const AccessControl = () => {
                 </tr>
               </thead>
               <tbody className="bg-[#ffffff] divide-y divide-[#aec9ff]">
-
                 {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-[#eaf4ff]">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#212A31]">{user.name}</td>
@@ -112,9 +120,11 @@ const AccessControl = () => {
         )}
       </div>
 
+      {/* Block New User Form Section */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66]">
         <h2 className="text-xl font-semibold text-[#212A31] mb-4">Block New User</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* User Search */}
           <div>
             <label className="block text-sm font-medium text-[#212A31] mb-1">Search User</label>
             <div className="relative">
@@ -126,6 +136,8 @@ const AccessControl = () => {
               <FaSearch className="absolute left-3 top-3 text-[#124E66]" />
             </div>
           </div>
+          
+          {/* Blocking Reason */}
           <div>
             <label className="block text-sm font-medium text-[#212A31] mb-1">Reason for Blocking</label>
             <select className="w-full px-4 py-2 border border-[#124E66] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]">
@@ -136,6 +148,8 @@ const AccessControl = () => {
               <option value="other">Other</option>
             </select>
           </div>
+          
+          {/* Additional Notes */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-[#212A31] mb-1">Additional Notes</label>
             <textarea
@@ -144,6 +158,8 @@ const AccessControl = () => {
               placeholder="Add any additional details..."
             ></textarea>
           </div>
+          
+          {/* Submit Button */}
           <div className="md:col-span-2 flex justify-end">
             <button className="px-4 py-2 bg-[#124E66] text-white rounded-lg hover:bg-[#212A31] transition-colors flex items-center">
               <FaBan className="mr-2" /> Block User

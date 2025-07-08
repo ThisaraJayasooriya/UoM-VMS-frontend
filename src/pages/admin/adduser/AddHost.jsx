@@ -46,6 +46,8 @@ const AddHost = () => {
       if (field === "email" && value && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";
       if (field === "password" && value && !strongPasswordRegex.test(value)) {
         tempErrors[field] = "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.";
+      if (!admin.nicNumber?.trim()) tempErrors.nicNumber = "Nic Number is required";
+      
       }
     });
 
