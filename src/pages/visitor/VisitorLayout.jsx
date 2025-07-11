@@ -30,6 +30,10 @@ function VisitorLayout() {
     setSidebarVisible(false);
   };
 
+  const handleUserClick = () => {
+    navigate("/visitor/settings");
+  };
+
   const sidebarItems = [
     { icon: <FaTachometerAlt />, description: "Dashboard", route: "/visitor" },
     { icon: <FaCog />, description: "Settings", route: "/visitor/settings" },
@@ -42,6 +46,9 @@ function VisitorLayout() {
     if (location.pathname === "/visitor/editprofile") {
       return "Edit Profile"; // Set the title for the Edit Profile page
     }
+    if (location.pathname === "/visitor/settings") {
+      return "Settings"; // Set the title for the Settings page
+    }
   
     const currentItem = sidebarItems.find(item => 
       location.pathname === item.route || 
@@ -49,6 +56,9 @@ function VisitorLayout() {
     );
     return currentItem?.description || 'Dashboard';
   };
+
+  const selectedTitle = localStorage.getItem("name");
+
 
   return (
     <div className="h-screen w-full bg-white relative">
@@ -67,9 +77,10 @@ function VisitorLayout() {
           toggleSidebar={toggleSidebar}
           userName={userName || "Visitor"} 
           userRole="Visitor account"
-          type= {state.name}
+          type= {selectedTitle || "Dashboard"}
           pageTitle={getCurrentPageTitle()}
           pageSubtitle="Visitor"
+          onUserClick={handleUserClick} // Pass the handler to Headerbar
         />
 
       
