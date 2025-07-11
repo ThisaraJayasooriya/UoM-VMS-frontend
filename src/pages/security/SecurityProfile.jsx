@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaIdCard, FaEnvelope, FaPhone } from "react-icons/fa";
-import { fetchUserProfile } from "../../services/userProfileService"; // make sure path is correct
+import { fetchUserProfile } from "../../services/userProfileService"; 
 
 const SecurityProfile = () => {
   const [profile, setProfile] = useState(null);
