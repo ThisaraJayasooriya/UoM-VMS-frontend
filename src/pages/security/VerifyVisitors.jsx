@@ -30,6 +30,7 @@ const VerifyVisitors = () => {
   // Search for visitor when searchTerm changes
   useEffect(() => {
     const term = searchTerm.trim();
+    console.log("Searching for visitor with term:", term);
     if (term) {
       const fetchVisitor = async () => {
         try {
@@ -75,8 +76,8 @@ const VerifyVisitors = () => {
     setIsLoading(true);
     try {
       const endpoint = type === 'in'
-        ? `http://localhost:5000/api/verify-visitors/${filteredVisitor.visitorId}/checkin` 
-        : `http://localhost:5000/api/verify-visitors/${filteredVisitor.visitorId}/checkout`; 
+        ? `http://localhost:5000/api/verify-visitors/${filteredVisitor.appointmentId}/checkin` 
+        : `http://localhost:5000/api/verify-visitors/${filteredVisitor.appointmentId}/checkout`; 
       const response = await fetch(endpoint, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -119,8 +120,7 @@ const VerifyVisitors = () => {
   };
 
   return (
-    <div className="flex flex-col flex-1 pt-16 px-4 max-w-5xl mx-auto text-darkblue2">
-      
+    <div className="pt-20 px-4 lg:px-10 max-w-5xl mx-auto">
       {/* Alert */}
       {alert.show && (
         <div className={`mb-6 py-3 px-4 rounded-lg flex items-center justify-between ${
@@ -158,35 +158,35 @@ const VerifyVisitors = () => {
       )}
       
       {/* Search Box */}
-      <div className="bg-blue3 shadow-lg rounded-xl p-6 mb-8 border border-blue2/20">
-        <h2 className="text-xl font-semibold mb-5 text-center text-blue">Verify Visitor</h2>
-        <form onSubmit={(e) => e.preventDefault()} className="flex items-center gap-4 justify-center">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66] mb-8">
+        <h2 className="text-xl font-semibold mb-5 text-center text-[#212A31]">Verify Visitor</h2>
+        <div className="flex items-center gap-4 justify-center">
           <div className="relative w-full max-w-md">
             <input
               type="text"
               value={searchTerm}
               onChange={handleInputChange}
-              placeholder="Enter Visitor ID or NIC" // Updated placeholder
-              className="px-5 py-3 rounded-full border border-blue2/30 w-full focus:outline-none focus:ring-2 focus:ring-blue shadow-sm bg-white text-darkblue placeholder-customgray/70"
+              placeholder="Enter Appointment ID or NIC"
+              className="px-5 py-3 rounded-lg border border-[#124E66] w-full focus:outline-none focus:ring-2 focus:ring-[#124E66] shadow-sm bg-white text-[#212A31] placeholder-gray-500"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-customgray hover:text-darkblue text-xl font-bold"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#124E66] text-xl font-bold"
               >
                 ×
               </button>
             )}
           </div>
-        </form>
+        </div>
       </div>
 
       {/* Visitor Card */}
       {filteredVisitor && (
-        <div className="bg-white shadow-md rounded-xl p-6 mb-8 border border-blue3 transition-all duration-300 ease-in-out">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66] mb-8 transition-all duration-300">
           <div className="flex justify-between items-center mb-5">
-            <h3 className="text-lg font-semibold text-blue">Visitor Details</h3>
+            <h3 className="text-lg font-semibold text-[#212A31]">Visitor Details</h3>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               filteredVisitor.status === 'Checked-In' 
                 ? 'bg-green-100 text-green-700' 
@@ -199,25 +199,22 @@ const VerifyVisitors = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
             <div className="flex flex-col">
-              <span className="text-sm text-customgray">Name</span>
-              <span className="font-medium text-darkblue">{filteredVisitor.name}</span>
+              <span className="text-sm text-gray-500">Name</span>
+              <span className="font-medium text-[#212A31]">{filteredVisitor.name}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-sm text-customgray">Visitor ID</span> {/* Updated label */}
-              <span className="font-medium text-darkblue">{filteredVisitor.visitorId}</span> 
+              <span className="text-sm text-gray-500">Visitor ID</span>
+              <span className="font-medium text-[#212A31]">{filteredVisitor.visitorId}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-sm text-customgray">NIC</span>
-              <span className="font-medium text-darkblue">{filteredVisitor.nic}</span>
+              <span className="text-sm text-gray-500">NIC</span>
+              <span className="font-medium text-[#212A31]">{filteredVisitor.nic}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-sm text-customgray">Vehicle Number</span>
-              <span className="font-medium text-darkblue">{filteredVisitor.vehicleNumber || "N/A"}</span>
+              <span className="text-sm text-gray-500">Vehicle Number</span>
+              <span className="font-medium text-[#212A31]">{filteredVisitor.vehicleNumber}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-customgray">Host</span>
-              <span className="font-medium text-darkblue">{filteredVisitor.host}</span>
-            </div>
+            
           </div>
         </div>
       )}
@@ -226,14 +223,14 @@ const VerifyVisitors = () => {
       <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
         <button
           onClick={() => handleAction('in')}
-          className="bg-blue hover:bg-blue/90 text-white px-8 py-3 rounded-lg shadow-md transition-all duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+          className="bg-[#124E66] hover:bg-[#212A31] text-white px-8 py-3 rounded-lg transition-all duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed border border-[#124E66]"
           disabled={isLoading || (filteredVisitor?.status === 'Checked-In')}
         >
           {isLoading ? 'Processing...' : 'Check-In Visitor'}
         </button>
         <button
           onClick={() => handleAction('out')}
-          className="bg-blue2 hover:bg-blue2/90 text-white px-8 py-3 rounded-lg shadow-md transition-all duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+          className="bg-[#124E66] hover:bg-[#212A31] text-white px-8 py-3 rounded-lg transition-all duration-200 font-medium disabled:opacity-60 disabled:cursor-not-allowed border border-[#124E66]"
           disabled={isLoading || (filteredVisitor?.status === 'Checked-Out')}
         >
           {isLoading ? 'Processing...' : 'Check-Out Visitor'}
@@ -241,27 +238,27 @@ const VerifyVisitors = () => {
       </div>
 
       {/* Recent Activities */}
-      <div className="bg-blue3 shadow-md rounded-xl p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-5 text-blue flex items-center">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66]">
+        <h3 className="text-lg font-semibold mb-5 text-[#212A31] flex items-center">
           <span className="mr-2">Recent Activities</span>
           {activities.length > 0 && (
-            <span className="bg-blue text-white text-xs rounded-full px-2 py-1">
+            <span className="bg-[#124E66] text-white text-xs rounded-full px-2 py-1">
               {activities.length}
             </span>
           )}
         </h3>
         {activities.length === 0 ? (
-          <div className="text-center py-8 text-customgray">
+          <div className="text-center py-8 text-gray-500">
             <p>No recent activity recorded</p>
           </div>
         ) : (
           <ul className="space-y-3 max-h-72 overflow-y-auto pr-1">
             {activities.map((activity, index) => (
-              <li key={index} className="bg-white p-4 rounded-lg border border-blue2/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <li key={index} className="bg-blue-50 p-4 rounded-lg border border-[#124E66] shadow-sm hover:bg-blue-100 transition-colors duration-200">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium text-darkblue">{activity.name}</p>
-                    <p className="text-xs text-customgray mt-1">ID: {activity.visitorId}</p> 
+                    <p className="font-medium text-[#212A31]">{activity.name}</p>
+                    <p className="text-xs text-gray-500 mt-1">ID: {activity.visitorId}</p>
                   </div>
                   <span className={`text-xs px-3 py-1 rounded-full font-medium ${
                     activity.action === 'Checked-In'
@@ -271,7 +268,7 @@ const VerifyVisitors = () => {
                     {activity.action}
                   </span>
                 </div>
-                <p className="text-xs text-customgray mt-2 italic">{formatTime(activity.timestamp)}</p>
+                <p className="text-xs text-gray-500 mt-2 italic">{formatTime(activity.timestamp)}</p>
               </li>
             ))}
           </ul>
