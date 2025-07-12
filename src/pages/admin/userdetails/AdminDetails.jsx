@@ -3,7 +3,7 @@ import { FiSearch, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight, FiArrowLeft
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-//Main Component Definition
+// Main Component Definition
 const AdminDetails = () => {
   const [adminList, setAdminList] = useState([]);
   const [editAdmin, setEditAdmin] = useState(null);
@@ -12,12 +12,14 @@ const AdminDetails = () => {
   const recordsPerPage = 5;
   const navigate = useNavigate();
 
-  //Data Fetching
+  // Data Fetching
   const fetchAdmins = async () => {
     try {
+      // Fetching admin data from the API
       const res = await fetch("http://localhost:5000/api/staff/admin");
       if (!res.ok) throw new Error("Failed to fetch admins");
       const data = await res.json();
+      // Updates the adminList state with the fetched data
       setAdminList(data);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -26,10 +28,10 @@ const AdminDetails = () => {
   };
 
   useEffect(() => {
-    fetchAdmins();
+    fetchAdmins(); // Runs the code when component mounts
   }, []);
 
-// Data Filtering and Pagination
+  // Data Filtering and Pagination logic
   const filteredAdmins = adminList.filter((admin) =>
     admin.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -47,17 +49,17 @@ const AdminDetails = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
-  // Phone Number Formatting
+  // Phone Number Formatting function to display
   const formatPhone = (phone) => {
     if (!phone) return "-";
-    const cleaned = phone.replace(/\D/g, ""); //Removes all non-digit characters
+    const cleaned = phone.replace(/\D/g, ""); // Removes all non-digit characters
     if (cleaned.length === 9) {
       return `+94 ${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5)}`;
     }
     return phone;
   };
- 
-  // Email Formatting
+
+  // Email Formatting function to display
   const formatEmail = (email) => {
     if (!email) return "-";
     return email.toLowerCase();
@@ -70,12 +72,13 @@ const AdminDetails = () => {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editAdmin),
+        // Sends a PUT request to update the admin with the specified ID, sending the updated editAdmin data
       });
 
       if (res.ok) {
         toast.success("Admin updated successfully!");
         setEditAdmin(null);
-        fetchAdmins(); 
+        fetchAdmins();
       } else {
         throw new Error("Failed to update admin");
       }
@@ -89,12 +92,11 @@ const AdminDetails = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this admin?")) return;
     try {
-
       const res = await fetch(`http://localhost:5000/api/staff/${id}`, { method: "DELETE" });
       if (res.ok) {
         toast.success("Admin deleted successfully!");
-        fetchAdmins();
-        setCurrentPage(1);
+        fetchAdmins(); // Refetches the admin list to reflect the deletion
+        setCurrentPage(1); // Resets to the first page to avoid pagination issues
       } else {
         throw new Error("Failed to delete admin");
       }
@@ -118,7 +120,6 @@ const AdminDetails = () => {
   return (
     <div className="pt-5 px-4 lg:px-2 min-h-screen bg-[#FFFFFF]">
       <div className="max-w-full mx-auto">
-
         {/* Search input and Add New Admin button */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <div className="relative w-full sm:w-80">
@@ -137,7 +138,8 @@ const AdminDetails = () => {
           <button
             onClick={handleAddNewAdmin}
             className="flex items-center gap-2 bg-[#124E66] text-[#FFFFFF] px-4 py-2 rounded-lg hover:bg-[#0e3a4f] transition shadow-sm hover:shadow-md"
-            aria-label="Add New Admin">
+            aria-label="Add New Admin"
+          >
             <FiPlus /> Add New Admin
           </button>
         </div>
@@ -152,12 +154,14 @@ const AdminDetails = () => {
                   <th key={idx} className="py-3 px-4 font-medium whitespace-nowrap">{heading}</th>
                 ))}
               </tr>
+              {/* Renders table headers dynamically. */}
             </thead>
             <tbody>
               {currentRecords.map((admin, idx) => {
                 const globalIndex = indexOfFirstRecord + idx + 1;
                 return (
                   <tr key={admin._id} className="bg-[#E8EAEC] border-t border-[#C4C9CE] hover:bg-[#C4C9CE] transition">
+                    {/* Table row for each admin, with hover effect. */}
                     <td className="py-3 px-4 whitespace-nowrap">{globalIndex}</td>
                     <td className="py-3 px-4 whitespace-nowrap">{admin.userID || "-"}</td>
                     <td className="py-3 px-4 whitespace-nowrap">{admin.username || "-"}</td>
@@ -167,8 +171,7 @@ const AdminDetails = () => {
                     <td className="py-3 px-4 whitespace-nowrap">{admin.nicNumber || "-"}</td>
                     <td className="py-3 px-4 whitespace-nowrap">{admin.registeredDate || "-"}</td>
                     <td className="py-3 px-4 whitespace-nowrap space-x-2">
-
-                       {/* Edit and Delete buttons */}
+                      {/* Edit and Delete buttons in the table */}
                       <button
                         onClick={() => setEditAdmin(admin)}
                         className="p-2 bg-[#1d4756] hover:bg-[#5d8696] text-[#FFFFFF] rounded-full transition"
@@ -239,7 +242,7 @@ const AdminDetails = () => {
       {editAdmin && (
         <EditAdminForm
           title="Edit Admin"
-          fields={["userID", "username", "name", "email", "phone", "nicNumber"]}
+          fields={["username", "name", "email", "phone", "nicNumber"]} // Removed userID from editable fields
           data={editAdmin}
           setData={setEditAdmin}
           onSubmit={handleEditSubmit}
@@ -261,13 +264,12 @@ const EditAdminForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
     fields.forEach((field) => {
       const value = data[field] || "";
 
-      if (["userID", "username", "name", "email", "phone"].includes(field)) {
+      if (["username", "name", "email", "phone"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
 
-      if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
       if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
       if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
       if (field === "phone" && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
@@ -284,7 +286,7 @@ const EditAdminForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
     if (Object.keys(tempErrors).length === 0) {
       onSubmit();
     }
-  };
+  }; // Handles form submission, validates the form, and calls the onSubmit prop if there are no errors
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
@@ -327,6 +329,18 @@ const EditAdminForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
                 )}
               </div>
             ))}
+            {/* Display userID as read-only */}
+            <div>
+              <label className="block mb-1 text-sm font-medium text-[#4B5563] capitalize">
+                User ID
+              </label>
+              <input
+                type="text"
+                value={data.userID || "-"}
+                className="w-full p-3 border rounded-md shadow-sm bg-[#E5E7EB] text-[#6B7280] cursor-not-allowed"
+                readOnly
+              />
+            </div>
           </div>
 
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">

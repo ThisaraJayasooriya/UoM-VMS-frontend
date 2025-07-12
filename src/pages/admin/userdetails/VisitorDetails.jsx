@@ -4,13 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const VisitorDetails = () => {
-  const [visitorList, setVisitorList] = useState([]);
-  const [editVisitor, setEditVisitor] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 5;
+  // State management
+  const [visitorList, setVisitorList] = useState([]); // Stores fetched visitor data
+  const [editVisitor, setEditVisitor] = useState(null); // Tracks visitor being edited
+  const [searchQuery, setSearchQuery] = useState(""); // Search input value
+  const [currentPage, setCurrentPage] = useState(1); // Pagination current page
+  const recordsPerPage = 5; // Items per page
   const navigate = useNavigate();
 
+  // Fetch visitors from API
   const fetchVisitors = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/visitor");
@@ -38,19 +40,23 @@ const VisitorDetails = () => {
     }
   };
 
+  // Fetch data on component mount
   useEffect(() => {
     fetchVisitors();
   }, []);
 
+  // Filter visitors based on search query
   const filteredVisitors = visitorList.filter((v) =>
     v.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Pagination calculations
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = filteredVisitors.slice(indexOfFirstRecord, indexOfLastRecord);
   const totalPages = Math.ceil(filteredVisitors.length / recordsPerPage);
 
+  // Navigation handlers
   const goToNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
@@ -59,6 +65,7 @@ const VisitorDetails = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
+  // Format phone number for display
   const formatPhone = (phone) => {
     if (!phone) return "-";
     const cleaned = phone.replace(/\D/g, "");
@@ -68,11 +75,13 @@ const VisitorDetails = () => {
     return phone;
   };
 
+  // Format email for display
   const formatEmail = (email) => {
     if (!email) return "-";
     return email.toLowerCase();
   };
 
+  // Handle visitor edit submission
   const handleEditSubmit = async () => {
     const [firstName, lastName] = editVisitor.name.split(" ", 2);
     try {
@@ -102,6 +111,7 @@ const VisitorDetails = () => {
     }
   };
 
+  // Handle visitor deletion
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this visitor?")) return;
     try {
@@ -122,6 +132,7 @@ const VisitorDetails = () => {
   return (
     <div className="pt-5 px-4 lg:px-2 min-h-screen bg-[#FFFFFF]">
       <div className="max-w-full mx-auto">
+        {/* Search Bar */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <div className="relative w-full sm:w-80">
             <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#6B7280]" />
@@ -136,6 +147,7 @@ const VisitorDetails = () => {
           </div>
         </div>
 
+        {/* Visitor Table */}
         <div className="bg-[#D5D8DC] p-6 rounded-xl shadow-lg overflow-x-auto">
           <h3 className="text-xl font-semibold mb-4 text-[#1F2937]">Visitor Details Management</h3>
           <table className="w-full text-sm text-left text-[#374151]">
@@ -146,7 +158,7 @@ const VisitorDetails = () => {
                     key={idx}
                     className="py-2 px-2 font-medium whitespace-nowrap"
                     style={{
-                      width: idx === 0 ? "5%" : idx === 8 ? "10%" : `${90 / 8}%`, // Distribute 90% width across 8 columns (excluding # and Actions)
+                      width: idx === 0 ? "5%" : idx === 8 ? "10%" : `${90 / 8}%`,
                     }}
                   >
                     {heading}
@@ -191,6 +203,7 @@ const VisitorDetails = () => {
             </tbody>
           </table>
 
+          {/* Pagination Controls */}
           <div className="flex justify-between items-center mt-6">
             <button
               onClick={() => window.history.back()}
@@ -233,6 +246,7 @@ const VisitorDetails = () => {
         </div>
       </div>
 
+      {/* Edit Modal */}
       {editVisitor && (
         <ModalForm
           title="Edit Visitor"
@@ -247,6 +261,7 @@ const VisitorDetails = () => {
   );
 };
 
+// Form validation helper
 const validateForm = (fields, data) => {
   let tempErrors = {};
   const phoneRegex = /^[0-9]{9}$/;
@@ -271,6 +286,7 @@ const validateForm = (fields, data) => {
   return tempErrors;
 };
 
+// Reusable Modal Component
 const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   const [errors, setErrors] = useState({});
 

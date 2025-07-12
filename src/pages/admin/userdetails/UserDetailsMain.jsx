@@ -80,6 +80,7 @@ const UserDetailsMain = () => {
                 <div className="flex flex-col items-center text-center text-white h-full">
                   {/* Icon and secondary badge */}
                   <div className="relative mb-6">
+                  
                     <div className="bg-[#124E66] p-4 rounded-full group-hover:bg-[#2E6B82] transition-all">
                       {card.icon}
                     </div>
