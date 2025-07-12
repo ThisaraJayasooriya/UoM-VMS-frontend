@@ -1,6 +1,6 @@
 import { FaBars, FaBell, FaEnvelope, FaUserCircle } from "react-icons/fa";
 
-function Headerbar({ toggleSidebar, userName, userRole, pageTitle, pageSubtitle, type }) {
+function Headerbar({ toggleSidebar, userName, userRole, pageTitle, pageSubtitle, type, onUserClick}) {
   return (
     <div className="w-full h-30 bg-gradient-to-r from-darkblue to-blue text-white p-8">
       <div className="flex justify-between">
@@ -17,7 +17,7 @@ function Headerbar({ toggleSidebar, userName, userRole, pageTitle, pageSubtitle,
             {/* Notification Dot */}
             <span className="absolute top-0 right-0 bg-red-500 w-2.5 h-2.5 rounded-full"></span>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer  hover:bg-opacity-20 p-2 rounded-lg transition-colors" onClick={onUserClick}>
             <FaUserCircle className="text-xl" />
             <div>
               <p className="text-sm font-semibold">{userName}</p>

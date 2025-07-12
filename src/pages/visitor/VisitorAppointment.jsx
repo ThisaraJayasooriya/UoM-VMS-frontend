@@ -101,7 +101,6 @@ function VisitorAppointment() {
             onChange={(e) => setContact(e.target.value)}
             className="p-3 rounded-lg bg-gray-200 outline-none w-full"
           />
-
           {/* Host */}
           <select
             onChange={(e) => sethostId(e.target.value)}

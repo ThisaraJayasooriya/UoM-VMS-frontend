@@ -5,67 +5,53 @@ import { VscFeedback } from "react-icons/vsc";
 
 function VisitorDashboard() {
   const [userName, setUserName] = useState("");
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userData"));
-    if (storedUser && storedUser.username) {
+    if (storedUser?.username) {
       setUserName(storedUser.username);
     }
   }, []);
 
-  const navigate = useNavigate();
-
-  const handleAppointmentClick = () => {
-    navigate("/visitor/appointment");
+  // 🔁 Generic click handler
+  const handleCardClick = (title, path) => {
+    localStorage.setItem("name", title);
+    navigate(path);
   };
+   localStorage.setItem("name", "Dashboard");
 
-  const handleHistoryClick = () => {
-    navigate("/visitor/history");
-  };
-
-  const handleUpcommingClick = () => {
-    navigate("/visitor/Status");
-  };
-
-  const handleFeedbackClick = () => {
-    navigate("/visitor/feedback");
-  };
-
-  const handleHostAvailableTimeClick = () => {
-    navigate("/visitor/HostAvailableTime");
-  };
-
+  // 💡 Dashboard items
   const dashboardCards = [
     {
       id: 1,
       title: "Make an Appointment",
       icon: <FaRegCalendarAlt className="text-blue-500 text-4xl" />,
-      action: handleAppointmentClick,
+      path: "/visitor/appointment",
     },
     {
       id: 2,
       title: "Host Available Time Slot",
       icon: <FaClock className="text-green-500 text-4xl" />,
-      action: handleHostAvailableTimeClick,
+      path: "/visitor/HostAvailableTime",
     },
     {
       id: 3,
       title: "Visit History",
       icon: <FaHistory className="text-yellow-500 text-4xl" />,
-      action: handleHistoryClick,
+      path: "/visitor/history",
     },
     {
       id: 4,
       title: "Provide Feedback",
       icon: <VscFeedback className="text-pink-500 text-4xl" />,
-      action: handleFeedbackClick,
+      path: "/visitor/feedback",
     },
     {
       id: 5,
       title: "Appointment Status",
       icon: <FaShareSquare className="text-purple-500 text-4xl" />,
-      action: handleUpcommingClick,
+      path: "/visitor/Status",
     },
   ];
 
@@ -80,7 +66,7 @@ function VisitorDashboard() {
         {dashboardCards.map((card) => (
           <div
             key={card.id}
-            onClick={card.action}
+            onClick={() => handleCardClick(card.title, card.path)}
             className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex flex-col items-center text-center cursor-pointer group hover:scale-105"
           >
             <div className="w-20 h-20 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center mb-5 group-hover:border-blue2 transition-colors duration-300">

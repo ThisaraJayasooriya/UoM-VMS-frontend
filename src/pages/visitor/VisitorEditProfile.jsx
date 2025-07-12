@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import profilePhoto from "../../assets/profile.jpeg"; // Default profile photo
 
 function VisitorEditProfile() {
   const [selectedPhoto, setSelectedPhoto] = useState(profilePhoto); // State to store the selected photo
+
+  useEffect(() => {
+    // Set the page name for the header
+    localStorage.setItem("name", "Edit Profile");
+  }, []);
 
   const handlePhotoChange = (event) => {
     const file = event.target.files[0];
