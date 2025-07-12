@@ -5,12 +5,12 @@ import { toast } from "react-toastify";
 const AddAdmin = () => {
   // Manage form state for admin details
   const [admin, setAdmin] = useState({
-    userID: "",
     username: "",
     name: "",
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
     nicNumber: "",
   });
   const [errors, setErrors] = useState({});
@@ -18,7 +18,7 @@ const AddAdmin = () => {
   const navigate = useNavigate();
 
   // Define the fields to be rendered and validated
-  const fields = ["userID", "username", "name", "email", "phone", "password", "confirmpassword", "nicNumber"];
+  const fields = ["username", "name", "email", "phone", "password","confirmPassword", "nicNumber"];
 
   // Function to validate form input values
   const validateForm = (data) => {
@@ -33,23 +33,24 @@ const AddAdmin = () => {
       const value = data[field] || "";
 
       // Check required fields
-      if (["userID", "username", "name", "email", "phone", "password"].includes(field)) {
+      if (["username", "name", "email", "phone", "password","confirmPassword"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
+        if (field === "confirmPassword" && value && data.password !== value) {
+         tempErrors[field] = "Passwords do not match";
+        }
 
       // Specific validations
-       if (!admin.userID?.trim()) tempErrors.userID = "User ID is required";
-        if (!admin.username?.trim()) tempErrors.username = "Username is required";
-        if (!admin.name?.trim()) tempErrors.name = "Name is required";
-        if (!admin.email?.trim()) tempErrors.email = "Email is required";
-        if (!admin.phone?.trim()) tempErrors.phone = "Phone is required";
-        if (!admin.password?.trim()) tempErrors.password = "Password is required";
-        
-        if (!admin.nicNumber?.trim()) tempErrors.nicNumber = "Nic Number is required";
-        setErrors(tempErrors);
-        return Object.keys(tempErrors).length === 0;
+      if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
+      if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
+      if (field === "phone" && value && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
+      if (field === "email" && value && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";
+      if (field === "password" && value && !strongPasswordRegex.test(value)) {
+        tempErrors[field] = "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.";
+      }
+      if (field === "nicNumber" && !value.trim()) tempErrors[field] = "NIC Number is required";
     });
 
     return tempErrors;
@@ -72,7 +73,7 @@ const AddAdmin = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...admin,
-            role: "admin", // Set role as admin 
+            role: "admin", // Set role as admin
             registeredDate: new Date().toLocaleString(),
           }),
         });
@@ -128,10 +129,7 @@ const AddAdmin = () => {
         </div>
 
         {/* Form body */}
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]"
-        >
+        <form onSubmit={handleSubmit} className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]">
           {/* Render each form input */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map((field) => (
@@ -140,7 +138,7 @@ const AddAdmin = () => {
                   {field} <span className="text-[#EF4444]">*</span>
                 </label>
                 <input
-                  type={field === "password" || "confirmpassword"? "password" : "text"}
+                  type={field === "password" || field === "confirmPassword" ? "password" : "text"}
                   name={field}
                   value={admin[field] || ""}
                   placeholder={`Enter ${field}`}

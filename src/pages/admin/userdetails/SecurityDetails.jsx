@@ -33,7 +33,7 @@ const SecurityDetails = () => {
   const filteredSecurity = securityList.filter((sec) =>
     sec.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-// Pagination logic
+  // Pagination logic
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = filteredSecurity.slice(indexOfFirstRecord, indexOfLastRecord);
@@ -65,7 +65,7 @@ const SecurityDetails = () => {
   // Function to handle submission of edited security user
   const handleEditSubmit = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/staff/${editSecurity._id}`, { 
+      const res = await fetch(`http://localhost:5000/api/staff/${editSecurity._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editSecurity),
@@ -158,7 +158,7 @@ const SecurityDetails = () => {
                 ))}
               </tr>
             </thead>
-          
+
             <tbody>
               {currentRecords.map((sec, idx) => {
                 const globalIndex = indexOfFirstRecord + idx + 1;
@@ -173,7 +173,6 @@ const SecurityDetails = () => {
                     <td className="py-2 px-2 whitespace-nowrap">{sec.nicNumber || "-"}</td>
                     <td className="py-2 px-2 whitespace-nowrap">{sec.registeredDate || "-"}</td>
                     <td className="py-2 px-2 whitespace-nowrap space-x-2">
-
                       {/* Action buttons for editing and deleting security user */}
                       <button
                         onClick={() => setEditSecurity(sec)}
@@ -245,7 +244,7 @@ const SecurityDetails = () => {
       {editSecurity && (
         <EditSecurityForm
           title="Edit Security"
-          fields={["userID", "username", "name", "email", "phone", "nicNumber"]}
+          fields={["username", "name", "email", "phone", "nicNumber"]} // Removed userID from editable fields
           data={editSecurity}
           setData={setEditSecurity}
           onSubmit={handleEditSubmit}
@@ -264,13 +263,12 @@ const validateForm = (fields, data) => {
   fields.forEach((field) => {
     const value = data[field] || "";
 
-    if (["userID", "username", "name", "email", "phone"].includes(field)) {
+    if (["username", "name", "email", "phone"].includes(field)) {
       if (!value.trim()) {
         tempErrors[field] = "This field is required";
       }
     }
 
-    if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
     if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
     if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
     if (field === "phone" && value && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
@@ -279,10 +277,10 @@ const validateForm = (fields, data) => {
 
   return tempErrors;
 };
-{/* Edit Security Form Component */}
+// Edit Security Form Component
 const EditSecurityForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   const [errors, setErrors] = useState({});
-{/* Validate form fields on mount and when data changes */}
+  // Validate form fields on mount and when data changes
   const handleSubmit = (e) => {
     e.preventDefault();
     const tempErrors = validateForm(fields, data);
@@ -308,6 +306,7 @@ const EditSecurityForm = ({ title, fields, data, setData, onSubmit, onClose }) =
 
         <form onSubmit={handleSubmit} className="p-6 bg-[#F9FAFB]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Render input fields dynamically based on provided fields */}
             {fields.map((field) => (
               <div key={field}>
                 <label className="block mb-1 text-sm font-medium text-[#4B5563] capitalize">
@@ -333,6 +332,18 @@ const EditSecurityForm = ({ title, fields, data, setData, onSubmit, onClose }) =
                 )}
               </div>
             ))}
+            {/* Display userID as read-only */}
+            <div>
+              <label className="block mb-1 text-sm font-medium text-[#4B5563] capitalize">
+                User ID
+              </label>
+              <input
+                type="text"
+                value={data.userID || "-"}
+                className="w-full p-3 border rounded-md shadow-sm bg-[#E5E7EB] text-[#6B7280] cursor-not-allowed"
+                readOnly
+              />
+            </div>
           </div>
 
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">

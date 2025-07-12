@@ -5,12 +5,12 @@ import { toast } from "react-toastify";
 const AddSecurity = () => {
   // Form state for security details
   const [security, setSecurity] = useState({
-    userID: "",
     username: "",
     name: "",
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "", // New state for confirm password
     nicNumber: "",
   });
   // State for form validation errors and loading state
@@ -18,7 +18,7 @@ const AddSecurity = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const fields = ["userID", "username", "name", "email", "phone", "password", "nicNumber"];
+  const fields = ["username", "name", "email", "phone", "password", "confirmPassword", "nicNumber"]; // Added confirmPassword
 
   const validateForm = (data) => {
     // Initialize an object to hold validation errors
@@ -31,13 +31,12 @@ const AddSecurity = () => {
       const value = data[field] || "";
 
       // Check if the field is required and not empty
-      if (["userID", "username", "name", "email", "phone", "password"].includes(field)) {
+      if (["username", "name", "email", "phone", "password", "confirmPassword"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
 
-      if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
       if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
       if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
       if (field === "phone" && value && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
@@ -45,6 +44,10 @@ const AddSecurity = () => {
       if (field === "password" && value && !strongPasswordRegex.test(value)) {
         tempErrors[field] = "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.";
       }
+      if (field === "confirmPassword" && value && data.password !== value) {
+        tempErrors[field] = "Passwords do not match";
+      }
+      if (field === "nicNumber" && !value.trim()) tempErrors[field] = "NIC Number is required";
     });
 
     return tempErrors;
@@ -114,20 +117,17 @@ const AddSecurity = () => {
             ×
           </button>
         </div>
-         {/* Form body */}
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]"
-        >
+        {/* Form body */}
+        <form onSubmit={handleSubmit} className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             {/* Dynamically render inputs for each field */}
+            {/* Dynamically render inputs for each field */}
             {fields.map((field) => (
               <div key={field}>
                 <label className="block mb-1 text-sm font-medium text-[#374151] capitalize">
                   {field} <span className="text-[#EF4444]">*</span>
                 </label>
                 <input
-                  type={field === "password" ? "password" : "text"}
+                  type={field === "password" || field === "confirmPassword" ? "password" : "text"} // Updated for confirmPassword
                   name={field}
                   value={security[field] || ""}
                   placeholder={`Enter ${field}`}
@@ -142,7 +142,7 @@ const AddSecurity = () => {
                   aria-describedby={errors[field] ? `error-${field}` : undefined}
                   disabled={isLoading}
                 />
-                 {/* Field-level error message */}
+                {/* Field-level error message */}
                 {errors[field] && (
                   <p id={`error-${field}`} className="text-[#EF4444] text-sm mt-1">
                     {errors[field]}

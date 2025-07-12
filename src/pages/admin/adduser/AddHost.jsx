@@ -5,12 +5,12 @@ import { toast } from "react-toastify";
 const AddHost = () => {
   // State for form input fields
   const [host, setHost] = useState({
-    userID: "",
     username: "",
     name: "",
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "", // New state for confirm password
     nicNumber: "",
     faculty: "",
     department: "",
@@ -19,9 +19,9 @@ const AddHost = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const fields = ["userID", "username", "name", "email", "phone", "password", "nicNumber", "faculty", "department"];
+  const fields = ["username", "name", "email", "phone", "password", "confirmPassword", "nicNumber", "faculty", "department"]; // Added confirmPassword
 
-   // Form validation function
+  // Form validation function
   const validateForm = (data) => {
     let tempErrors = {};
     const phoneRegex = /^[0-9]{9}$/;
@@ -31,23 +31,23 @@ const AddHost = () => {
     fields.forEach((field) => {
       const value = data[field] || "";
 
-       // Check required fields
-      if (["userID", "username", "name", "email", "phone", "password", "faculty", "department"].includes(field)) {
+      // Check required fields
+      if (["username", "name", "email", "phone", "password", "confirmPassword", "faculty", "department"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
 
       // Additional field-specific validations
-      if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
       if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
       if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
       if (field === "phone" && value && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
       if (field === "email" && value && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";
       if (field === "password" && value && !strongPasswordRegex.test(value)) {
         tempErrors[field] = "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.";
-      if (!admin.nicNumber?.trim()) tempErrors.nicNumber = "Nic Number is required";
-      
+      }
+      if (field === "confirmPassword" && value && data.password !== value) {
+        tempErrors[field] = "Passwords do not match";
       }
     });
 
@@ -59,8 +59,7 @@ const AddHost = () => {
     const tempErrors = validateForm(host);
     setErrors(tempErrors);
 
-
-  // If no validation errors, proceed to submit data
+    // If no validation errors, proceed to submit data
     if (Object.keys(tempErrors).length === 0) {
       setIsLoading(true);
       try {
@@ -99,8 +98,8 @@ const AddHost = () => {
     setHost((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "", general: "" }));
   };
- 
-   // Cancel and go back to host list
+
+  // Cancel and go back to host list
   const handleCancel = () => {
     navigate("/admin/userdetails/host");
   };
@@ -121,10 +120,7 @@ const AddHost = () => {
         </div>
 
         {/* Form Section */}
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]"
-        >
+        <form onSubmit={handleSubmit} className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map((field) => (
               <div key={field}>
@@ -132,7 +128,7 @@ const AddHost = () => {
                   {field} <span className="text-[#EF4444]">*</span>
                 </label>
                 <input
-                  type={field === "password" ? "password" : "text"}
+                  type={field === "password" || field === "confirmPassword" ? "password" : "text"} // Updated for confirmPassword
                   name={field}
                   value={host[field] || ""}
                   placeholder={`Enter ${field}`}
