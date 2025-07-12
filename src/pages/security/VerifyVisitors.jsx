@@ -76,8 +76,8 @@ const VerifyVisitors = () => {
     setIsLoading(true);
     try {
       const endpoint = type === 'in'
-        ? `http://localhost:5000/api/verify-visitors/${filteredVisitor.visitorId}/checkin` 
-        : `http://localhost:5000/api/verify-visitors/${filteredVisitor.visitorId}/checkout`; 
+        ? `http://localhost:5000/api/verify-visitors/${filteredVisitor.appointmentId}/checkin` 
+        : `http://localhost:5000/api/verify-visitors/${filteredVisitor.appointmentId}/checkout`; 
       const response = await fetch(endpoint, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -166,7 +166,7 @@ const VerifyVisitors = () => {
               type="text"
               value={searchTerm}
               onChange={handleInputChange}
-              placeholder="Enter Visitor ID or NIC"
+              placeholder="Enter Appointment ID or NIC"
               className="px-5 py-3 rounded-lg border border-[#124E66] w-full focus:outline-none focus:ring-2 focus:ring-[#124E66] shadow-sm bg-white text-[#212A31] placeholder-gray-500"
             />
             {searchTerm && (
@@ -212,12 +212,9 @@ const VerifyVisitors = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-gray-500">Vehicle Number</span>
-              <span className="font-medium text-[#212A31]">{filteredVisitor.vehicleNumber || "N/A"}</span>
+              <span className="font-medium text-[#212A31]">{filteredVisitor.vehicleNumber}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500">Host</span>
-              <span className="font-medium text-[#212A31]">{filteredVisitor.host}</span>
-            </div>
+            
           </div>
         </div>
       )}
