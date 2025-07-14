@@ -38,8 +38,7 @@ export const getAllHosts = async () => {
       },
     });
     
-    // Directly return the host data from the backend
-    // Assuming backend now provides faculty and department information
+    // Return the host data from the backend with faculty and department info
     return response.data;
   } catch (error) {
     console.error("Error fetching hosts:", error);
@@ -75,6 +74,25 @@ export const getDepartmentsByFaculty = async (faculty) => {
     // Fallback to static data if the API fails
     console.log("Using fallback department data");
     return faculty && facultyDepartmentStructure[faculty] ? facultyDepartmentStructure[faculty] : [];
+  }
+};
+
+// Function to get hosts by faculty and department
+export const getHostsByFacultyAndDepartment = async (faculty, department) => {
+  try {
+    const facultyParam = faculty || 'all';
+    const departmentParam = department || 'all';
+    
+    const response = await axios.get(`${API_BASE_URL}/hosts/${facultyParam}/${departmentParam}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching hosts by faculty and department:", error);
+    throw error;
   }
 };
 

@@ -4,7 +4,8 @@ import {
   makeAppointment, 
   getAllHosts, 
   getAllFaculties, 
-  getDepartmentsByFaculty 
+  getDepartmentsByFaculty,
+  getHostsByFacultyAndDepartment
 } from "../../services/appoinment.api.js";
 
 function VisitorAppointment() {
@@ -48,9 +49,9 @@ function VisitorAppointment() {
     loadInitialData();
   }, []);
   
-  // Handle faculty selection - load departments for that faculty
+  // Handle faculty selection - load departments and filter hosts
   useEffect(() => {
-    const loadDepartments = async () => {
+    const loadDepartmentsAndFilterHosts = async () => {
       if (selectedFaculty) {
         try {
           // Reset department and host selection
@@ -61,41 +62,51 @@ function VisitorAppointment() {
           const departmentsList = await getDepartmentsByFaculty(selectedFaculty);
           setDepartments(departmentsList);
           
-          // Filter hosts by faculty
-          const hostsInFaculty = hosts.filter(host => host.faculty === selectedFaculty);
+          // Get hosts filtered by faculty only
+          const hostsInFaculty = await getHostsByFacultyAndDepartment(selectedFaculty, null);
           setFilteredHosts(hostsInFaculty);
         } catch (error) {
-          console.error("Failed to load departments:", error);
+          console.error("Failed to load departments and filter hosts:", error);
         }
       } else {
         // Reset everything if no faculty is selected
         setDepartments([]);
         setFilteredHosts(hosts);
+        setSelectedDepartment("");
         sethostId("");
       }
     };
     
-    loadDepartments();
+    loadDepartmentsAndFilterHosts();
   }, [selectedFaculty, hosts]);
   
-  // Handle department selection - filter hosts by department
+  // Handle department selection - filter hosts by both faculty and department
   useEffect(() => {
-    if (selectedDepartment && selectedFaculty) {
-      // Filter hosts by both faculty and department
-      const filteredByDept = hosts.filter(host => 
-        host.faculty === selectedFaculty && 
-        host.department === selectedDepartment
-      );
-      setFilteredHosts(filteredByDept);
-      
-      // Reset host selection
-      sethostId("");
-    } else if (selectedFaculty) {
-      // If only faculty is selected
-      const filteredByFaculty = hosts.filter(host => host.faculty === selectedFaculty);
-      setFilteredHosts(filteredByFaculty);
-    }
-  }, [selectedDepartment, selectedFaculty, hosts]);
+    const filterHostsByDepartment = async () => {
+      if (selectedDepartment && selectedFaculty) {
+        try {
+          // Reset host selection
+          sethostId("");
+          
+          // Get hosts filtered by both faculty and department
+          const filteredHosts = await getHostsByFacultyAndDepartment(selectedFaculty, selectedDepartment);
+          setFilteredHosts(filteredHosts);
+        } catch (error) {
+          console.error("Failed to filter hosts by department:", error);
+        }
+      } else if (selectedFaculty) {
+        // If only faculty is selected, show all hosts in that faculty
+        try {
+          const hostsInFaculty = await getHostsByFacultyAndDepartment(selectedFaculty, null);
+          setFilteredHosts(hostsInFaculty);
+        } catch (error) {
+          console.error("Failed to filter hosts by faculty:", error);
+        }
+      }
+    };
+    
+    filterHostsByDepartment();
+  }, [selectedDepartment, selectedFaculty]);
 
   const [visitorId, setvisitorId] = useState("");
   useEffect(() => {
@@ -319,7 +330,7 @@ function VisitorAppointment() {
           {/* Department Selection - Only show if faculty is selected */}
           {selectedFaculty && (
             <div className="mb-4">
-              <label className="block text-[#748D92] text-sm mb-2">Select Department *</label>
+              <label className="block text-[#748D92] text-sm mb-2">Select Department (Optional)</label>
               <select
                 onChange={(e) => setSelectedDepartment(e.target.value)}
                 value={selectedDepartment}
@@ -340,10 +351,13 @@ function VisitorAppointment() {
             </div>
           )}
 
-          {/* Host Selection - Only show after department is selected */}
-          {selectedDepartment && (
+          {/* Host Selection - Show after faculty is selected */}
+          {selectedFaculty && (
             <div className="mb-4">
-              <label className="block text-[#748D92] text-sm mb-2">Select Host *</label>
+              <label className="block text-[#748D92] text-sm mb-2">
+                Select Host * 
+                {selectedDepartment ? ` (${selectedDepartment} Department)` : ` (${selectedFaculty} Faculty)`}
+              </label>
               <select
                 onChange={(e) => sethostId(e.target.value)}
                 value={hostId}
@@ -354,7 +368,7 @@ function VisitorAppointment() {
                 {filteredHosts.length > 0 ? (
                   filteredHosts.map((host) => (
                     <option key={host._id} value={host._id}>
-                      {host.name} ({host.department})
+                      {host.name} ({host.department || 'No Department'})
                     </option>
                   ))
                 ) : (
@@ -362,7 +376,14 @@ function VisitorAppointment() {
                 )}
               </select>
               {filteredHosts.length === 0 && (
-                <p className="text-[#748D92] text-xs mt-1">No hosts found in {selectedDepartment} department</p>
+                <p className="text-[#748D92] text-xs mt-1">
+                  No hosts found in {selectedDepartment ? `${selectedDepartment} department` : `${selectedFaculty} faculty`}
+                </p>
+              )}
+              {filteredHosts.length > 0 && (
+                <p className="text-xs text-[#124E66] mt-1">
+                  {filteredHosts.length} host(s) available
+                </p>
               )}
             </div>
           )}
