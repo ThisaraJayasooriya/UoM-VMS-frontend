@@ -56,7 +56,7 @@ function VisitorDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-20 px-6 lg:px-24 mt-10">
+    <div className="min-h-screen bg-gray-50 py-20 px-6 lg:px-24 mt-12">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-800">Welcome, {userName} 👋</h1>
         <p className="text-lg text-gray-500">What would you like to do today?</p>

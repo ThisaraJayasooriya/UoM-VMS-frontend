@@ -61,7 +61,7 @@ function VisitorLayout() {
 
 
   return (
-    <div className="h-screen w-full bg-white relative">
+    <div className="h-screen w-full bg-gray-50  relative">
       {isSidebarVisible && (
         <div
           className="fixed inset-0 bg-opacity-50 z-10"
