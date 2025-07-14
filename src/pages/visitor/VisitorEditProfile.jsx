@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import profilePhoto from "../../assets/profile.jpeg"; // Default profile photo
 
 function VisitorEditProfile() {
+  const navigate = useNavigate();
   const [selectedPhoto, setSelectedPhoto] = useState(profilePhoto); // State to store the selected photo
 
   useEffect(() => {
@@ -86,7 +88,19 @@ function VisitorEditProfile() {
               />
             </div>
           </div>
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex justify-between">
+            <button
+              type="button"
+              className="bg-[#748D94] text-white px-4 py-2 rounded-md hover:bg-[#5a7179] transition-colors duration-200"
+              onClick={() => {
+              
+                localStorage.removeItem("authToken");
+                // Navigate to forgot password page
+                window.location.href = "/forgot-password";
+              }}
+            >
+              Reset Password
+            </button>
             <button
               type="submit"
               className="bg-[#124E66] text-white px-4 py-2 rounded-md hover:bg-[#0E3D52] transition-colors duration-200"
