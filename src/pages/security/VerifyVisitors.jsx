@@ -214,6 +214,10 @@ const VerifyVisitors = () => {
               <span className="text-sm text-gray-500">Vehicle Number</span>
               <span className="font-medium text-[#212A31]">{filteredVisitor.vehicleNumber}</span>
             </div>
+             <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Appointment Date</span>
+              <span className="font-medium text-[#212A31]">{filteredVisitor.date}</span>
+            </div>
             
           </div>
         </div>
