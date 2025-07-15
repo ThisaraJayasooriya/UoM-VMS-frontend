@@ -19,7 +19,7 @@ const HostProfile = () => {
     localStorage.removeItem("authRemember");
     localStorage.removeItem("rememberMe");
     localStorage.removeItem("userData");
-    navigate("/login");
+    navigate("/");
   };
 
   useEffect(() => {

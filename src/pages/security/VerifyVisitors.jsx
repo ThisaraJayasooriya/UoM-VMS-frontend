@@ -12,6 +12,7 @@ const VerifyVisitors = () => {
   const [filteredVisitor, setFilteredVisitor] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
+  const [filteredHost, setFilteredHost] = useState(null);
 
   // Fetch recent activities on component mount
   useEffect(() => {
@@ -37,18 +38,23 @@ const VerifyVisitors = () => {
           const response = await fetch(`http://localhost:5000/api/verify-visitors/search?term=${term}`);
           if (!response.ok) {
             setFilteredVisitor(null);
+            setFilteredHost(null);
             return;
           }
           const data = await response.json();
-          setFilteredVisitor(data);
+          setFilteredVisitor(data.visitor);
+          setFilteredHost(data.staff); // Assuming the host data is included in the response
         } catch (error) {
           console.error("Error searching for visitor:", error);
           setFilteredVisitor(null);
+          setFilteredHost(null);
         }
       };
       fetchVisitor();
     } else {
       setFilteredVisitor(null);
+      setFilteredHost(null);
+
     }
   }, [searchTerm]);
 
@@ -217,6 +223,10 @@ const VerifyVisitors = () => {
              <div className="flex flex-col">
               <span className="text-sm text-gray-500">Appointment Date</span>
               <span className="font-medium text-[#212A31]">{filteredVisitor.date}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Host Name</span>
+              <span className="font-medium text-[#212A31]">{filteredHost?.name}</span>
             </div>
             
           </div>
