@@ -1,193 +1,82 @@
-import { useState } from 'react';
-import { FiSearch, FiDownload, FiEye } from 'react-icons/fi';
+import { useState, useEffect } from "react";
+import { FiSearch, FiDownload, FiEye } from "react-icons/fi";
+import { fetchAllAppointments } from "../../services/appointmentService";
+
+function formatTo12Hour(time24) {
+  const [hourStr, minuteStr] = time24.split(":");
+  const hour = parseInt(hourStr, 10);
+  const minute = parseInt(minuteStr, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
 const VisitLog = () => {
-  const [activeFilter, setActiveFilter] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Track current page
   const logsPerPage = 5; // Number of logs to show per page
+  const [appointments, setAppointments] = useState([]);
+  const [hostId, setHostId] = useState("");
 
-  const dummyLogs = [
-    {
-      id: 'A001',
-      visitor: 'Dr. Emily Carter',
-      purpose: 'Project Discussion',
-      date: '2024-04-10',
-      time: '10:00 AM - 11:00 AM',
-      status: 'Completed',
-    },
-    {
-      id: 'A002',
-      visitor: 'Prof. Alan Lee',
-      purpose: 'Consultation',
-      date: '2024-03-22',
-      time: '1:00 PM - 2:00 PM',
-      status: 'Cancelled',
-    },
-    {
-      id: 'A003',
-      visitor: 'Ms. Rachel Green',
-      purpose: 'Collaboration Talk',
-      date: '2024-03-10',
-      time: '2:30 PM - 3:15 PM',
-      status: 'Completed',
-    },
-    {
-      id: 'A004',
-      visitor: 'Mr. John Smith',
-      purpose: 'Technical Interview',
-      date: '2024-04-05',
-      time: '9:00 AM - 10:00 AM',
-      status: 'Completed',
-    },
-    {
-      id: 'A005',
-      visitor: 'Ms. Clara Oswald',
-      purpose: 'Workshop Facilitation',
-      date: '2024-04-01',
-      time: '11:00 AM - 12:30 PM',
-      status: 'Completed',
-    },
-    {
-      id: 'A006',
-      visitor: 'Dr. Alex Turner',
-      purpose: 'Lab Visit',
-      date: '2024-03-18',
-      time: '3:00 PM - 4:00 PM',
-      status: 'Cancelled',
-    },
-    {
-      id: 'A007',
-      visitor: 'Mr. Nathan Drake',
-      purpose: 'Product Demo',
-      date: '2024-04-12',
-      time: '1:30 PM - 2:30 PM',
-      status: 'Completed',
-    },
-    {
-      id: 'A008',
-      visitor: 'Ms. Sara Connor',
-      purpose: 'System Review',
-      date: '2024-03-25',
-      time: '10:00 AM - 11:00 AM',
-      status: 'Completed',
-    },
-    {
-      id: 'A009',
-      visitor: 'Dr. Henry Morgan',
-      purpose: 'Research Collaboration',
-      date: '2024-04-03',
-      time: '2:00 PM - 3:00 PM',
-      status: 'Cancelled',
-    },
-    {
-      id: 'A010',
-      visitor: 'Mr. Leo Fitz',
-      purpose: 'Equipment Inspection',
-      date: '2024-04-15',
-      time: '9:30 AM - 10:30 AM',
-      status: 'Completed',
-    },
-    {
-      id: 'A011',
-      visitor: 'Ms. Daisy Johnson',
-      purpose: 'Security Audit',
-      date: '2024-04-17',
-      time: '4:00 PM - 5:00 PM',
-      status: 'Completed',
-    },
-    {
-      id: 'A012',
-      visitor: 'Prof. Xavier Reed',
-      purpose: 'Academic Review',
-      date: '2024-03-28',
-      time: '12:00 PM - 1:00 PM',
-      status: 'Cancelled',
-    },
-    {
-      id: 'A013',
-      visitor: 'Ms. Wanda Maximoff',
-      purpose: 'Counseling Session',
-      date: '2024-04-20',
-      time: '3:15 PM - 4:15 PM',
-      status: 'Completed',
-    },
-    {
-      id: 'A014',
-      visitor: 'Mr. Steve Rogers',
-      purpose: 'Alumni Meeting',
-      date: '2024-04-22',
-      time: '1:00 PM - 2:00 PM',
-      status: 'Completed',
-    },
-    {
-      id: 'A015',
-      visitor: 'Ms. Natasha Romanoff',
-      purpose: 'Safety Briefing',
-      date: '2024-03-15',
-      time: '11:00 AM - 12:00 PM',
-      status: 'Cancelled',
-    },
-    {
-      id: 'A016',
-      visitor: 'Dr. Bruce Banner',
-      purpose: 'Energy Research',
-      date: '2024-03-19',
-      time: '10:30 AM - 11:30 AM',
-      status: 'Completed',
-    },
-    {
-      id: 'A017',
-      visitor: 'Mr. Tony Stark',
-      purpose: 'Tech Consultation',
-      date: '2024-04-25',
-      time: '9:00 AM - 10:00 AM',
-      status: 'Completed',
-    },
-    {
-      id: 'A018',
-      visitor: 'Ms. Carol Danvers',
-      purpose: 'Outreach Planning',
-      date: '2024-04-08',
-      time: '2:00 PM - 3:00 PM',
-      status: 'Completed',
-    },
-    {
-      id: 'A019',
-      visitor: 'Mr. Peter Parker',
-      purpose: 'Student Mentoring',
-      date: '2024-04-11',
-      time: '12:00 PM - 1:00 PM',
-      status: 'Cancelled',
-    },
-    {
-      id: 'A020',
-      visitor: 'Ms. Monica Rambeau',
-      purpose: 'IT Support Meeting',
-      date: '2024-04-27',
-      time: '3:30 PM - 4:30 PM',
-      status: 'Completed',
-    },
-  ];
-  
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
+    if (storedUser && storedUser.id) {
+      setHostId(storedUser.id);
+    }
+  }, []);
 
-  const filters = ['All', 'Completed', 'Cancelled'];
+  useEffect(() => {
+    const loadRequests = async () => {
+      try {
+        const data = await fetchAllAppointments(hostId);
+        const formatted = data.map((a) => ({
+          id: a._id,
+          aId: a.appointmentId,
+          purpose: a.reason,
+          visitorName: a.firstname + " " + a.lastname,
+          date: a.response ? formatDate(a.response.date) : "N/A",
+          time: a.response
+            ? `${formatTo12Hour(a.response.startTime)} - ${formatTo12Hour(
+                a.response.endTime
+              )}`
+            : "N/A",
+          status: a.status,
+        }));
+        setAppointments(formatted);
+      } catch (error) {
+        console.error("Failed to fetch visit logs:", error);
+      }
+    };
 
-  const filteredLogs = dummyLogs.filter(log => {
-    const matchesFilter = activeFilter === 'All' || log.status === activeFilter;
+    if (hostId) loadRequests();
+  }, [hostId]);
+
+  const filters = ["All", "Completed", "Incompleted"];
+  console.log(appointments.map(a => a.status));
+
+  const filteredLogs = appointments.filter((log) => {
+    const matchesFilter = activeFilter === "All" ||  log.status?.toLowerCase() === activeFilter.toLowerCase();
     const matchesSearch =
-      log.visitor?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.visitorName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.purpose?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const logDate = new Date(log.date);
     const from = startDate ? new Date(startDate) : null;
     const to = endDate ? new Date(endDate) : null;
 
-    const matchesDate =
-      (!from || logDate >= from) &&
-      (!to || logDate <= to);
+    const matchesDate = (!from || logDate >= from) && (!to || logDate <= to);
 
     return matchesFilter && matchesSearch && matchesDate;
   });
@@ -211,7 +100,8 @@ const VisitLog = () => {
   };
 
   return (
-    <div className="flex-1 overflow-auto p-6 bg-[#F8F9FA] mt-10">
+    <div className="relative">
+    <div className="pt-20 px-4 lg:px-20 ">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <div className="relative flex-1">
@@ -226,20 +116,18 @@ const VisitLog = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
-         
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">
-        {filters.map(filter => (
+        {filters.map((filter) => (
           <button
             key={filter}
             onClick={() => setActiveFilter(filter)}
             className={`px-4 py-2 rounded-lg transition-colors ${
               activeFilter === filter
-                ? 'bg-[#124E66] text-white'
-                : 'bg-white text-[#2E3944] hover:bg-[#D3D9D2]'
+                ? "bg-[#124E66] text-white"
+                : "bg-white text-[#2E3944] hover:bg-[#D3D9D2]"
             }`}
           >
             {filter}
@@ -249,20 +137,20 @@ const VisitLog = () => {
 
       <div className="flex flex-wrap items-center gap-4 mb-6">
         <label className="text-sm text-[#2E3944]">
-          From:{' '}
+          From:{" "}
           <input
             type="date"
             value={startDate}
-            onChange={e => setStartDate(e.target.value)}
+            onChange={(e) => setStartDate(e.target.value)}
             className="border border-[#D3D9D2] rounded-lg px-2 py-1 ml-2"
           />
         </label>
         <label className="text-sm text-[#2E3944]">
-          To:{' '}
+          To:{" "}
           <input
             type="date"
             value={endDate}
-            onChange={e => setEndDate(e.target.value)}
+            onChange={(e) => setEndDate(e.target.value)}
             className="border border-[#D3D9D2] rounded-lg px-2 py-1 ml-2"
           />
         </label>
@@ -291,19 +179,29 @@ const VisitLog = () => {
                 <th className="px-6 py-3 text-left text-xs font-bold text-[#2E3944] uppercase tracking-wider">
                   Status
                 </th>
-                
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-[#D3D9D2]">
-              {currentLogs.map(log => (
+              {currentLogs.map((log) => (
                 <tr key={log.id} className="hover:bg-[#F8F9FA]">
-                  <td className="px-6 py-4 text-sm text-[#2E3944]">{log.id}</td>
-                  <td className="px-6 py-4 text-sm text-[#2E3944]">{log.visitor}</td>
-                  <td className="px-6 py-4 text-sm text-[#2E3944]">{log.purpose}</td>
-                  <td className="px-6 py-4 text-sm text-[#2E3944]">{log.date}</td>
-                  <td className="px-6 py-4 text-sm text-[#2E3944]">{log.time}</td>
-                  <td className="px-6 py-4 text-sm text-[#2E3944]">{log.status}</td>
-                  
+                  <td className="px-6 py-4 text-sm text-[#2E3944]">
+                    {log.aId}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-[#2E3944]">
+                    {log.visitorName}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-[#2E3944]">
+                    {log.purpose}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-[#2E3944]">
+                    {log.date}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-[#2E3944]">
+                    {log.time}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-[#2E3944]">
+                    {log.status}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -312,8 +210,8 @@ const VisitLog = () => {
 
         <div className="bg-[#F8F9FA] px-6 py-3 flex flex-col md:flex-row justify-between items-center border-t border-[#D3D9D2]">
           <div className="text-sm text-[#748D92] mb-2 md:mb-0">
-            Showing <span className="font-medium">{indexOfFirstLog + 1}</span> to{' '}
-            <span className="font-medium">{indexOfLastLog}</span> of{' '}
+            Showing <span className="font-medium">{indexOfFirstLog + 1}</span>{" "}
+            to <span className="font-medium">{indexOfLastLog}</span> of{" "}
             <span className="font-medium">{filteredLogs.length}</span> entries
           </div>
           <div className="flex gap-2">
@@ -332,6 +230,7 @@ const VisitLog = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

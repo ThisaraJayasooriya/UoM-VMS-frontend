@@ -11,7 +11,6 @@ const DashboardCard = ({ icon: Icon, title, count, change, changeColor }) => (
         <FaChartLine className="mr-1 text-xs" /> {change}
       </div>
     </div>
-    
     <div className="space-y-2">
       <p className="text-sm font-medium text-blue-100/80">{title}</p>
       <h2 className="text-3xl font-bold">{count}</h2>
@@ -25,29 +24,29 @@ const SecurityDashboard = () => {
     { 
       icon: FaUsers, 
       title: "Total Visitors", 
-      count: 25, 
-      change: "+12%", 
+      count: 0, 
+      change: "+0%", 
       changeColor: "text-emerald-300" 
     },
     { 
       icon: FaUserPlus, 
       title: "Expected Visitors", 
-      count: 5, 
-      change: "+8%", 
+      count: 0, 
+      change: "+0%", 
       changeColor: "text-emerald-300" 
     },
     { 
       icon: FaArrowDown, 
       title: "Total Checked-in", 
       count: 0, 
-      change: "+3%", 
+      change: "+0%", 
       changeColor: "text-emerald-300" 
     },
     { 
       icon: FaArrowUp, 
       title: "Total Checked-out", 
       count: 0, 
-      change: "-2%", 
+      change: "+0%", 
       changeColor: "text-red-300" 
     },
   ]);
@@ -62,11 +61,35 @@ const SecurityDashboard = () => {
       try {
         const response = await fetch("http://localhost:5000/api/security/stats");
         const data = await response.json();
-        setStats((prevStats) => [
-          prevStats[0],
-          prevStats[1],
-          { ...prevStats[2], count: data.totalCheckedIn },
-          { ...prevStats[3], count: data.totalCheckedOut },
+        setStats([
+          { 
+            icon: FaUsers, 
+            title: "Total Visitors", 
+            count: data.totalVisitorsToday ?? 0, 
+            change: "+0%", 
+            changeColor: "text-emerald-300" 
+          },
+          { 
+            icon: FaUserPlus, 
+            title: "Expected Visitors", 
+            count: data.expectedVisitorsToday ?? 0, 
+            change: "+0%", 
+            changeColor: "text-emerald-300" 
+          },
+          { 
+            icon: FaArrowDown, 
+            title: "Total Checked-in", 
+            count: data.totalCheckedIn ?? 0, 
+            change: "+0%", 
+            changeColor: "text-emerald-300" 
+          },
+          { 
+            icon: FaArrowUp, 
+            title: "Total Checked-out", 
+            count: data.totalCheckedOut ?? 0, 
+            change: "+0%", 
+            changeColor: "text-red-300" 
+          },
         ]);
       } catch (error) {
         console.error("Failed to fetch visitor stats:", error);
@@ -102,5 +125,4 @@ const SecurityDashboard = () => {
     </div>
   );
 };
-
 export default SecurityDashboard;

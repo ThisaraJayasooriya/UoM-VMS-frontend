@@ -40,7 +40,10 @@ const Sidebar = ({ items, hide, onItemClick }) => {
       </nav>
       <div
         className="p-4 flex items-center space-x-2 text-gray-400 cursor-pointer hover:text-black"
-        onClick={hide}
+        onClick={() => {
+          hide(); // Hide the sidebar first
+          navigate(-1); // Navigate to previous page in history
+        }}
       >
         <FaArrowLeft />
         <span>Go Back</span>

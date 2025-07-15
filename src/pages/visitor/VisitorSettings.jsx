@@ -9,7 +9,21 @@ const VisitorSettings = () => {
     lastVisitDate: new Date() // Always use today's date as the last visit date
   });
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const loadProfile = async (userId) => {
+    try {
+      setIsLoading(true);
+      const data = await fetchUserProfile(userId);
+      setProfile(data);
+    } catch (err) {
+      console.error("Error loading profile", err);
+      setError("Failed to load profile data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Set the page name for the header
@@ -17,12 +31,7 @@ const VisitorSettings = () => {
     
     const userData = JSON.parse(localStorage.getItem("userData"));
     if (userData?.id) {
-      // Fetch user profile
-      fetchUserProfile(userData.id)
-        .then((data) => setProfile(data))
-        .catch((err) => {
-          console.error("Error loading profile", err);
-        });
+      loadProfile(userData.id);
       
       // Just use today's date instead of fetching from backend
       setLastVisit({
@@ -30,6 +39,20 @@ const VisitorSettings = () => {
       });
     }
   }, []);
+
+  // Add effect to refresh data when returning from edit page
+  useEffect(() => {
+    const handleFocus = () => {
+      const userData = JSON.parse(localStorage.getItem("userData"));
+      if (userData?.id && profile) {
+        // Refresh profile data when window regains focus
+        loadProfile(userData.id);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [profile]);
 
   const handleLogout = () => {
     // Clear authentication data
@@ -42,7 +65,12 @@ const VisitorSettings = () => {
   };
 
   if (error) return <div className="text-red-600 p-6">{error}</div>;
-  if (!profile) return <div className="p-6">Loading profile...</div>;
+  if (!profile) return (
+    <div className="p-6 text-center">
+      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#124E66]"></div>
+      <p className="mt-2 text-[#748D92]">Loading profile...</p>
+    </div>
+  );
 
   return (
     <div className="pt-20 px-4 lg:px-20 min-h-screen">

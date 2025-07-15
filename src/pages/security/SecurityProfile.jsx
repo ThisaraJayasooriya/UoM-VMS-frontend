@@ -20,9 +20,12 @@ const SecurityProfile = () => {
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/Login");
+  const logout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authRemember");
+    localStorage.removeItem("rememberMe");
+    localStorage.removeItem("userData");
+    navigate("/");
   };
 
   if (error) return <div className="text-red-600 p-6">{error}</div>;
@@ -99,7 +102,7 @@ const SecurityProfile = () => {
           {/* Footer */}
           <div className="bg-[#F8FAF9] px-6 py-4 border-t border-[#D3D9D2] flex justify-end">
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="bg-[#748D92] text-white px-4 py-2 rounded-md hover:bg-[#5A7176] transition-colors duration-200"
             >
               Log Out

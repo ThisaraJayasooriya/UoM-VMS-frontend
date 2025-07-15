@@ -46,12 +46,12 @@ export const updateLastVisitLog = async (userId) => {
 
 export const updateUserProfile = async (userId, profileData) => {
   try {
-    // Backend API හරහා යාවත්කාලීන ඉල්ලීම යවන්න
+
     console.log("Sending profile update to API for userId:", userId);
     const response = await axiosInstance.put(`/userProfile/${userId}`, profileData);
     console.log("API response:", response.data);
     
-    // API සාර්ථක නම්, localStorage යාවත්කාලින කරන්න
+
     if (response.data && response.data.success) {
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
       const updatedUserData = { ...userData, ...profileData };
