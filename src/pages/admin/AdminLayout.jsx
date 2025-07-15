@@ -77,6 +77,7 @@ function AdminLayout() {
     if (path.includes("/admin/visitorfeedbackreview")) return "Visitors' Feedback Review";
     if (path.includes("/admin/adminInsights")) return "Insights";
     if (path.includes("/admin/settings")) return "Settings";
+    if (path.includes("/notifications")) return "All Notifications";
     return "Dashboard";
   };
 

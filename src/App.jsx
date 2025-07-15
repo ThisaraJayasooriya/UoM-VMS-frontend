@@ -30,6 +30,7 @@ import AdminReports from "./pages/admin/AdminReports";
 import AdminInsights from "./pages/admin/AdminInsights.jsx";
 import Settings from "./pages/admin/AdminSettings";
 import AccessControl from './pages/admin/AccessControl';
+import Notifications from "./pages/admin/Notifications";
 
 // User Details Pages
 import UserDetailsMain from "./pages/admin/userdetails/UserDetailsMain";
@@ -309,6 +310,7 @@ function App() {
             <Route path="adminreports" element={<AdminReports />} />
             <Route path="adminInsights" element={<AdminInsights />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="notifications" element={<Notifications />} />
           </Route>
 
           {/* Staff Dashboard Route */}
