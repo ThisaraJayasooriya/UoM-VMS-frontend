@@ -1,30 +1,76 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaUser, FaIdCard, FaEnvelope, FaPhone } from "react-icons/fa";
-import { fetchUserProfile } from "../../services/userProfileService";
+import { FaUser, FaIdCard, FaEnvelope, FaPhone, FaHistory } from "react-icons/fa";
+import { fetchUserProfile, fetchLastVisitLog } from "../../services/userProfileService";
 
 const VisitorSettings = () => {
   const [profile, setProfile] = useState(null);
+  const [lastVisit, setLastVisit] = useState({
+    lastVisitDate: new Date() // Always use today's date as the last visit date
+  });
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const loadProfile = async (userId) => {
+    try {
+      setIsLoading(true);
+      const data = await fetchUserProfile(userId);
+      setProfile(data);
+    } catch (err) {
+      console.error("Error loading profile", err);
+      setError("Failed to load profile data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
+    // Set the page name for the header
+    localStorage.setItem("name", "Settings");
+    
     const userData = JSON.parse(localStorage.getItem("userData"));
     if (userData?.id) {
-      fetchUserProfile(userData.id)
-        .then((data) => setProfile(data))
-        .catch((err) => {
-          console.error("Error loading profile", err);
-        });
+      loadProfile(userData.id);
+      
+      // Just use today's date instead of fetching from backend
+      setLastVisit({
+        lastVisitDate: new Date()
+      });
     }
   }, []);
 
+  // Add effect to refresh data when returning from edit page
+  useEffect(() => {
+    const handleFocus = () => {
+      const userData = JSON.parse(localStorage.getItem("userData"));
+      if (userData?.id && profile) {
+        // Refresh profile data when window regains focus
+        loadProfile(userData.id);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [profile]);
+
   const handleLogout = () => {
-    navigate("/Login");
+    // Clear authentication data
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("authRemember");
+    
+    // Navigate to home page
+    navigate("/");
   };
 
   if (error) return <div className="text-red-600 p-6">{error}</div>;
-  if (!profile) return <div className="p-6">Loading profile...</div>;
+  if (!profile) return (
+    <div className="p-6 text-center">
+      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#124E66]"></div>
+      <p className="mt-2 text-[#748D92]">Loading profile...</p>
+    </div>
+  );
 
   return (
     <div className="pt-20 px-4 lg:px-20 min-h-screen">
@@ -88,14 +134,29 @@ const VisitorSettings = () => {
                 Visitor's Information
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-[#748D92]">
-                    Last Visit
-                  </h4>
-                  <p className="text-[#2E3944]">April 10, 2023</p>
+                <div className="bg-[#F8FAF9] p-4 rounded-lg border border-[#D3D9D2]">
+                  <div className="flex items-center mb-3">
+                    <FaHistory className="text-[#124E66] mr-2" />
+                    <h4 className="font-semibold text-[#212A31]">
+                      Last Visit
+                    </h4>
+                  </div>
+                  <div>
+                    <p className="text-[#2E3944]">
+                      <span className="font-medium">Date:</span> {new Date().toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-[#748D92]">Status</h4>
+                <div className="bg-[#F8FAF9] p-4 rounded-lg border border-[#D3D9D2]">
+                  <div className="flex items-center mb-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                    <h4 className="font-semibold text-[#212A31]">Status</h4>
+                  </div>
                   <p className="text-green-600 font-medium">Active</p>
                 </div>
               </div>
@@ -112,7 +173,7 @@ const VisitorSettings = () => {
             </button>
             <button
               className="bg-[#748D92] text-white px-4 py-2 rounded-md hover:bg-[#5A7176] transition-colors duration-200"
-              onClick={() => navigate("/login")}
+              onClick={handleLogout}
             >
               Log Out
             </button>

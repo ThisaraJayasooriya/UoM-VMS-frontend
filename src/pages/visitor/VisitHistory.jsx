@@ -1,43 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getAppointmentStatus } from "../../services/appoinment.api.js";
 
 function Visithistory() {
-  // Sample visit history data with dates
-  const visitHistory = [
-    {
-      visitorName: "Hafsa",
-      host: "Mr. Smith",
-      dateTime: "2025/04/01 10:30 AM", // Within 30 days
-      reason: "Official Meeting",
-      status: "Completed"
-    },
-    {
-      visitorName: "Hafsa",
-      host: "Ms. Taylor",
-      dateTime: "2025/04/10 2:00 PM", // Within 14 days
-      reason: "Document Submission",
-      status: "Completed"
-    },
-    {
-      visitorName: "Hafsa",
-      host: "Mr. Wick",
-      dateTime: "2025/04/15 11:00 AM", // Within 7 days
-      reason: "Client Visit",
-      status: "Completed"
-    },
-    {
-      visitorName: "Hafsa",
-      host: "Mr. Smith",
-      dateTime: "2025/03/01 10:30 AM", // Older than 30 days
-      reason: "Official Meeting",
-      status: "Canceled"
-    },
-  ];
+  // State for visit history
+  const [visitHistory, setVisitHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Fetch completed appointments from backend
+  useEffect(() => {
+    const fetchCompletedVisits = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get visitor ID from localStorage
+        const userData = JSON.parse(localStorage.getItem("userData"));
+        const visitorId = userData?.id;
+        
+        if (!visitorId) {
+          throw new Error("User not logged in or visitor ID not found");
+        }
+        
+        // Fetch appointments from backend
+        const appointments = await getAppointmentStatus(visitorId);
+        
+        // Filter only appointments with completed or confirmed status
+        const completedVisits = appointments.filter(appointment => 
+          appointment.status === "completed" || appointment.status === "confirmed"
+        );
+        
+        // Format the data for our component
+        const formattedVisits = completedVisits.map(appointment => ({
+          visitorName: `${appointment.firstname} ${appointment.lastname}`,
+          host: appointment.hostName || "Unknown Host",
+          dateTime: appointment.appointmentDate 
+            ? new Date(appointment.appointmentDate).toLocaleString('en-US', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit', 
+                minute: '2-digit'
+              }) 
+            : new Date(appointment.createdAt).toLocaleString('en-US', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit', 
+                minute: '2-digit'
+              }),
+          reason: appointment.reason,
+          status: "Completed",
+          appointmentId: appointment._id,
+          hostInfo: {
+            faculty: appointment.hostFaculty,
+            department: appointment.hostDepartment
+          }
+        }));
+        
+        setVisitHistory(formattedVisits);
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Error fetching visits:", err);
+        setError(err.message || "Failed to load visit history");
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCompletedVisits();
+  }, []);
 
-  // Filter options
+  // Filter option - only time filter since we're showing only completed visits
   const [timeFilter, setTimeFilter] = useState("7"); // 7/14/30/all
-  const [statusFilter, setStatusFilter] = useState("all"); // all/completed/pending/canceled
 
-  // Filter visits based on selections
+  // Filter visits based on time selection
   const filteredVisits = visitHistory.filter(visit => {
     // Time filter logic
     const visitDate = new Date(visit.dateTime);
@@ -47,9 +82,6 @@ function Visithistory() {
       cutoffDate.setDate(cutoffDate.getDate() - parseInt(timeFilter));
       if (visitDate < cutoffDate) return false;
     }
-
-    // Status filter logic
-    if (statusFilter !== "all" && visit.status !== statusFilter) return false;
 
     return true;
   });
@@ -66,96 +98,109 @@ function Visithistory() {
       <div className="max-w-4xl mx-auto">
 
         
-        {/* Filter Controls */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          {/* Time Period Filter */}
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-[#2E3944] mb-1">
-              Time Period
-            </label>
-            <div className="flex gap-2">
-              {["7", "14", "30", "all"].map(option => (
-                <button
-                  key={option}
-                  onClick={() => setTimeFilter(option)}
-                  className={`px-4 py-2 rounded-lg ${
-                    timeFilter === option
-                      ? "bg-[#124E66] text-white"
-                      : "bg-[#748D94] text-white hover:bg-[#5a7179]"
-                  }`}
-                >
-                  {option === "all" ? "All Time" : `Last ${option} Days`}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Status Filter */}
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-[#2E3944] mb-1">
-              Visit Status
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full p-2 rounded-lg border border-[#748D94] bg-white text-[#212A31]"
-            >
-              <option value="all">All Statuses</option>
-              <option value="Completed">Completed</option>
-              <option value="Pending">Pending</option>
-              <option value="Canceled">Canceled</option>
-            </select>
-          </div>
+        {/* Page Title */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-[#124E66] mb-2">Completed Visit History</h1>
+          <p className="text-[#748D94]">View your past visits to the University of Moratuwa</p>
         </div>
-
-        {/* Results Count */}
-        <div className="mb-6 text-[#2E3944]">
-          Showing <span className="font-bold">{filteredVisits.length}</span> visits matching filters
-        </div>
-
-        {/* Visit History Cards */}
-        <div className="space-y-6">
-          {filteredVisits.length > 0 ? (
-            filteredVisits.map((visit, index) => (
-              <div
-                key={index}
-                className="bg-gray-200 border-l-4 border-[#124E66] shadow-md rounded-lg p-6 transition transform hover:scale-[1.02]"
+        
+        {/* Filter Controls - Only Time Period */}
+        <div className="mb-8">
+          <label className="block text-sm font-medium text-[#2E3944] mb-2">
+            Time Period
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {["7", "14", "30", "all"].map(option => (
+              <button
+                key={option}
+                onClick={() => setTimeFilter(option)}
+                className={`px-4 py-2 rounded-lg ${
+                  timeFilter === option
+                    ? "bg-[#124E66] text-white"
+                    : "bg-[#748D94] text-white hover:bg-[#5a7179]"
+                }`}
               >
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-                  <div>
-                    <p className="text-xl font-semibold text-[#212A31]">{visit.visitorName}</p>
-                    <p className="text-[#2E3944] mt-1">
-                      <span className="font-medium">Host:</span> {visit.host}
-                    </p>
+                {option === "all" ? "All Time" : `Last ${option} Days`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#124E66]"></div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+            <p className="font-bold">Error</p>
+            <p>{error}</p>
+          </div>
+        ) : (
+          <>
+            {/* Results Count */}
+            <div className="mb-6 text-[#2E3944]">
+              <span className="font-bold">{filteredVisits.length}</span> completed {filteredVisits.length === 1 ? 'visit' : 'visits'} {timeFilter !== "all" ? `in the last ${timeFilter} days` : ''}
+            </div>
+
+            {/* Visit History Cards */}
+          </>
+        )}
+        {!isLoading && !error && (
+          <div className="space-y-6">
+            {filteredVisits.length > 0 ? (
+              filteredVisits.map((visit, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-50 border-l-4 border-[#124E66] shadow-md rounded-lg p-6 transition transform hover:scale-[1.01]"
+                >
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                    <div>
+                      <p className="text-xl font-semibold text-[#212A31]">{visit.visitorName}</p>
+                      <p className="text-[#2E3944] mt-1">
+                        <span className="font-medium">Host:</span> {visit.host}
+                      </p>
+                      {visit.hostInfo && visit.hostInfo.faculty && visit.hostInfo.department && (
+                        <p className="text-[#748D94] text-sm mt-1">
+                          {visit.hostInfo.faculty} - {visit.hostInfo.department}
+                        </p>
+                      )}
+                    </div>
+                    <div className="mt-4 md:mt-0 flex flex-col items-end gap-2">
+                      <span 
+                        className="inline-block text-white px-3 py-1 text-sm rounded-full font-medium"
+                        style={{ backgroundColor: statusColors[visit.status] }}
+                      >
+                        {visit.status}
+                      </span>
+                      <span className="text-[#748D94] text-sm">
+                        {visit.dateTime}
+                      </span>
+                    </div>
                   </div>
-                  <div className="mt-4 md:mt-0 flex flex-col items-end gap-2">
-                    <span 
-                      className="inline-block text-white px-3 py-1 text-sm rounded-full font-medium"
-                      style={{ backgroundColor: statusColors[visit.status] }}
-                    >
-                      {visit.status}
-                    </span>
-                    <span className="text-[#748D94] text-sm">
-                      {visit.dateTime}
-                    </span>
+                  <div className="mt-4 flex justify-between items-center">
+                    <div className="text-[#2E3944]">
+                      <p>
+                        <span className="text-[#124E66]">📝</span> {visit.reason}
+                      </p>
+                    </div>
+                    
                   </div>
                 </div>
-                <div className="mt-4 flex justify-between items-center">
-                  <p className="text-[#2E3944]">
-                    <span className="text-[#124E66]">📝</span> {visit.reason}
-                  </p>
-                  <button className="text-[#124E66] hover:text-[#0e3d52] font-medium">
-                    View Details
-                  </button>
+              ))
+            ) : (
+              <div className="bg-white rounded-lg p-8 text-center text-[#748D94] shadow-md">
+                <div className="flex flex-col items-center">
+                  <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <p className="text-lg font-medium">No completed visits found</p>
+                  <p className="text-sm mt-2">No visits match your selected time period</p>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="bg-white rounded-lg p-8 text-center text-[#748D94]">
-              No visits match the selected filters
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Pagination - Only show when not using time filter */}
         {timeFilter === "all" && (

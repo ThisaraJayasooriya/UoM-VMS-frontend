@@ -15,6 +15,7 @@ function HostAvailableTimeSlots() {
   const fetchAppointment = async (visitorId) => {
     try {
       const data = await getAcceptedAppointment(visitorId);
+      console.log("Fetched appointment data:", data);
       setAppointment(data);
     } catch (error) {
       console.error("Error loading appointment", error);

@@ -2,7 +2,7 @@
 import { FaBars, FaBell, FaEnvelope, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-function Headerbar({ toggleSidebar, userName, userRole, pageTitle, pageSubtitle, type }) {
+function Headerbar({ toggleSidebar, userName, userRole, pageTitle, pageSubtitle, type, onUserClick}) {
   const navigate = useNavigate();
 
   const handleNotificationsClick = () => {
@@ -28,7 +28,7 @@ function Headerbar({ toggleSidebar, userName, userRole, pageTitle, pageSubtitle,
               <span className="absolute top-0 right-0 bg-red-500 w-2.5 h-2.5 rounded-full"></span>
             </button>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer  hover:bg-opacity-20 p-2 rounded-lg transition-colors" onClick={onUserClick}>
             <FaUserCircle className="text-xl" />
             <div>
               <p className="text-sm font-semibold">{userName}</p>

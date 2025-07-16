@@ -1,100 +1,82 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaRegCalendarAlt, FaHistory, FaShareSquare } from "react-icons/fa";
+import { FaRegCalendarAlt, FaHistory, FaShareSquare, FaClock } from "react-icons/fa";
 import { VscFeedback } from "react-icons/vsc";
-import { useState, useEffect } from "react";
 
 function VisitorDashboard() {
   const [userName, setUserName] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
-    if (storedUser && storedUser.username) {
+    const storedUser = JSON.parse(localStorage.getItem("userData"));
+    if (storedUser?.username) {
       setUserName(storedUser.username);
     }
   }, []);
-  const navigate = useNavigate();
-  const handleAppointmentClick = () => {
-    navigate("/visitor/appointment", {
-      state: {
-        name: "Make an Appointment",
-      },
-    });
-  };
 
-  const handleHistoryClick = () => {
-    navigate("/visitor/history", {
-      state: {
-        name: "Visit History",
-      },
-    });
+  // 🔁 Generic click handler
+  const handleCardClick = (title, path) => {
+    localStorage.setItem("name", title);
+    navigate(path);
   };
-  const handleUpcommingClick = () => {
-    navigate("/visitor/Status", {
-      state: {
-        name: "Appointment Status",
-      },
-    });
-  };
-  const handleFeedbackClick = () => {
-    navigate("/visitor/feedback", {
-      state: {
-        name: "Provide Feedback",
-      },
-    });
-  };
-  const handleHostAvailableTimeClick = () => {
-    navigate("/visitor/HostAvailableTime", {
-      state: {
-        name: "Host Available Time Slot",
-      },
-    });
-  };
+   localStorage.setItem("name", "Dashboard");
+
+  // 💡 Dashboard items
+  const dashboardCards = [
+    {
+      id: 1,
+      title: "Make an Appointment",
+      icon: <FaRegCalendarAlt className="text-blue-500 text-4xl" />,
+      path: "/visitor/appointment",
+    },
+    {
+      id: 2,
+      title: "Host Available Time Slot",
+      icon: <FaClock className="text-green-500 text-4xl" />,
+      path: "/visitor/HostAvailableTime",
+    },
+    {
+      id: 3,
+      title: "Visit History",
+      icon: <FaHistory className="text-yellow-500 text-4xl" />,
+      path: "/visitor/history",
+    },
+    {
+      id: 4,
+      title: "Provide Feedback",
+      icon: <VscFeedback className="text-pink-500 text-4xl" />,
+      path: "/visitor/feedback",
+    },
+    {
+      id: 5,
+      title: "Appointment Status",
+      icon: <FaShareSquare className="text-purple-500 text-4xl" />,
+      path: "/visitor/Status",
+    },
+  ];
+
   return (
-    <div className="pt-20 px-4 lg:px-20">
-      <div className="flex items-center mt-10">
-      <h2 className="text-3xl font-bold text-black ml-50">Hi {userName}!</h2>
+    <div className="min-h-screen bg-gray-50 py-20 px-6 lg:px-24 mt-12">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-gray-800">Welcome, {userName} 👋</h1>
+        <p className="text-lg text-gray-500">What would you like to do today?</p>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-6 mt-8 max-w-[1300px] mx-auto">
-        <div
-          className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
-          onClick={handleAppointmentClick} // Navigate to Appointment page
-        >
-          <FaRegCalendarAlt className="mr-2" />
-          Make an Appointment
-        </div>
-
-        <div
-          className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
-          onClick={handleHostAvailableTimeClick} // Navigate to Appointment page
-        >
-          <FaRegCalendarAlt className="mr-2" />
-          Host Available Time Slot
-        </div>
-
-        <div
-          className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
-          onClick={handleHistoryClick} // Navigate to Visit History page
-        >
-          <FaHistory className="mr-2" />
-          Visit History
-        </div>
-
-        <div
-          className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer "
-          onClick={handleFeedbackClick} // Navigate to provide feedback page
-        >
-          <VscFeedback className="mr-2 text-2xl font-bold" />
-          Provide Feedback
-        </div>
-        <div
-          className="bg-[#748D92] p-4 rounded-lg shadow-md w-[430px] h-[180px] flex items-center justify-center text-xl font-semibold text-gray-700 cursor-pointer"
-          onClick={handleUpcommingClick} // Navigate to Upcoming Visits page
-        >
-          <FaShareSquare className="mr-2" />
-          Appointment Status
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto">
+        {dashboardCards.map((card) => (
+          <div
+            key={card.id}
+            onClick={() => handleCardClick(card.title, card.path)}
+            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex flex-col items-center text-center cursor-pointer group hover:scale-105"
+          >
+            <div className="w-20 h-20 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center mb-5 group-hover:border-blue2 transition-colors duration-300">
+              {card.icon}
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 group-hover:text-blue transition-colors duration-300">
+              {card.title}
+            </h3>
+          </div>
+        ))}
       </div>
     </div>
   );
