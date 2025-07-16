@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { FiSearch, FiDownload, FiEdit, FiTrash2, FiLogOut, FiX } from 'react-icons/fi';
 import { BsArrowsExpand, BsThreeDotsVertical, BsArrowLeft, BsArrowRight } from 'react-icons/bs';
 import { FaSpinner } from 'react-icons/fa';
@@ -16,15 +17,34 @@ const VisitorLogbook = () => {
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
   const [editEntry, setEditEntry] = useState(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null); // New state for deletion confirmation
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
-  const toggleMenu = (id) => {
-    setOpenMenuId(openMenuId === id ? null : id);
-  };
-
+  // Debug component renders
   useEffect(() => {
-    fetchLogEntries();
-  }, []);
+    console.log('VisitorLogbook rendered, openMenuId:', openMenuId);
+  });
+
+  const toggleMenu = useCallback((id) => {
+    console.log('Toggling menu for ID:', id, 'Previous openMenuId:', openMenuId);
+    if (openMenuId !== id) {
+      setTimeout(() => setOpenMenuId(id), 100); // Debounce to prevent rapid toggling
+    } else {
+      setOpenMenuId(null);
+    }
+  }, [openMenuId]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openMenuId && !event.target.closest('.action-menu-container')) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenuId]);
 
   const fetchLogEntries = async () => {
     try {
@@ -32,7 +52,17 @@ const VisitorLogbook = () => {
       const response = await fetch('http://localhost:5000/api/logbook');
       if (!response.ok) throw new Error('Failed to fetch visitor log data');
       const data = await response.json();
-      const mappedEntries = data.map(entry => ({
+
+      // Check for duplicate IDs and log date fields
+      const ids = data.map(entry => entry.visitorId);
+      const uniqueIds = new Set(ids);
+      if (ids.length !== uniqueIds.size) {
+        console.warn('Duplicate visitor IDs detected:', ids);
+      }
+      console.log('API response data:', data); // Debug API response
+
+      // Remove duplicates and validate dates
+      const mappedEntries = [...new Map(data.map(entry => [entry.visitorId, {
         id: entry.visitorId,
         visitor: entry.name || 'Unknown',
         host: entry.host || 'Unknown',
@@ -42,20 +72,29 @@ const VisitorLogbook = () => {
         email: entry.email || 'N/A',
         status: entry.status || 'Awaiting Check-In',
         createdAt: entry.createdAt ? new Date(entry.createdAt) : null,
-      })).sort((a, b) => (b.checkIn || b.createdAt || 0) - (a.checkIn || a.createdAt || 0));
+      }])).values()].sort((a, b) => {
+        const aTime = a.checkIn || a.createdAt || 0;
+        const bTime = b.checkIn || b.createdAt || 0;
+        return bTime - aTime;
+      });
       setLogEntries(mappedEntries);
       setLoading(false);
     } catch (err) {
       setError(err.message);
       setLoading(false);
+      console.error('Fetch error:', err);
     }
   };
+
+  useEffect(() => {
+    fetchLogEntries();
+  }, []);
 
   const filters = ['All', 'Awaiting Check-In', 'Checked-In', 'Checked-Out'];
 
   const filteredEntries = logEntries.filter(entry => {
     const matchesFilter = activeFilter === 'All' || entry.status === activeFilter;
-    const matchesSearch = 
+    const matchesSearch =
       (entry.visitor?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
       (entry.host?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
       (entry.purpose?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
@@ -78,15 +117,17 @@ const VisitorLogbook = () => {
     }
   };
 
-  const sortedEntries = [...currentEntries].sort((a, b) => {
-    if (!sortColumn) return 0;
-    const aValue = a[sortColumn] instanceof Date ? a[sortColumn].getTime() : a[sortColumn];
-    const bValue = b[sortColumn] instanceof Date ? b[sortColumn].getTime() : b[sortColumn];
-    return sortDirection === 'asc' ? aValue > bValue ? 1 : -1 : aValue < bValue ? 1 : -1;
-  });
+  const sortedEntries = useMemo(() => {
+    return [...currentEntries].sort((a, b) => {
+      if (!sortColumn) return 0;
+      const aValue = a[sortColumn] instanceof Date ? a[sortColumn].getTime() : a[sortColumn];
+      const bValue = b[sortColumn] instanceof Date ? b[sortColumn].getTime() : b[sortColumn];
+      return sortDirection === 'asc' ? aValue > bValue ? 1 : -1 : aValue < bValue ? 1 : -1;
+    });
+  }, [currentEntries, sortColumn, sortDirection]);
 
   const formatDate = (date) => {
-    if (!date) return '-';
+    if (!date || !(date instanceof Date) || isNaN(date)) return '-';
     return date.toLocaleDateString('en-US', {
       day: '2-digit',
       month: 'short',
@@ -95,7 +136,7 @@ const VisitorLogbook = () => {
   };
 
   const formatTime = (date) => {
-    if (!date) return '-';
+    if (!date || !(date instanceof Date) || isNaN(date)) return '-';
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
@@ -104,13 +145,13 @@ const VisitorLogbook = () => {
   };
 
   const handleDelete = async (id) => {
-    setDeleteConfirmId(id); // Show confirmation modal
+    setDeleteConfirmId(id);
   };
 
   const confirmDelete = async () => {
     if (deleteConfirmId) {
       try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token'); // Adjust storage
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const response = await fetch(`http://localhost:5000/api/logbook/${deleteConfirmId}`, {
           method: 'DELETE',
           headers: {
@@ -142,7 +183,7 @@ const VisitorLogbook = () => {
 
   const handleCheckOut = async (id) => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token'); // Adjust storage
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/logbook/${id}`, {
         method: 'PUT',
         headers: {
@@ -159,6 +200,7 @@ const VisitorLogbook = () => {
         throw new Error(errorData.message || 'Failed to check out');
       }
       const updatedEntry = await response.json();
+      console.log('Check out response:', updatedEntry); // Debug response
       setLogEntries(logEntries.map(entry => entry.id === id ? { ...entry, ...updatedEntry } : entry));
       setOpenMenuId(null);
       setMessage('Checked out successfully');
@@ -174,12 +216,13 @@ const VisitorLogbook = () => {
     const entryToEdit = logEntries.find(entry => entry.id === id);
     setEditEntry({ ...entryToEdit, purpose: entryToEdit.purpose, host: entryToEdit.host });
     setOpenMenuId(null);
+    console.log('Editing entry:', entryToEdit); // Debug edit entry
   };
 
   const handleSaveEdit = async () => {
     if (editEntry) {
       try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token'); // Adjust storage
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const response = await fetch(`http://localhost:5000/api/logbook/${editEntry.id}`, {
           method: 'PUT',
           headers: {
@@ -198,7 +241,12 @@ const VisitorLogbook = () => {
           throw new Error(errorData.message || 'Failed to update entry');
         }
         const updatedEntry = await response.json();
-        setLogEntries(logEntries.map(entry => entry.id === editEntry.id ? { ...entry, ...updatedEntry } : entry));
+        console.log('Edit response:', updatedEntry); // Debug response
+        setLogEntries(logEntries.map(entry => entry.id === editEntry.id ? { 
+          ...entry, 
+          host: updatedEntry.host || entry.host, 
+          purpose: updatedEntry.purpose || entry.purpose 
+        } : entry));
         setEditEntry(null);
         setMessage('Entry updated successfully');
         setTimeout(() => setMessage(null), 3000);
@@ -236,7 +284,7 @@ const VisitorLogbook = () => {
       theme: 'striped',
       margin: { top: 20 },
       styles: { fontSize: 10 },
-      headStyles: { fillColor: [18, 78, 102] }, // Match your theme color
+      headStyles: { fillColor: [18, 78, 102] },
     });
 
     doc.save('visitor_logbook.pdf');
@@ -266,7 +314,7 @@ const VisitorLogbook = () => {
               <label className="block text-sm text-[#2E3944] mb-1">Host</label>
               <input
                 type="text"
-                value={editEntry.host}
+                value={editEntry.host || ''}
                 onChange={(e) => setEditEntry({ ...editEntry, host: e.target.value })}
                 className="w-full p-2 border border-[#D3D9D2] rounded-lg"
               />
@@ -275,7 +323,7 @@ const VisitorLogbook = () => {
               <label className="block text-sm text-[#2E3944] mb-1">Purpose</label>
               <input
                 type="text"
-                value={editEntry.purpose}
+                value={editEntry.purpose || ''}
                 onChange={(e) => setEditEntry({ ...editEntry, purpose: e.target.value })}
                 className="w-full p-2 border border-[#D3D9D2] rounded-lg"
               />
@@ -351,7 +399,7 @@ const VisitorLogbook = () => {
           </button>
         </div>
         <div className="text-sm text-[#2E3944] font-medium">
-          Date Range: {filteredEntries.length > 0 
+          Date Range: {filteredEntries.length > 0
             ? `${formatDate(filteredEntries[0].checkIn || filteredEntries[0].createdAt)} - ${formatDate(filteredEntries[filteredEntries.length - 1].checkIn || filteredEntries[filteredEntries.length - 1].createdAt)}`
             : 'No data'}
         </div>
@@ -453,7 +501,7 @@ const VisitorLogbook = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
                       {entry.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative action-menu-container">
                       <button
                         onClick={() => toggleMenu(entry.id)}
                         className="text-[#748D92] hover:text-[#124E66]"
@@ -462,26 +510,25 @@ const VisitorLogbook = () => {
                         <BsThreeDotsVertical />
                       </button>
                       {openMenuId === entry.id && (
-                        <div className="absolute right-0 z-10 mt-2 w-48 bg-white rounded-md shadow-lg border border-[#D3D9D2]">
+                        <div className="absolute right-0 top-10 z-[100] mt-2 w-48 bg-white rounded-md shadow-lg border border-[#D3D9D2]">
                           <div className="py-1">
                             <button
                               onClick={() => handleEdit(entry.id)}
                               className="flex items-center px-4 py-2 text-sm text-[#2E3944] hover:bg-[#F8F9FA] w-full text-left"
-                              aria-label={`Edit ${entry.visitor}`}
                             >
                               <FiEdit className="mr-2" /> Edit
                             </button>
-                            <button
-                              onClick={() => handleCheckOut(entry.id)}
-                              className="flex items-center px-4 py-2 text-sm text-[#2E3944] hover:bg-[#F8F9FA] w-full text-left"
-                              aria-label={`Check out ${entry.visitor}`}
-                            >
-                              <FiLogOut className="mr-2" /> Check Out
-                            </button>
+                            {entry.status !== 'Checked-Out' && (
+                              <button
+                                onClick={() => handleCheckOut(entry.id)}
+                                className="flex items-center px-4 py-2 text-sm text-[#2E3944] hover:bg-[#F8F9FA] w-full text-left"
+                              >
+                                <FiLogOut className="mr-2" /> Check Out
+                              </button>
+                            )}
                             <button
                               onClick={() => handleDelete(entry.id)}
                               className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-[#F8F9FA] w-full text-left"
-                              aria-label={`Delete ${entry.visitor}`}
                             >
                               <FiTrash2 className="mr-2" /> Delete
                             </button>

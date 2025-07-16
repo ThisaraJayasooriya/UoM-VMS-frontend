@@ -1,78 +1,74 @@
-import { useState } from 'react';
-import { FiSearch, FiDownload, FiCalendar, FiFilter } from 'react-icons/fi';
-import { BsArrowsExpand } from 'react-icons/bs';
+import { useState, useEffect } from 'react';
+import { FiSearch, FiDownload, FiCalendar } from 'react-icons/fi';
 
 const VisitorHistoryReport = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [dateRange, setDateRange] = useState({
-    start: '',
-    end: ''
-  });
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [historyData, setHistoryData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const historyData = [
-    {
-      id: 1,
-      visitor: 'John Doe',
-      host: 'Sarah Smith',
-      purpose: 'Business Meeting',
-      checkIn: '2023-06-15 14:00',
-      checkOut: '2023-06-15 15:30',
-      duration: '1h 30m',
-      department: 'Computer Science',
-      status: 'Completed'
-    },
-    {
-      id: 2,
-      visitor: 'Jane Smith',
-      host: 'Michael Johnson',
-      purpose: 'Interview',
-      checkIn: '2023-06-15 10:00',
-      checkOut: '2023-06-15 11:45',
-      duration: '1h 45m',
-      department: 'Engineering',
-      status: 'Completed'
-    },
-    {
-      id: 3,
-      visitor: 'Robert Chen',
-      host: 'Sarah Smith',
-      purpose: 'Client Visit',
-      checkIn: '2023-06-16 09:30',
-      checkOut: '2023-06-16 11:00',
-      duration: '1h 30m',
-      department: 'Administration',
-      status: 'Completed'
-    },
-    {
-      id: 4,
-      visitor: 'Emily Wilson',
-      host: 'David Brown',
-      purpose: 'Delivery',
-      checkIn: '2023-06-17 13:15',
-      checkOut: '2023-06-17 13:45',
-      duration: '30m',
-      department: 'Facilities',
-      status: 'Completed'
-    },
-  ];
+  // Fetch data from backend
+  useEffect(() => {
+    const fetchHistoryData = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const response = await fetch(
+          `http://localhost:5000/api/visitor-history?searchQuery=${encodeURIComponent(searchQuery)}&selectedDate=${encodeURIComponent(selectedDate)}`,
+          {
+            method: 'GET',
+            credentials: 'include', // Include cookies for CORS
+            headers: {
+              'Authorization': token ? `Bearer ${token}` : '',
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch visitor history data');
+        }
+        const data = await response.json();
+        
+        console.log('Raw backend response:', data); // Debug raw response
 
-  const filters = ['All', 'Completed', 'Early Departure', 'No Show'];
+        // Map backend data to frontend format (as fallback)
+        const mappedData = data.map(entry => ({
+          id: entry.id || 'Unknown',
+          visitor: entry.visitor || 'Unknown',
+          host: entry.host || 'Not Assigned',
+          purpose: entry.purpose || 'Not Specified',
+          checkIn: entry.checkIn ? new Date(entry.checkIn).toISOString() : null,
+          checkOut: entry.checkOut ? new Date(entry.checkOut).toISOString() : null,
+        }));
 
+        console.log('Fetched and mapped data:', mappedData); // Debug frontend data
+
+        setHistoryData(mappedData);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch visitor history');
+        setLoading(false);
+        console.error('Fetch error:', err);
+      }
+    };
+
+    fetchHistoryData();
+  }, [searchQuery, selectedDate]);
+
+  // Filter data (minimal, as backend handles most filtering)
   const filteredData = historyData.filter(entry => {
-    const matchesFilter = activeFilter === 'All' || entry.status === activeFilter;
-    const matchesSearch = entry.visitor.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         entry.host.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         entry.purpose.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDate = (!dateRange.start || entry.checkIn >= dateRange.start) && 
-                       (!dateRange.end || entry.checkIn <= dateRange.end);
+    const matchesSearch = 
+      (entry.visitor?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+      (entry.id?.toString().includes(searchQuery) || '');
+    const matchesDate = !selectedDate || entry.checkIn?.startsWith(selectedDate);
     
-    return matchesFilter && matchesSearch && matchesDate;
+    return matchesSearch && matchesDate;
   });
 
   const formatDate = (datetime) => {
     if (!datetime) return '-';
     const date = new Date(datetime);
+    if (isNaN(date)) return '-';
     return date.toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'short', 
@@ -83,13 +79,41 @@ const VisitorHistoryReport = () => {
   const formatTime = (datetime) => {
     if (!datetime) return '-';
     const date = new Date(datetime);
+    if (isNaN(date)) return '-';
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const exportToPDF = () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(12);
+    doc.text('Visitor History Report', 10, 10);
+
+    const headers = [['Visitor ID', 'Visitor', 'Host', 'Purpose', 'Check In', 'Check Out']];
+    const data = filteredData.map(entry => [
+      entry.id,
+      entry.visitor,
+      entry.host,
+      entry.purpose,
+      `${formatDate(entry.checkIn)} ${formatTime(entry.checkIn)}`,
+      entry.checkOut ? `${formatDate(entry.checkOut)} ${formatTime(entry.checkOut)}` : '-',
+    ]);
+
+    doc.autoTable({
+      head: headers,
+      body: data,
+      startY: 20,
+      theme: 'striped',
+      margin: { top: 20 },
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [18, 78, 102] },
+    });
+
+    doc.save('visitor_history_report.pdf');
   };
 
   return (
     <div className="flex-1 overflow-auto p-6 bg-[#F8F9FA] mt-10">
-      
-      
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <div className="relative flex-1">
@@ -98,158 +122,93 @@ const VisitorHistoryReport = () => {
             </div>
             <input
               type="text"
-              placeholder="Search visitors, hosts or purpose..."
+              placeholder="Search by visitor name or ID..."
               className="pl-10 pr-4 py-2 w-full border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           
-          <div className="flex gap-2">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiCalendar className="text-[#748D92]" />
-              </div>
-              <input
-                type="date"
-                className="pl-10 pr-4 py-2 border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
-                value={dateRange.start}
-                onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
-                placeholder="Start date"
-              />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiCalendar className="text-[#748D92]" />
             </div>
-            
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiCalendar className="text-[#748D92]" />
-              </div>
-              <input
-                type="date"
-                className="pl-10 pr-4 py-2 border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
-                value={dateRange.end}
-                onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
-                placeholder="End date"
-              />
-            </div>
+            <input
+              type="date"
+              className="pl-10 pr-4 py-2 border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              placeholder="Select date"
+            />
           </div>
         </div>
         
         <div className="flex gap-2">
-          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#D3D9D2] text-[#2E3944] rounded-lg hover:bg-[#F8F9FA] transition-colors">
-            <FiFilter />
-            <span>Filter</span>
-          </button>
-          
-          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-[#124E66] text-white rounded-lg hover:bg-[#0E3D52] transition-colors">
+          <button
+            onClick={exportToPDF}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-[#124E66] text-white rounded-lg hover:bg-[#0E3D52] transition-colors"
+          >
             <FiDownload />
             <span>Export</span>
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {filters.map(filter => (
-          <button
-            key={filter}
-            onClick={() => setActiveFilter(filter)}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              activeFilter === filter
-                ? 'bg-[#124E66] text-white'
-                : 'bg-white text-[#2E3944] hover:bg-[#D3D9D2]'
-            }`}
-          >
-            {filter}
-          </button>
-        ))}
-      </div>
-
       <div className="bg-white rounded-xl shadow-sm border border-[#D3D9D2] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-[#D3D9D2]">
-            <thead className="bg-[#F8F9FA]">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                  Visitor ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                  Visitor
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                  Host
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                  Department
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                  Purpose
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                  Visit Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                  Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-[#D3D9D2]">
-              {filteredData.map((entry) => (
-                <tr key={entry.id} className="hover:bg-[#F8F9FA]">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
-                    {entry.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#212A31]">
-                    {entry.visitor}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
-                    {entry.host}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
-                    {entry.department}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
-                    {entry.purpose}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
-                    <div>{formatDate(entry.checkIn)}</div>
-                    <div className="text-xs text-[#748D92]">
-                      {formatTime(entry.checkIn)} - {formatTime(entry.checkOut)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
-                    {entry.duration}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      entry.status === 'Completed' 
-                        ? 'bg-green-100 text-green-800' 
-                        : entry.status === 'Early Departure'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                    }`}>
-                      {entry.status}
-                    </span>
-                  </td>
+          {loading ? (
+            <div className="p-4 text-center text-[#2E3944]">Loading...</div>
+          ) : error ? (
+            <div className="p-4 text-center text-red-500">{error}</div>
+          ) : filteredData.length === 0 ? (
+            <div className="p-4 text-center text-[#2E3944]">No visitor history found</div>
+          ) : (
+            <table className="min-w-full divide-y divide-[#D3D9D2]">
+              <thead className="bg-[#F8F9FA]">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
+                    Visitor ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
+                    Visitor
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
+                    Host
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
+                    Purpose
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider">
+                    Visit Date & Time
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="bg-[#F8F9FA] px-6 py-3 flex flex-col md:flex-row justify-between items-center border-t border-[#D3D9D2]">
-          <div className="text-sm text-[#748D92] mb-2 md:mb-0">
-            Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredData.length}</span> of <span className="font-medium">{historyData.length}</span> entries
-          </div>
-          <div className="flex gap-2">
-            <button className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2]">
-              Previous
-            </button>
-            <button className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2]">
-              Next
-            </button>
-          </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-[#D3D9D2]">
+                {filteredData.map((entry) => (
+                  <tr key={entry.id} className="hover:bg-[#F8F9FA]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
+                      {entry.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#212A31]">
+                      {entry.visitor}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
+                      {entry.host || 'Not Assigned'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
+                      {entry.purpose}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
+                      <div>{formatDate(entry.checkIn)}</div>
+                      <div className="text-xs text-[#748D92]">
+                        {formatTime(entry.checkIn)} - {formatTime(entry.checkOut)}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
