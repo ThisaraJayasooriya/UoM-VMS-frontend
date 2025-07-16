@@ -8,28 +8,20 @@ const AccessControl = () => {
   const [newUser, setNewUser] = useState({ email: '', role: '', reason: '' }); // Form state for blocking
 
   // Fetch blocked users from the backend on component mount
-  useEffect(() => {
-    const fetchBlockedUsers = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch('http://localhost:5000/api/staff/blocked');
-        const data = await response.json();
-        console.log("Fetched blocked users response:", data);
-        if (Array.isArray(data)) {
-          setBlockedUsers(data);
-        } else {
-          setBlockedUsers([]);
-          console.warn("Unexpected data format from /api/staff/blocked:", data);
-        }
-      } catch (error) {
-        console.error('Error fetching blocked users:', error);
-        setBlockedUsers([]);
-      }
-      setIsLoading(false);
-    };
-
-    fetchBlockedUsers();
-  }, []); // Runs on mount, ensuring data loads on navigation or refresh
+useEffect(() => {
+  const fetchBlockedUsers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/staff/blocked');
+      const data = await response.json();
+      setBlockedUsers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setBlockedUsers([]);
+    }
+    setIsLoading(false);
+  };
+  fetchBlockedUsers();
+}, []);// Runs on mount, ensuring data loads on navigation or refresh
 
   // Handle unblocking a user
   const handleUnblockUser = async (userId) => {
