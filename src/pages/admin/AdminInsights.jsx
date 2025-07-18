@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
+  LineChart,
+  Line,
   BarChart,
   Bar,
   XAxis,
@@ -13,7 +15,7 @@ import {
   Legend,
 } from "recharts";
 
-const PIE_COLORS = ["#124E66", "#5f767c"]; 
+const PIE_COLORS = ["#124E66", "#5f767c"];
 
 const AdminInsights = () => {
   const [insights, setInsights] = useState(null);
@@ -59,19 +61,20 @@ const AdminInsights = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold" style={{ color: "#124E66" }}>
-           
+          Admin Insights
         </h2>
-          <select
-            className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-[#124E66] focus:outline-none focus:ring-2 focus:ring-[#124E66] hover:border-[#124E66] transition"
-            value={range}
-            onChange={handleRangeChange}
-          >
-            <option value="day">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-          </select>
+        <select
+          className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-[#124E66] focus:outline-none focus:ring-2 focus:ring-[#124E66] hover:border-[#124E66] transition"
+          value={range}
+          onChange={handleRangeChange}
+        >
+          <option value="day">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+        </select>
       </div>
 
       {/* Summary Cards */}
@@ -94,19 +97,19 @@ const AdminInsights = () => {
         </div>
       </div>
 
-      {/* Charts */}
+      {/* Charts Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Bar Chart */}
+        {/* Line Chart */}
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-lg font-medium mb-4" style={{ color: "#124E66" }}>Visitor Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={insights.trend}>
+            <LineChart data={insights.trend}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" stroke="#124E66" />
               <YAxis allowDecimals={false} stroke="#124E66" />
               <Tooltip />
-              <Bar dataKey="count" fill="#748D92" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Line type="monotone" dataKey="count" stroke="#748D92" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 8 }} />
+            </LineChart>
           </ResponsiveContainer>
         </div>
 
@@ -132,6 +135,20 @@ const AdminInsights = () => {
               />
               <Legend verticalAlign="bottom" height={36} />
             </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Visitor Distribution Bar Chart */}
+        <div className="bg-white p-4 rounded-lg shadow md:col-span-2">
+          <h3 className="text-lg font-medium mb-4" style={{ color: "#124E66" }}>Visitor Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={insights.visitorDistribution}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="_id" stroke="#124E66" />
+              <YAxis allowDecimals={false} stroke="#124E66" />
+              <Tooltip />
+              <Bar dataKey="count" fill="#124E66" barSize={50} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
