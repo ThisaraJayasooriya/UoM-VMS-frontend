@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../../components/common/Sidebar";
 import Headerbar from "../../components/common/Headerbar";
 import {
@@ -15,8 +15,20 @@ import {
 
 function AdminLayout() {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
+    const [userName, setUserName] = useState(""); // 🔹 new state for username
+
   const navigate = useNavigate();
   const location = useLocation();
+   const state = location.state || {};
+
+    // 🔹 Load userName from localStorage on mount
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
+    if (storedUser && storedUser.username) {
+      setUserName(storedUser.username);
+    }
+  }, []);
+
 
   // Toggle sidebar visibility
   const toggleSidebar = () => {
@@ -95,8 +107,9 @@ function AdminLayout() {
         {/* Header bar with page title, user info, and sidebar toggle */}
         <Headerbar
           toggleSidebar={toggleSidebar}
-          userName="Nick"
+          userName={userName || "Admin"} // 🔹 use dynamic username
           userRole="Admin account"
+          type={state.name}
           pageTitle={getPageTitle()}   // Dynamic title
           pageSubtitle="Admin"
         />
