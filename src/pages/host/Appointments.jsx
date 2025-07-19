@@ -3,7 +3,7 @@ import { FaTimes } from "react-icons/fa";
 import { CgMenuLeftAlt } from "react-icons/cg";
 import { LuContact } from "react-icons/lu";
 import { FaPenToSquare } from "react-icons/fa6";
-import { fetchConfirmedAppointments } from "../../services/appointmentService";
+import { fetchConfirmedAppointments, rescheduleAppointment, cancelAppointment } from "../../services/appointmentService";
 
 function formatTo12Hour(time24) {
   const [hourStr, minuteStr] = time24.split(":");
@@ -37,6 +37,8 @@ export default function Appointments() {
     startTime: "",
     endTime: ""
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
    useEffect(() => {
          const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
@@ -46,26 +48,28 @@ export default function Appointments() {
        }, []);
    
      useEffect(() => {
-       const loadRequests = async () => {
-         try {
-           const data = await fetchConfirmedAppointments(hostId);
-           const formatted = data.map((a) => ({
-             id: a._id,
-             aId: a.appointmentId,
-             title: a.reason,
-             visitorName: a.firstname + " " + a.lastname,
-             phone: a.contact || "N/A",
-             date: formatDate(a.response.date),
-             time:`${formatTo12Hour(a.response.startTime)} - ${formatTo12Hour(a.response.endTime)}`
-           }));
-           setAppointments(formatted);
-         } catch (error) {
-           console.error("Failed to fetch meeting requests:", error);
-         }
-       };
-   
        if (hostId) loadRequests();
      }, [hostId]);
+
+  const loadRequests = async () => {
+    try {
+      const data = await fetchConfirmedAppointments(hostId);
+      const formatted = data.map((a) => ({
+        id: a._id,
+        aId: a.appointmentId,
+        title: a.reason,
+        visitorName: a.firstname + " " + a.lastname,
+        phone: a.contact || "N/A",
+        email: a.email || "N/A",
+        date: formatDate(a.response.date),
+        time:`${formatTo12Hour(a.response.startTime)} - ${formatTo12Hour(a.response.endTime)}`
+      }));
+      setAppointments(formatted);
+    } catch (error) {
+      console.error("Failed to fetch meeting requests:", error);
+      setError("Failed to load appointments");
+    }
+  };
 
 
 
@@ -79,16 +83,30 @@ export default function Appointments() {
     setIsCancelConfirmOpen(true); // Open the cancel confirmation popup
   }
 
-  const handleCancelConfirm = () => {
-    // TODO: Implement cancel appointment API call
-    console.log("Canceled Appointment:", selectedAppointment.id);
-    
-    // Close all popups
-    setIsCancelConfirmOpen(false);
-    setSelectedAppointment(null);
-    
-    // You would typically refresh the appointments list here
-    // loadRequests();
+  const handleCancelConfirm = async () => {
+    if (!selectedAppointment) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      await cancelAppointment(selectedAppointment.id);
+      
+      // Close all popups
+      setIsCancelConfirmOpen(false);
+      setSelectedAppointment(null);
+      
+      // Refresh appointments list
+      await loadRequests();
+      
+      console.log("Appointment canceled successfully");
+      
+    } catch (error) {
+      console.error("Failed to cancel appointment:", error);
+      setError(error.response?.data?.message || "Failed to cancel appointment. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const handleCancelConfirmClose = () => {
@@ -108,16 +126,49 @@ export default function Appointments() {
     });
   }
 
-  const handleRescheduleSubmit = () => {
-    // TODO: Implement reschedule API call
-    console.log("Rescheduling appointment:", selectedAppointment.id, "to:", rescheduleData);
-    
-    // For now, just close the popup
-    setIsReschedulePopupOpen(false);
-    setSelectedAppointment(null);
-    
-    // You would typically refresh the appointments list here
-    // loadRequests();
+  const handleRescheduleSubmit = async () => {
+    if (!selectedAppointment || !rescheduleData.date || !rescheduleData.startTime || !rescheduleData.endTime) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    if (rescheduleData.startTime >= rescheduleData.endTime) {
+      setError("End time must be after start time");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const reschedulePayload = {
+        date: rescheduleData.date,
+        startTime: rescheduleData.startTime,
+        endTime: rescheduleData.endTime
+      };
+
+      await rescheduleAppointment(selectedAppointment.id, reschedulePayload);
+      
+      // Close popup and reset data
+      setIsReschedulePopupOpen(false);
+      setSelectedAppointment(null);
+      setRescheduleData({
+        date: "",
+        startTime: "",
+        endTime: ""
+      });
+
+      // Refresh appointments list
+      await loadRequests();
+      
+      console.log("Appointment rescheduled successfully");
+      
+    } catch (error) {
+      console.error("Failed to reschedule appointment:", error);
+      setError(error.response?.data?.message || "Failed to reschedule appointment. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const handleRescheduleCancel = () => {
@@ -127,11 +178,27 @@ export default function Appointments() {
       startTime: "",
       endTime: ""
     });
+    setError(""); // Clear any error messages
   }
   if (!open) return null;
 
   return (
     <div className="relative">
+      {/* Error message display */}
+      {error && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-[60] max-w-md">
+          <div className="flex justify-between items-center">
+            <span>{error}</span>
+            <button 
+              onClick={() => setError("")}
+              className="ml-2 text-red-700 hover:text-red-900 text-xl font-bold"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
     <div  className={`pt-20 px-4 lg:px-20 transition-all duration-300 ${
         isPopupOpen || isReschedulePopupOpen || isCancelConfirmOpen ? "blur-sm pointer-events-none" : ""
       }`}>
@@ -252,7 +319,8 @@ export default function Appointments() {
           <div className="relative bg-white p-6 rounded-lg w-115 z-10 shadow-lg border-black border-solid border-1">
             <button
               onClick={handleRescheduleCancel}
-              className="absolute top-2 right-2 text-white px-4 py-2 rounded hover:bg-gray-300 transition duration-300 cursor-pointer"
+              disabled={isLoading}
+              className="absolute top-2 right-2 text-white px-4 py-2 rounded hover:bg-gray-300 transition duration-300 cursor-pointer disabled:cursor-not-allowed"
             >
               <FaTimes className="text-black text" />
             </button>
@@ -281,6 +349,7 @@ export default function Appointments() {
                   onChange={(e) => setRescheduleData({...rescheduleData, date: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   min={new Date().toISOString().split('T')[0]} // Prevent past dates
+                  disabled={isLoading}
                 />
               </div>
 
@@ -294,6 +363,7 @@ export default function Appointments() {
                     value={rescheduleData.startTime}
                     onChange={(e) => setRescheduleData({...rescheduleData, startTime: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isLoading}
                   />
                 </div>
                 
@@ -306,6 +376,7 @@ export default function Appointments() {
                     value={rescheduleData.endTime}
                     onChange={(e) => setRescheduleData({...rescheduleData, endTime: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -323,17 +394,28 @@ export default function Appointments() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={handleRescheduleCancel}
-                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-semibold cursor-pointer"
+                disabled={isLoading}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-semibold cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={handleRescheduleSubmit}
-                disabled={!rescheduleData.date || !rescheduleData.startTime || !rescheduleData.endTime || 
+                disabled={isLoading || !rescheduleData.date || !rescheduleData.startTime || !rescheduleData.endTime || 
                          rescheduleData.startTime >= rescheduleData.endTime}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
               >
-                Reschedule
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Rescheduling...
+                  </>
+                ) : (
+                  'Reschedule'
+                )}
               </button>
             </div>
           </div>
@@ -348,7 +430,8 @@ export default function Appointments() {
           <div className="relative bg-white p-6 rounded-lg w-115 z-10 shadow-lg border-black border-solid border-1">
             <button
               onClick={handleCancelConfirmClose}
-              className="absolute top-2 right-2 text-white px-4 py-2 rounded hover:bg-gray-300 transition duration-300 cursor-pointer"
+              disabled={isLoading}
+              className="absolute top-2 right-2 text-white px-4 py-2 rounded hover:bg-gray-300 transition duration-300 cursor-pointer disabled:cursor-not-allowed"
             >
               <FaTimes className="text-black text" />
             </button>
@@ -385,15 +468,27 @@ export default function Appointments() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={handleCancelConfirmClose}
-                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-semibold cursor-pointer"
+                disabled={isLoading}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-semibold cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Keep Appointment
               </button>
               <button
                 onClick={handleCancelConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-semibold cursor-pointer"
+                disabled={isLoading}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-semibold cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
               >
-                Yes, Cancel Appointment
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Canceling...
+                  </>
+                ) : (
+                  'Yes, Cancel Appointment'
+                )}
               </button>
             </div>
           </div>
