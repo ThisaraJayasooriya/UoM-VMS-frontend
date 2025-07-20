@@ -43,6 +43,7 @@ const VisitLog = () => {
         const data = await fetchAllAppointments(hostId);
         const formatted = data.map((a) => ({
           id: a._id,
+          vId: a.visitorId.visitorId,
           aId: a.appointmentId,
           purpose: a.reason,
           visitorName: a.firstname + " " + a.lastname,
@@ -162,6 +163,9 @@ const VisitLog = () => {
             <thead className="bg-[#F8F9FA]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-bold text-[#2E3944] uppercase tracking-wider">
+                  Visitor ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-[#2E3944] uppercase tracking-wider">
                   Appointment ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-[#2E3944] uppercase tracking-wider">
@@ -184,6 +188,9 @@ const VisitLog = () => {
             <tbody className="bg-white divide-y divide-[#D3D9D2]">
               {currentLogs.map((log) => (
                 <tr key={log.id} className="hover:bg-[#F8F9FA]">
+                  <td className="px-6 py-4 text-sm text-[#2E3944]">
+                    {log.vId}
+                  </td>
                   <td className="px-6 py-4 text-sm text-[#2E3944]">
                     {log.aId}
                   </td>
