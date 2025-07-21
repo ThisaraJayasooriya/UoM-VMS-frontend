@@ -34,6 +34,7 @@ const MeetingRequests = () => {
   const [duration, setDuration] = useState(30);
   const [hostId, setHostId] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [showConfirmDecline, setShowConfirmDecline] = useState(false);
   const [declineRequestId, setDeclineRequestId] = useState(null);
 
@@ -47,6 +48,10 @@ const MeetingRequests = () => {
   useEffect(() => {
     const loadRequests = async () => {
       try {
+        setIsInitialLoading(true);
+        // Add a small delay to show the loading animation
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
         const data = await fetchPendingAppointments(hostId);
         const formatted = data.map((a) => ({
           id: a._id,
@@ -60,6 +65,8 @@ const MeetingRequests = () => {
         setMeetingRequests(formatted);
       } catch (error) {
         console.error("Failed to fetch meeting requests:", error);
+      } finally {
+        setIsInitialLoading(false);
       }
     };
 
@@ -179,6 +186,120 @@ const MeetingRequests = () => {
     return "bg-green-50 text-green-700 border-green-200";
   };
 
+  // Skeleton Loading Component
+  const SkeletonLoader = () => (
+    <div className="space-y-4 animate-pulse">
+      {[...Array(3)].map((_, index) => (
+        <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-gray-300 rounded-full animate-pulse"></div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-3">
+                <div className="h-6 w-20 bg-gray-300 rounded-full animate-pulse"></div>
+              </div>
+              <div className="mb-3 p-4 bg-gray-100 rounded-lg">
+                <div className="h-4 w-32 bg-gray-300 rounded animate-pulse mb-2"></div>
+                <div className="h-6 w-3/4 bg-gray-300 rounded animate-pulse"></div>
+              </div>
+              <div className="mb-3">
+                <div className="h-4 w-48 bg-gray-300 rounded animate-pulse"></div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="h-4 w-16 bg-gray-300 rounded animate-pulse"></div>
+                <div className="h-4 w-20 bg-gray-300 rounded animate-pulse"></div>
+                <div className="h-4 w-24 bg-gray-300 rounded animate-pulse"></div>
+              </div>
+            </div>
+            <div className="w-20">
+              <div className="h-10 w-full bg-gray-300 rounded-lg animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Add custom styles for animations
+const styles = `
+  @keyframes fadeIn {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from { 
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideIn {
+    from { 
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes bounceGentle {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  
+  @keyframes pulseSlow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out forwards;
+  }
+  
+  .animate-slide-in {
+    animation: slideIn 0.6s ease-out forwards;
+  }
+  
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulseSlow 2s ease-in-out infinite;
+  }
+`;
+
+// Inject styles into the document
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = styles;
+  document.head.appendChild(styleElement);
+}
+
   return (
     <div className="pt-20 px-4 lg:px-16 max-w-6xl mx-auto">
       {/* Main Content */}
@@ -187,19 +308,19 @@ const MeetingRequests = () => {
       }`}>
         
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="mb-8 animate-fade-in">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue/10 rounded-xl">
-                <FaBell className="text-blue text-xl" />
+              <div className="p-3 bg-blue/10 rounded-xl animate-pulse-slow">
+                <FaBell className="text-blue text-xl animate-bounce-gentle" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-darkblue">Pending Requests</h1>
                 <p className="text-customgray mt-1">Review and respond to visitor appointment requests</p>
               </div>
             </div>
-            {meetingRequests.length > 0 && (
-              <div className="bg-blue text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2">
+            {meetingRequests.length > 0 && !isInitialLoading && (
+              <div className="bg-blue text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2 animate-slide-in">
                 <HiOutlineUserGroup />
                 {meetingRequests.length} Pending
               </div>
@@ -208,8 +329,12 @@ const MeetingRequests = () => {
         </div>
         
         {/* Meeting Requests */}
-        {meetingRequests.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+        {isInitialLoading ? (
+          <div className="animate-fade-in">
+            <SkeletonLoader />
+          </div>
+        ) : meetingRequests.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-xl shadow-sm animate-fade-in">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <HiOutlineDocumentText className="w-8 h-8 text-gray-400" />
             </div>
@@ -217,7 +342,7 @@ const MeetingRequests = () => {
             <p className="text-customgray">You're all caught up! No pending requests at the moment.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-slide-up">
             {meetingRequests.map((request) => (
               <div
                 key={request.id}
