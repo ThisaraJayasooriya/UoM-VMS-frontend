@@ -17,6 +17,13 @@ const AddTimeSlotsModal = ({
 }) => {
   if (!isOpen) return null;
 
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const minDate = `${yyyy}-${mm}-${dd}`;
+
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
@@ -105,6 +112,7 @@ const AddTimeSlotsModal = ({
                       <input
                         type="date"
                         value={slot.date}
+                        min={minDate}
                         onChange={(e) => onDateChange(index, e.target.value)}
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue/20 focus:border-blue transition-all"
                       />
