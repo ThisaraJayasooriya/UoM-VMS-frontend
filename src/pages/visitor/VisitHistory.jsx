@@ -26,7 +26,7 @@ function Visithistory() {
         
         // Filter only appointments with completed
         const completedVisits = appointments.filter(appointment => 
-          appointment.status === "completed"
+          appointment.status === "Completed"
         );
         
         // Format the data for our component

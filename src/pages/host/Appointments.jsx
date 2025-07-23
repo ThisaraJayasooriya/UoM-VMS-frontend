@@ -260,6 +260,9 @@ export default function Appointments() {
     </div>
   );
 
+  // For navigation
+  const navigate = typeof window !== 'undefined' && window.history ? () => window.history.back() : null;
+
   return (
     <div className="relative">
       {/* Error message display */}
@@ -280,10 +283,20 @@ export default function Appointments() {
       <div className={`pt-20 px-4 lg:px-16 max-w-7xl mx-auto transition-all duration-300 ${
         isPopupOpen || isReschedulePopupOpen || isCancelConfirmOpen ? "blur-sm pointer-events-none" : ""
       }`}>
-        
+        {/* Back Button */}
+        <div className="mb-4 animate-fade-in">
+          <button
+            onClick={() => navigate && navigate()}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-blue text-blue rounded-lg shadow-sm hover:bg-blue/10 transition-colors font-semibold text-sm mb-2"
+            aria-label="Go back"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            Back
+          </button>
+        </div>
         {/* Page Header */}
         <div className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue/10 rounded-xl animate-pulse-slow">
                 <HiOutlineCalendar className="text-blue text-xl animate-bounce-gentle" />
