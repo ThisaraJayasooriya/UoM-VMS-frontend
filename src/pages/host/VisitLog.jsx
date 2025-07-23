@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
-import { FiSearch, FiDownload, FiEye } from "react-icons/fi";
+import { FiSearch, FiDownload, FiEye, FiFlag } from "react-icons/fi";
 import { HiOutlineDocumentText, HiOutlineClipboardList } from "react-icons/hi";
 import { fetchAllAppointments } from "../../services/appointmentService";
+import { reportBadVisitor } from "../../services/reportVisitorService";
+// Dummy report API (replace with real API call)
+
 
 function formatTo12Hour(time24) {
   const [hourStr, minuteStr] = time24.split(":");
@@ -26,11 +29,60 @@ const VisitLog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [currentPage, setCurrentPage] = useState(1); // Track current page
-  const logsPerPage = 5; // Number of logs to show per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const logsPerPage = 5;
   const [appointments, setAppointments] = useState([]);
   const [hostId, setHostId] = useState("");
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Report Visitor Modal State
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportCategory, setReportCategory] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
+  const [reportSuccess, setReportSuccess] = useState(false);
+  const [reportAppointmentId, setReportAppointmentId] = useState("");
+  const [error, setError] = useState("");
+
+  // Open report modal
+  const handleOpenReport = (appointmentId) => {
+    setReportReason("");
+    setReportCategory("");
+    setReportSuccess(false);
+    setError("");
+    setReportAppointmentId(appointmentId);
+    setIsReportModalOpen(true);
+  };
+
+  // Submit report
+  const handleSubmitReport = async () => {
+    if (!reportReason || !reportCategory) {
+      setError("Please provide both a reason and a category.");
+      return;
+    }
+    setIsReporting(true);
+    setError("");
+    try {
+      const badVisitorReport = {
+        appointmentId: reportAppointmentId,
+        reason: reportReason,
+        category: reportCategory,
+        hostId: hostId,
+      }
+      console.log("bad visitor report", badVisitorReport);
+
+      await reportBadVisitor(badVisitorReport);
+      setReportSuccess(true);
+      setTimeout(() => {
+        setIsReportModalOpen(false);
+      }, 1200);
+      console.log("Report submitted successfully", );
+    } catch (e) {
+      setError("Failed to submit report. Please try again.");
+    } finally {
+      setIsReporting(false);
+    }
+  };
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userData")); // adjust key based on your login
@@ -288,8 +340,15 @@ const VisitLog = () => {
                         <td className="px-6 py-4 text-sm text-[#2E3944]">
                           {log.vId}
                         </td>
-                        <td className="px-6 py-4 text-sm text-[#2E3944]">
+                        <td className="px-6 py-4 text-sm text-[#2E3944] flex items-center gap-2">
                           {log.aId}
+                          <button
+                            title="Report Visitor"
+                            onClick={() => handleOpenReport(log.aId)}
+                            className="ml-2 p-1 rounded hover:bg-yellow-100 border border-yellow-200 text-yellow-700 transition-colors"
+                          >
+                            <FiFlag className="w-4 h-4" />
+                          </button>
                         </td>
                         <td className="px-6 py-4 text-sm text-[#2E3944]">
                           {log.visitorName}
@@ -315,19 +374,21 @@ const VisitLog = () => {
               <div className="bg-[#F8F9FA] px-6 py-3 flex flex-col md:flex-row justify-between items-center border-t border-[#D3D9D2]">
                 <div className="text-sm text-[#748D92] mb-2 md:mb-0">
                   Showing <span className="font-medium">{indexOfFirstLog + 1}</span>{" "}
-                  to <span className="font-medium">{indexOfLastLog}</span> of{" "}
+                  to <span className="font-medium">{Math.min(indexOfLastLog, filteredLogs.length)}</span> of{" "}
                   <span className="font-medium">{filteredLogs.length}</span> entries
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={prevPage}
-                    className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2]"
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
                   <button
                     onClick={nextPage}
-                    className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2]"
+                    disabled={currentPage >= Math.ceil(filteredLogs.length / logsPerPage)}
+                    className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>
@@ -337,6 +398,100 @@ const VisitLog = () => {
           </div>
         )}
       </div>
+
+      {/* Report Visitor Modal */}
+      {isReportModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md z-10 overflow-hidden border border-[#D3D9D2]">
+            <div className="bg-gradient-to-r from-[#124E66] to-[#2E3944] text-white px-5 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Report Visitor</h3>
+                <p className="text-[#748D92] text-sm mt-1">Appointment ID: {reportAppointmentId}</p>
+              </div>
+              <button
+                onClick={() => setIsReportModalOpen(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                disabled={isReporting}
+              >
+                <span className="text-white text-xl">×</span>
+              </button>
+            </div>
+            <div className="p-6 space-y-5">
+              {reportSuccess ? (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 font-semibold text-center">
+                  Report submitted successfully!
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold text-[#2E3944] mb-2">Category *</label>
+                    <select
+                      className="w-full p-3 border border-[#D3D9D2] rounded-lg focus:ring-2 focus:ring-[#124E66] focus:border-[#124E66] transition-all disabled:bg-gray-100"
+                      value={reportCategory}
+                      onChange={(e) => setReportCategory(e.target.value)}
+                      disabled={isReporting}
+                    >
+                      <option value="">Select category</option>
+                      <option value="Disruptive Behavior">Disruptive Behavior</option>
+                      <option value="Policy Violation">Policy Violation</option>
+                      <option value="Security Concern">Security Concern</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[#2E3944] mb-2">Reason *</label>
+                    <textarea
+                      className="w-full p-3 border border-[#D3D9D2] rounded-lg focus:ring-2 focus:ring-[#124E66] focus:border-[#124E66] transition-all disabled:bg-gray-100"
+                      rows={3}
+                      value={reportReason}
+                      onChange={(e) => setReportReason(e.target.value)}
+                      disabled={isReporting}
+                      placeholder="Describe the issue with the visitor..."
+                    />
+                  </div>
+                  {error && (
+                    <div className="p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm font-medium">
+                      {error}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            <div className="bg-[#F8F9FA] px-6 py-4 flex justify-end gap-3 border-t border-[#D3D9D2]">
+              {!reportSuccess && (
+                <button
+                  onClick={handleSubmitReport}
+                  disabled={isReporting}
+                  className="px-4 py-2 text-sm bg-[#124E66] text-white rounded-lg hover:bg-[#2E3944] transition-colors font-medium shadow-sm disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isReporting ? (
+                    <>
+                      <svg className="animate-spin w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <FiFlag className="w-3 h-3" />
+                      Submit Report
+                    </>
+                  )}
+                </button>
+              )}
+              <button
+                onClick={() => setIsReportModalOpen(false)}
+                disabled={isReporting}
+                className="px-4 py-2 text-sm bg-white border border-[#D3D9D2] rounded-lg hover:bg-[#F8F9FA] transition-colors font-medium text-[#2E3944]"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
