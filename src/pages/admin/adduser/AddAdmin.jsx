@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const AddAdmin = () => {
-  // Manage form state for admin details
   const [admin, setAdmin] = useState({
     username: "",
     name: "",
@@ -15,34 +15,30 @@ const AddAdmin = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState({
+    password: false, // Default: password hidden, shows FiEyeOff (closed eye)
+    confirmPassword: false, // Default: confirmPassword hidden, shows FiEyeOff (closed eye)
+  });
   const navigate = useNavigate();
 
-  // Define the fields to be rendered and validated
-  const fields = ["username", "name", "email", "phone", "password","confirmPassword", "nicNumber"];
+  const fields = ["username", "name", "email", "phone", "password", "confirmPassword", "nicNumber"];
 
-  // Function to validate form input values
   const validateForm = (data) => {
     let tempErrors = {};
-
     const phoneRegex = /^[0-9]{9}$/;
     const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
     const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
-    // Loop through fields and validate
     fields.forEach((field) => {
       const value = data[field] || "";
-
-      // Check required fields
-      if (["username", "name", "email", "phone", "password","confirmPassword"].includes(field)) {
+      if (["username", "name", "email", "phone", "password", "confirmPassword"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
-        if (field === "confirmPassword" && value && data.password !== value) {
-         tempErrors[field] = "Passwords do not match";
-        }
-
-      // Specific validations
+      if (field === "confirmPassword" && value && data.password !== value) {
+        tempErrors[field] = "Passwords do not match";
+      }
       if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
       if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
       if (field === "phone" && value && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
@@ -56,31 +52,25 @@ const AddAdmin = () => {
     return tempErrors;
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate before sending
     const tempErrors = validateForm(admin);
     setErrors(tempErrors);
 
     if (Object.keys(tempErrors).length === 0) {
       setIsLoading(true);
       try {
-        // Send POST request to backend API
         const res = await fetch("http://localhost:5000/api/staff/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...admin,
-            role: "admin", // Set role as admin
+            role: "admin",
             registeredDate: new Date().toLocaleString(),
           }),
         });
 
         const data = await res.json();
-
-        // Success or failure handling
         if (res.ok && data.success) {
           if (data.message.includes("email sent") || !data.message.includes("failed to send")) {
             toast.success("Admin registered and email sent successfully!");
@@ -101,22 +91,23 @@ const AddAdmin = () => {
     }
   };
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setAdmin((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "", general: "" }));
   };
 
-  // Cancel and navigate back
   const handleCancel = () => {
     navigate("/admin/userdetails/admin");
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
       <div className="bg-[#FFFFFF] w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-[#124E66] to-[#1d4756] px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-[#FFFFFF]">Add New Admin</h2>
           <button
@@ -128,31 +119,51 @@ const AddAdmin = () => {
           </button>
         </div>
 
-        {/* Form body */}
         <form onSubmit={handleSubmit} className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]">
-          {/* Render each form input */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map((field) => (
-              <div key={field}>
-                <label className="block mb-1 text-sm font-medium text-[#374151] capitalize">
-                  {field} <span className="text-[#EF4444]">*</span>
+              <div
+                key={field}
+                className={`flex flex-col ${field === "confirmPassword" ? "space-y-4" : "space-y-1"}`}
+                style={field === "confirmPassword" ? { marginBottom: "16px" } : {}}
+              >
+                <label className="block text-sm font-medium text-[#374151] capitalize">
+                  {field.replace(/([A-Z])/g, " $1").trim()} <span className="text-[#EF4444]">*</span>
                 </label>
-                <input
-                  type={field === "password" || field === "confirmPassword" ? "password" : "text"}
-                  name={field}
-                  value={admin[field] || ""}
-                  placeholder={`Enter ${field}`}
-                  onChange={handleChange}
-                  className={`w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-                    errors[field]
-                      ? "border-[#EF4444] focus:ring-[#F87171]"
-                      : "border-[#D1D5DB] focus:ring-[#3B82F6]"
-                  } transition duration-200 bg-[#FFFFFF]`}
-                  aria-required="true"
-                  aria-invalid={!!errors[field]}
-                  aria-describedby={errors[field] ? `error-${field}` : undefined}
-                  disabled={isLoading}
-                />
+                <div className="relative">
+                  <input
+                    type={
+                      field === "password" || field === "confirmPassword"
+                        ? showPassword[field]
+                          ? "text"
+                          : "password"
+                        : "text"
+                    }
+                    name={field}
+                    value={admin[field] || ""}
+                    placeholder={`Enter ${field.replace(/([A-Z])/g, " $1").trim()}`}
+                    onChange={handleChange}
+                    className={`w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
+                      errors[field]
+                        ? "border-[#EF4444] focus:ring-[#F87171]"
+                        : "border-[#D1D5DB] focus:ring-[#3B82F6]"
+                    } transition duration-200 bg-[#FFFFFF] pr-10`}
+                    aria-required="true"
+                    aria-invalid={!!errors[field]}
+                    aria-describedby={errors[field] ? `error-${field}` : undefined}
+                    disabled={isLoading}
+                  />
+                  {(field === "password" || field === "confirmPassword") && (
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility(field)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#6B7280] hover:text-[#374151]"
+                      aria-label={showPassword[field] ? "Hide password" : "Show password"}
+                    >
+                      {showPassword[field] ? <FiEye /> : <FiEyeOff />}
+                    </button>
+                  )}
+                </div>
                 {errors[field] && (
                   <p id={`error-${field}`} className="text-[#EF4444] text-sm mt-1">
                     {errors[field]}
@@ -162,14 +173,12 @@ const AddAdmin = () => {
             ))}
           </div>
 
-          {/* General error display */}
           {errors.general && (
             <div className="col-span-full text-[#EF4444] text-sm mt-4 text-center">
               {errors.general}
             </div>
           )}
 
-          {/* Action buttons */}
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
             <button
               type="button"

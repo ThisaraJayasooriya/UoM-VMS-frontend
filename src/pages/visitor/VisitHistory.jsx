@@ -24,9 +24,9 @@ function Visithistory() {
         // Fetch appointments from backend
         const appointments = await getAppointmentStatus(visitorId);
         
-        // Filter only appointments with completed or confirmed status
+        // Filter only appointments with completed
         const completedVisits = appointments.filter(appointment => 
-          appointment.status === "completed" || appointment.status === "confirmed"
+          appointment.status === "completed"
         );
         
         // Format the data for our component

@@ -4,57 +4,47 @@ import {
   FaUserCheck,
   FaUserTimes,
   FaClipboardList,
-  FaExclamationCircle,
-  FaPlus,
-  FaChartLine,
+  FaCalendarDay,  // ✅ replaced graph icon with calendar-day
   FaSpinner,
   FaBell,
+  FaPlus,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  const [userSummary, setUserSummary] = useState([]);
+  const [todayStats, setTodayStats] = useState({
+    expectedVisitorsToday: 0,
+    totalCheckedIn: 0,
+    totalCheckedOut: 0,
+  });
+  const [todayAppointments, setTodayAppointments] = useState(0);
   const [recentActivities, setRecentActivities] = useState([]);
+  const [userSummary, setUserSummary] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Static statistics (later can fetch from backend)
-  const stats = [
-    {
-      title: "Visitors Today",
-      value: 58,
-      change: "+12%",
-      icon: <FaUsers className="text-[#124E66] text-2xl" />,
-      bgColor:
-        "bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))]",
-    },
-    {
-      title: "Checked-In",
-      value: 39,
-      change: "+8%",
-      icon: <FaUserCheck className="text-[#124E66] text-2xl" />,
-      bgColor:
-        "bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))]",
-    },
-    {
-      title: "Checked-Out",
-      value: 28,
-      change: "-4%",
-      icon: <FaUserTimes className="text-[#124E66] text-2xl" />,
-      bgColor:
-        "bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))]",
-    },
-    {
-      title: "Pending Actions",
-      value: 5,
-      change: "+2%",
-      icon: <FaExclamationCircle className="text-[#124E66] text-2xl" />,
-      bgColor:
-        "bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))]",
-    },
-  ];
+  // ✅ Fetch today visitor stats + today appointments
+  useEffect(() => {
+    // Fetch today visitors
+    fetch("http://localhost:5000/api/security/stats")
+      .then((res) => res.json())
+      .then((data) => {
+        setTodayStats({
+          expectedVisitorsToday: data.expectedVisitorsToday || 0,
+          totalCheckedIn: data.totalCheckedIn || 0,
+          totalCheckedOut: data.totalCheckedOut || 0,
+        });
+      })
+      .catch((err) => console.error("Error fetching visitor stats:", err));
+
+    // Fetch today appointments
+    fetch("http://localhost:5000/api/appointment/today/count")
+      .then((res) => res.json())
+      .then((data) => setTodayAppointments(data.todayAppointments || 0))
+      .catch((err) => console.error("Error fetching today appointments:", err));
+  }, []);
 
   // ✅ Fetch User Summary Counts
   useEffect(() => {
@@ -86,7 +76,6 @@ const AdminDashboard = () => {
         setLoading(false);
       }
     };
-
     fetchUserSummary();
   }, []);
 
@@ -98,7 +87,6 @@ const AdminDashboard = () => {
         const data = await res.json();
 
         if (data.success) {
-          // Format into activity items
           const formatted = data.data.map((notif) => ({
             id: notif._id,
             message: notif.message,
@@ -115,33 +103,54 @@ const AdminDashboard = () => {
         console.error("❌ Failed to fetch latest notifications", error);
       }
     };
-
     fetchLatestNotifications();
   }, []);
 
-  // ✅ Redirect to full Admin Notifications page
   const handleShowMore = () => {
-    navigate("/admin/notifications"); // ✅ This matches Notifications.jsx
+    navigate("/admin/notifications");
   };
+
+  // ✅ Top 4 cards
+  const todayCards = [
+    {
+      title: "Expected Visitors Today",
+      value: todayStats.expectedVisitorsToday,
+      icon: <FaUsers className="text-[#124E66] text-2xl" />,
+    },
+    {
+      title: "Checked-In Today",
+      value: todayStats.totalCheckedIn,
+      icon: <FaUserCheck className="text-[#124E66] text-2xl" />,
+    },
+    {
+      title: "Checked-Out Today",
+      value: todayStats.totalCheckedOut,
+      icon: <FaUserTimes className="text-[#124E66] text-2xl" />,
+    },
+    {
+      title: "Appointments Requested Today",
+      value: todayAppointments,
+      icon: <FaClipboardList className="text-[#124E66] text-2xl" />,
+    },
+  ];
 
   return (
     <div className="pt-20 px-4 lg:px-10">
-      {/* Stats Cards */}
+      {/* ✅ TODAY STATS CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
+        {todayCards.map((stat, index) => (
           <div
             key={index}
-            className={`${stat.bgColor} p-6 rounded-xl shadow-sm border border-[#124E66] transition-all duration-300 hover:-translate-y-1 hover:shadow-md text-white`}
+            className="bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))] p-6 rounded-xl shadow-sm border border-[#124E66] transition-all duration-300 hover:-translate-y-1 hover:shadow-md text-white"
           >
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-blue-100">
-                  {stat.title}
-                </p>
+                <p className="text-sm font-medium text-blue-100">{stat.title}</p>
                 <div className="flex items-end mt-2">
                   <h2 className="text-3xl font-bold">{stat.value}</h2>
+                  {/* ✅ updated mini-icon label */}
                   <span className="ml-2 text-sm font-medium text-white flex items-center">
-                    <FaChartLine className="mr-1" /> {stat.change}
+                    <FaCalendarDay className="mr-1" /> Today
                   </span>
                 </div>
               </div>
@@ -153,7 +162,7 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* ✅ Recent Activity Section */}
+      {/* ✅ Recent Activity */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66] mb-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-semibold text-[#212A31]">Recent Activity</h3>
@@ -164,7 +173,6 @@ const AdminDashboard = () => {
             Show More
           </button>
         </div>
-
         <div className="space-y-4">
           {recentActivities.length === 0 ? (
             <p className="text-gray-500 text-sm">No recent activities</p>
@@ -180,9 +188,7 @@ const AdminDashboard = () => {
                   {activity.icon}
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-[#212A31]">
-                    {activity.message}
-                  </p>
+                  <p className="font-medium text-[#212A31]">{activity.message}</p>
                   <p className="text-sm text-[#748D92]">{activity.time}</p>
                 </div>
               </div>
@@ -191,7 +197,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* ✅ User Summary Section */}
+      {/* ✅ User Summary */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66] mb-6">
         <h3 className="text-xl font-semibold text-[#212A31]">User Summary</h3>
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
@@ -215,7 +221,7 @@ const AdminDashboard = () => {
         )}
       </div>
 
-      {/* ✅ Quick Actions Section */}
+      {/* ✅ Quick Actions */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-[#124E66]">
         <h3 className="text-xl font-semibold text-[#212A31]">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
