@@ -18,6 +18,19 @@ const VisitorFeedbackReview = () => {
   const [showDetails, setShowDetails] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
+  // Move formatDate up to avoid reference error
+  const formatDate = (datetime) => {
+    if (!datetime) return '-';
+    const date = new Date(datetime);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
   const toggleMenu = (id) => {
     setOpenMenuId(openMenuId === id ? null : id);
   };
@@ -79,9 +92,9 @@ const VisitorFeedbackReview = () => {
   const filteredEntries = feedbackEntries.filter(entry => {
     const matchesFilter = activeFilter === 'All' || entry.rating === parseInt(activeFilter.split(' ')[0]);
     const matchesSearch = 
-      entry.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      entry.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entry.experience.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      entry.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.experience?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       formatDate(entry.createdAt).toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
@@ -104,20 +117,8 @@ const VisitorFeedbackReview = () => {
     if (!sortColumn) return 0;
     const aValue = a[sortColumn] instanceof Date ? a[sortColumn].getTime() : a[sortColumn];
     const bValue = b[sortColumn] instanceof Date ? b[sortColumn].getTime() : b[sortColumn];
-    return sortDirection === 'asc' ? aValue > bValue ? 1 : -1 : aValue < bValue ? 1 : -1;
+    return sortDirection === 'asc' ? (aValue > bValue ? 1 : -1) : (aValue < bValue ? 1 : -1);
   });
-
-  const formatDate = (datetime) => {
-    if (!datetime) return '-';
-    const date = new Date(datetime);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
 
   const renderStars = (rating) => {
     return (
@@ -212,7 +213,7 @@ const VisitorFeedbackReview = () => {
       )}
 
       {/* Feedback Summary */}
-      <div className="mb-6 p-4 bg-white rounded-lg shadow-sm border border-[#D3D9D2]">
+      <div className="mb-6 p-4 bg-white rounded-lg shadowed border border-[#D3D9D2]">
         <p className="text-sm text-[#2E3944]">
           Total Feedback: <span className="font-medium">{feedbackEntries.length}</span> | 
           Average Rating: <span className="font-medium">{averageRating} / 5</span>
@@ -400,7 +401,7 @@ const VisitorFeedbackReview = () => {
           <div className="flex gap-2 items-center">
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border border-[#D3D9D滿足2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2] disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={currentPage === 1}
             >
               <BsArrowLeft />
