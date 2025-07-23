@@ -11,7 +11,7 @@ function AppointmentStatus() {
 
   useEffect(() => {
     // Set the page name for the header
-    localStorage.setItem("name", "Make an Appointment");
+    localStorage.setItem("name", "Appoinment Status");
     
     const fetchAppointments = async () => {
       const storedUser = JSON.parse(localStorage.getItem("userData"));
@@ -49,6 +49,13 @@ function AppointmentStatus() {
   const filteredAppointments = activeTab === "all" 
     ? processedAppointments 
     : processedAppointments.filter(appointment => appointment.status === activeTab);
+    
+  // Sort appointments by date, with newest dates first (descending order)
+  const sortedAppointments = [...filteredAppointments].sort((a, b) => {
+    const dateA = new Date(a.response?.date || a.date || 0);
+    const dateB = new Date(b.response?.date || b.date || 0);
+    return dateB - dateA; // Descending order (newest first)
+  });
 
   // Status styling information
   const statusColors = {
@@ -158,13 +165,13 @@ function AppointmentStatus() {
 
             {/* Results Count */}
             <div className="mb-6 text-[#2E3944]">
-              <span className="font-bold">{filteredAppointments.length}</span> appointments found
+              <span className="font-bold">{sortedAppointments.length}</span> appointments found
             </div>
 
-            {/* Appointments List */}
+            {/* Appointments List - Sorted by date (newest first) */}
             <div className="space-y-6">
-              {filteredAppointments.length > 0 ? (
-                filteredAppointments.map((appointment) => (
+              {sortedAppointments.length > 0 ? (
+                sortedAppointments.map((appointment) => (
                   <div
                     key={appointment._id}
                     className={`bg-white border-l-4 shadow-md rounded-lg p-6 transition hover:shadow-lg`}
