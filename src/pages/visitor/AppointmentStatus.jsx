@@ -11,7 +11,8 @@ function AppointmentStatus() {
 
   useEffect(() => {
     // Set the page name for the header
-    localStorage.setItem("name", "Appoinment Status");
+
+    localStorage.setItem("name", "Appointment Status");
     
     const fetchAppointments = async () => {
       const storedUser = JSON.parse(localStorage.getItem("userData"));

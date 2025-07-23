@@ -102,7 +102,7 @@ const ForgotPassword = () => {
               <input
                 id="contact"
                 type="text"
-                placeholder="Enter your email or phone number"
+                placeholder="Enter your email"
                 className="block w-full pl-10 pr-3 py-3 border border-[#D3D9D2] rounded-lg shadow-sm focus:ring-2 focus:ring-[#124E66] focus:border-[#124E66] transition duration-200"
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
