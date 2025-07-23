@@ -186,7 +186,10 @@ function App() {
             const validRoutes = ["/admin", "/host", "/security", "/visitor"];
             const isOnValidRoute = validRoutes.some(route => currentPath.startsWith(route));
 
-            if (!isOnValidRoute) {
+            // Don't redirect if user is trying to access login or contact pages
+            const isAccessingSpecificPage = currentPath === "/login" || currentPath === "/contact";
+
+            if (!isOnValidRoute && !isAccessingSpecificPage) {
               if (data.userType === "visitor") {
                 navigate("/visitor");
               } else if (data.userType === "staff") {
