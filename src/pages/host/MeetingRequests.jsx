@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   fetchPendingAppointments,
   updateAppointmentStatus,
@@ -13,7 +14,8 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaBell,
-  FaEye
+  FaEye,
+  FaArrowLeft
 } from "react-icons/fa";
 import { 
   HiOutlineDocumentText,
@@ -24,6 +26,7 @@ import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 
 const MeetingRequests = () => {
+  const navigate = useNavigate();
   const [meetingRequests, setMeetingRequests] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
@@ -302,6 +305,17 @@ if (typeof document !== 'undefined') {
 
   return (
     <div className="pt-20 px-4 lg:px-16 max-w-6xl mx-auto">
+      {/* Back Button */}
+      <div className="mb-4 animate-fade-in">
+        <button
+          onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign('/host/dashboard')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-darkblue rounded-lg font-medium shadow-sm border border-gray-200 transition-colors mb-2"
+          aria-label="Back"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+          Back
+        </button>
+      </div>
       {/* Main Content */}
       <div className={`transition-all duration-300 ${
         isPopupOpen ? "blur-sm pointer-events-none" : ""

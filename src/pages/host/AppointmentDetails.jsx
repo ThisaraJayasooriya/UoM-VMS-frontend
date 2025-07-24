@@ -56,8 +56,8 @@ function AppointmentDetails() {
   );
 
   return (
-    <div className="pt-24 px-4 lg:px-20 min-h-screen animate-fade-in">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-20 max-w-4xl mx-auto">
+    <div className="pt-35 px-4 lg:px-20 min-h-screen animate-fade-in">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-30 max-w-4xl mx-auto">
         {/* Meeting Requests Card */}
         <div
           className="relative bg-gray-100 p-6 rounded-lg shadow-xl w-full min-h-[180px] flex flex-col items-center justify-center transition-transform duration-300 hover:-translate-y-1 cursor-pointer group"
