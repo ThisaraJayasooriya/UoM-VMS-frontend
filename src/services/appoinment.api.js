@@ -138,4 +138,16 @@ export const getAppointmentStatus = async (visitorId) => {
   }
 };
 
+export const selectTimeSlot = async (appointmentId, slotId) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/selectTimeSlot/${appointmentId}`, {
+      slotId
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error selecting time slot:", error);
+    throw error;
+  }
+};
+
 

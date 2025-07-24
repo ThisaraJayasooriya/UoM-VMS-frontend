@@ -361,15 +361,17 @@ function MainComponent() {
     "/signup",
     "/login",
     "/forgot-password",
-    "/reset-password/:token",
     "/successful-reset",
     "/email-sent",
     "/sms-sent",
   ];
 
+  // Check if pathname starts with /reset-password/ to handle dynamic :token
+  const isNoNavbarRoute = noNavbarRoutes.includes(pathname) || pathname.startsWith("/reset-password/");
+
   return (
     <>
-      {!noNavbarRoutes.includes(pathname) && (
+      {!isNoNavbarRoute && (
         pathname === "/" ? <HomeNavbar /> : <MainNavbar />
       )}
 
