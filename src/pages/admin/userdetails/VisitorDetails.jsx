@@ -5,11 +5,13 @@ import { toast } from "react-toastify";
 
 const VisitorDetails = () => {
   // State management
-  const [visitorList, setVisitorList] = useState([]); // Stores fetched visitor data
-  const [editVisitor, setEditVisitor] = useState(null); // Tracks visitor being edited
-  const [searchQuery, setSearchQuery] = useState(""); // Search input value
-  const [currentPage, setCurrentPage] = useState(1); // Pagination current page
-  const recordsPerPage = 5; // Items per page
+  const [visitorList, setVisitorList] = useState([]);
+  const [editVisitor, setEditVisitor] = useState(null);
+  const [deleteVisitorId, setDeleteVisitorId] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
   const navigate = useNavigate();
 
   // Fetch visitors from API
@@ -111,22 +113,40 @@ const VisitorDetails = () => {
     }
   };
 
+  // Handle opening the delete confirmation modal
+  const handleDeleteClick = (id) => {
+    setDeleteVisitorId(id);
+    setShowConfirmModal(true);
+  };
+
   // Handle visitor deletion
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this visitor?")) return;
+  const handleDelete = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/visitor/${id}`, { method: "DELETE" });
+      const res = await fetch(`http://localhost:5000/api/visitor/${deleteVisitorId}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         toast.success("Visitor deleted successfully!");
         fetchVisitors();
         setCurrentPage(1);
+        setShowConfirmModal(false);
+        setDeleteVisitorId(null);
       } else {
         throw new Error("Failed to delete visitor");
       }
     } catch (err) {
       console.error("Delete error:", err);
       toast.error("Failed to delete visitor");
+      setShowConfirmModal(false);
+      setDeleteVisitorId(null);
     }
+  };
+
+  // Handle canceling delete
+  const handleCancelDelete = () => {
+    setShowConfirmModal(false);
+    setDeleteVisitorId(null);
+    toast.info("Delete action cancelled");
   };
 
   return (
@@ -153,24 +173,29 @@ const VisitorDetails = () => {
           <table className="w-full text-sm text-left text-[#374151]">
             <thead className="bg-[#B0B7BD] text-[#212A31] uppercase text-xs tracking-wider">
               <tr>
-                {["#", "User ID", "Name", "Username", "Email", "Phone", "NIC/Passport", "Registered Date", "Actions"].map((heading, idx) => (
-                  <th
-                    key={idx}
-                    className="py-2 px-2 font-medium whitespace-nowrap"
-                    style={{
-                      width: idx === 0 ? "5%" : idx === 8 ? "10%" : `${90 / 8}%`,
-                    }}
-                  >
-                    {heading}
-                  </th>
-                ))}
+                {["#", "User ID", "Name", "Username", "Email", "Phone Number", "NIC/Passport", "Registered Date", "Actions"].map(
+                  (heading, idx) => (
+                    <th
+                      key={idx}
+                      className="py-2 px-2 font-medium whitespace-nowrap"
+                      style={{
+                        width: idx === 0 ? "5%" : idx === 8 ? "10%" : `${90 / 8}%`,
+                      }}
+                    >
+                      {heading}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody>
               {currentRecords.map((v, idx) => {
                 const globalIndex = indexOfFirstRecord + idx + 1;
                 return (
-                  <tr key={v._id} className="bg-[#E8EAEC] border-t border-[#C4C9CE] hover:bg-[#C4C9CE] transition">
+                  <tr
+                    key={v._id}
+                    className="bg-[#E8EAEC] border-t border-[#C4C9CE] hover:bg-[#C4C9CE] transition"
+                  >
                     <td className="py-2 px-2 whitespace-nowrap">{globalIndex}</td>
                     <td className="py-2 px-2 whitespace-nowrap">{v.userID || "-"}</td>
                     <td className="py-2 px-2 whitespace-nowrap">{v.name || "-"}</td>
@@ -189,7 +214,7 @@ const VisitorDetails = () => {
                         <FiEdit2 className="text-lg" />
                       </button>
                       <button
-                        onClick={() => handleDelete(v._id)}
+                        onClick={() => handleDeleteClick(v._id)}
                         className="p-2 bg-[#4d0202] hover:bg-[#d18282] text-[#FFFFFF] rounded-full transition"
                         title="Delete"
                         aria-label="Delete visitor"
@@ -226,7 +251,9 @@ const VisitorDetails = () => {
                 <button
                   key={i + 1}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-1 rounded-full ${currentPage === i + 1 ? "bg-[#B9B9B9] text-[#FFFFFF]" : "bg-[#E5E7EB] text-[#374151] hover:bg-[#D1D5DB]"} transition`}
+                  className={`px-3 py-1 rounded-full ${
+                    currentPage === i + 1 ? "bg-[#B9B9B9] text-[#FFFFFF]" : "bg-[#E5E7EB] text-[#374151] hover:bg-[#D1D5DB]"
+                  } transition`}
                   aria-label={`Page ${i + 1}`}
                   aria-current={currentPage === i + 1 ? "page" : undefined}
                 >
@@ -256,6 +283,87 @@ const VisitorDetails = () => {
           onSubmit={handleEditSubmit}
           onClose={() => setEditVisitor(null)}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showConfirmModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '12px',
+            minWidth: '400px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            textAlign: 'center'
+          }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: '#1F2937'
+            }}>
+              Confirm Delete
+            </h2>
+            <p style={{
+              color: '#6B7280',
+              marginBottom: '2rem',
+              lineHeight: '1.5'
+            }}>
+              Are you sure you want to delete this visitor? This action cannot be undone.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={handleDelete}
+                style={{
+                  backgroundColor: '#EF4444',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#DC2626'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#EF4444'}
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={handleCancelDelete}
+                style={{
+                  backgroundColor: '#6B7280',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#4B5563'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#6B7280'}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -290,6 +398,16 @@ const validateForm = (fields, data) => {
 const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   const [errors, setErrors] = useState({});
 
+  // Get field label for display
+  const getFieldLabel = (field) => {
+    const labels = {
+      phone: "Phone Number",
+      nicNumber: "NIC/Passport",
+      userID: "User ID"
+    };
+    return labels[field] || field.charAt(0).toUpperCase() + field.slice(1);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const tempErrors = validateForm(fields, data);
@@ -312,19 +430,18 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
             ×
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="p-6 bg-[#F9FAFB]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map((field) => (
               <div key={field}>
-                <label className="block mb-1 text-sm font-medium text-[#4B5563] capitalize">
-                  {field}
+                <label className="block mb-1 text-sm font-medium text-[#4B5563]">
+                  {getFieldLabel(field)}
                 </label>
                 <input
                   type="text"
                   name={field}
                   value={data[field] || ""}
-                  placeholder={`Enter ${field}`}
+                  placeholder={`Enter ${getFieldLabel(field)}`}
                   onChange={(e) => setData((prev) => ({ ...prev, [field]: e.target.value }))}
                   className={`w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 ${
                     errors[field]
@@ -341,7 +458,6 @@ const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
               </div>
             ))}
           </div>
-
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
             <button
               type="button"
