@@ -57,9 +57,15 @@ const AdminInsights = () => {
     setRange(e.target.value);
   };
 
-  if (loading || !insights)
-    return <div className="p-6 text-gray-500">Loading insights...</div>;
-
+  if (loading || !insights) {
+  return (
+    <div className="flex flex-col items-center justify-center h-64 text-[#124E66] space-y-4">
+      <div className="animate-spin rounded-full h-10 w-10 border-4 border-t-[#124E66] border-gray-300" />
+      <p className="text-lg font-medium animate-bounce">Loading Insights...</p>
+    </div>
+  );
+  }
+  
   const totalCheck = insights.checkInCount + insights.checkOutCount;
   const pieData = [
     {
@@ -108,23 +114,23 @@ const AdminInsights = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {[
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[
           { title: "Total Visitors", value: insights.totalVisitors },
           { title: "Peak Hour", value: insights.peakHour },
           { title: "Check-Ins", value: insights.checkInCount },
           { title: "Check-Outs", value: insights.checkOutCount },
-        ].map((card, idx) => (
+          ].map((card, idx) => (
           <div
             key={idx}
-            className="p-4 rounded-lg shadow"
-            style={{ backgroundColor: "#D3D9D4", color: "#124E66" }}
+            className="bg-[linear-gradient(to_right,rgba(33,42,49,0.90),rgba(18,78,102,0.90))] p-6 rounded-xl shadow-sm border border-[#124E66] transition-all duration-300 hover:-translate-y-1 hover:shadow-md text-white"
           >
             <h3 className="text-lg font-medium">{card.title}</h3>
-            <p className="text-2xl font-bold">{card.value}</p>
+            <p className="text-3xl font-bold">{card.value}</p>
           </div>
         ))}
       </div>
+
 
       {/* Charts Grid 2x2 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
