@@ -23,6 +23,16 @@ const AddAdmin = () => {
 
   const fields = ["username", "name", "email", "phone", "password", "confirmPassword", "nicNumber"];
 
+  // Get field label for display
+  const getFieldLabel = (field) => {
+    const labels = {
+      phone: "Phone Number",
+      nicNumber: "NIC Number",
+      confirmPassword: "Confirm Password"
+    };
+    return labels[field] || field.replace(/([A-Z])/g, " $1").trim();
+  };
+
   const validateForm = (data) => {
     let tempErrors = {};
     const phoneRegex = /^[0-9]{9}$/;
@@ -127,8 +137,8 @@ const AddAdmin = () => {
                 className={`flex flex-col ${field === "confirmPassword" ? "space-y-4" : "space-y-1"}`}
                 style={field === "confirmPassword" ? { marginBottom: "16px" } : {}}
               >
-                <label className="block text-sm font-medium text-[#374151] capitalize">
-                  {field.replace(/([A-Z])/g, " $1").trim()} <span className="text-[#EF4444]">*</span>
+                <label className="block text-sm font-medium text-[#374151]">
+                  {getFieldLabel(field)} <span className="text-[#EF4444]">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -141,7 +151,7 @@ const AddAdmin = () => {
                     }
                     name={field}
                     value={admin[field] || ""}
-                    placeholder={`Enter ${field.replace(/([A-Z])/g, " $1").trim()}`}
+                    placeholder={`Enter ${getFieldLabel(field)}`}
                     onChange={handleChange}
                     className={`w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
                       errors[field]
