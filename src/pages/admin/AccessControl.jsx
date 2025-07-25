@@ -36,12 +36,12 @@ const AccessControl = () => {
       const data = await res.json();
       if (data.success) {
         setBlockedUsers(blockedUsers.filter((user) => user._id !== userId));
-        toast.success("✅ User unblocked successfully!");
+        toast.success("✅ User unblocked successfully!", { icon: false });
       } else {
-        toast.error(data.message || "❌ Failed to unblock user");
+        toast.error(data.message || "❌ Failed to unblock user", { icon: false });
       }
     } catch (error) {
-      toast.error("❌ Error unblocking user");
+      toast.error("❌ Error unblocking user", { icon: false });
       console.error("Error unblocking user:", error);
     }
   };
@@ -53,7 +53,7 @@ const AccessControl = () => {
     let finalReason = newUser.reason === "other" ? newUser.customReason : newUser.reason;
 
     if (!finalReason.trim()) {
-      toast.error("❌ Please enter a reason for blocking!");
+      toast.error("❌ Please enter a reason for blocking!", { icon: false });
       return;
     }
 
@@ -70,14 +70,14 @@ const AccessControl = () => {
       const data = await response.json();
 
       if (data.success) {
-        toast.success("✅ User blocked successfully!");
+        toast.success("✅ User blocked successfully!", { icon: false });
         setNewUser({ email: "", role: "", reason: "", customReason: "" });
         fetchBlockedUsers(); // refresh list
       } else {
-        toast.error(data.message || "❌ Failed to block user");
+        toast.error(data.message || "❌ Failed to block user", { icon: false });
       }
     } catch (error) {
-      toast.error("❌ Error blocking user");
+      toast.error("❌ Error blocking user", { icon: false });
       console.error("Error blocking user:", error);
     }
   };
@@ -255,3 +255,5 @@ const AccessControl = () => {
 };
 
 export default AccessControl;
+
+
