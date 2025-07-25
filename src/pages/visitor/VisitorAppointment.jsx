@@ -250,7 +250,7 @@ function VisitorAppointment() {
         {isSubmitSuccess && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
             <strong className="font-bold">Success!</strong>
-            <span className="block sm:inline"> Your appointment has been submitted successfully.</span>
+            <span className="block sm:inline"> Request submitted. Please wait for the host's response.</span>
           </div>
         )}
         
