@@ -8,22 +8,55 @@ import {
 } from "react-icons/fa";
 
 const DashboardCard = ({ icon: Icon, title, count, change, changeColor }) => (
-  <div className="bg-[linear-gradient(135deg,rgba(33,42,49,0.85),rgba(18,78,102,0.85))] 
-              p-6 rounded-2xl shadow-xl border border-white/10 
-              backdrop-blur-md transition-all duration-300 
-              hover:scale-[1.02] hover:shadow-2xl text-white min-h-[140px]">
-    <div className="flex justify-between items-start mb-4">
-      <div className="p-3 rounded-lg bg-white/10 border border-white/20 shadow-inner">
-        <Icon className="text-white text-xl" />
+  <div className="relative bg-white/95 backdrop-blur-sm border border-gray-200/50 
+                  rounded-3xl p-6 shadow-[0_8px_32px_rgba(18,78,102,0.12)] 
+                  transition-all duration-500 ease-out
+                  hover:shadow-[0_12px_40px_rgba(18,78,102,0.2)] 
+                  hover:border-[#124E66]/20 hover:-translate-y-1
+                  group overflow-hidden min-h-[160px]">
+    
+    {/* Gradient overlay for modern look */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[#124E66]/5 via-transparent to-[#2D7D9A]/3 opacity-0 
+                    group-hover:opacity-100 transition-opacity duration-500"></div>
+    
+    {/* Content */}
+    <div className="relative z-10">
+      <div className="flex justify-between items-start mb-6">
+        {/* Icon container with modern styling */}
+        <div className="relative">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#124E66] to-[#2D7D9A] 
+                          flex items-center justify-center shadow-lg
+                          group-hover:scale-110 transition-transform duration-300">
+            <Icon className="text-white text-xl" />
+          </div>
+          <div className="absolute -inset-1 bg-gradient-to-br from-[#124E66] to-[#2D7D9A] 
+                          rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+        </div>
+        
+        {/* Change indicator with modern badge */}
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${changeColor} 
+                        bg-gray-50 border border-gray-200/60 flex items-center gap-1.5
+                        shadow-sm group-hover:shadow-md transition-shadow duration-300`}>
+          <FaChartLine className="text-xs" /> 
+          <span>{change}</span>
+        </div>
       </div>
-      <div className={`px-2 py-1 rounded text-xs font-medium ${changeColor} flex items-center bg-white/10 border border-white/20`}>
-        <FaChartLine className="mr-1 text-xs" /> {change}
+      
+      {/* Text content */}
+      <div className="space-y-3">
+        <p className="text-sm font-medium text-gray-600 uppercase tracking-wide leading-tight">
+          {title}
+        </p>
+        <h2 className="text-3xl font-bold text-[#124E66] tracking-tight 
+                       group-hover:text-[#0F3A4F] transition-colors duration-300">
+          {count.toLocaleString()}
+        </h2>
       </div>
     </div>
-    <div className="space-y-2">
-      <p className="text-sm font-semibold text-blue-100/70">{title}</p>
-      <h2 className="text-3xl font-extrabold tracking-wide">{count}</h2>
-    </div>
+    
+    {/* Modern accent line */}
+    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#124E66] to-[#2D7D9A] 
+                    transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
   </div>
 );
 
@@ -73,17 +106,18 @@ const SecurityDashboard = () => {
         );
         const data = await response.json();
         setStats([
-          {
-            icon: FaUsers,
-            title: "Total Visitors",
-            count: data.totalVisitorsToday ?? 0,
-            change: "+0%",
-            changeColor: "text-emerald-300",
-          },
+          
           {
             icon: FaUserPlus,
             title: "Expected Visitors",
             count: data.expectedVisitorsToday ?? 0,
+            change: "+0%",
+            changeColor: "text-emerald-300",
+          },
+          {
+            icon: FaUsers,
+            title: "Total Visitors",
+            count: data.totalVisitorsToday ?? 0,
             change: "+0%",
             changeColor: "text-emerald-300",
           },
@@ -115,7 +149,7 @@ const SecurityDashboard = () => {
       {/* Welcome Section */}
       <div className="mb-8">
         <h1 className="text-4xl font-extrabold text-[#124E66] mb-1">
-          Welcome back, {userName || "Security Personnel"}! 👋
+          Welcome back, {userName || "Security Personnel"}! 
         </h1>
         <p className="text-lg text-[#5f767c]">
           Here's your visitor overview for today.
@@ -123,7 +157,7 @@ const SecurityDashboard = () => {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+      <div className="pt-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, index) => (
           <DashboardCard
             key={index}
