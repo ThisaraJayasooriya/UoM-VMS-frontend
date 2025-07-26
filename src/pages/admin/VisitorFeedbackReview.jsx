@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiSearch, FiDownload, FiTrash2, FiEye, FiX } from 'react-icons/fi';
-import { BsArrowsExpand, BsThreeDotsVertical, BsArrowLeft, BsArrowRight } from 'react-icons/bs';
+import { BsThreeDotsVertical, BsArrowLeft, BsArrowRight } from 'react-icons/bs';
 import { FaStar, FaRegStar, FaSpinner } from 'react-icons/fa';
 
 const VisitorFeedbackReview = () => {
@@ -280,10 +280,7 @@ const VisitorFeedbackReview = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('name')}>
-                  <div className="flex items-center gap-1">
-                    Name
-                    <BsArrowsExpand size={14} />
-                  </div> {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  Name {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('email')}>
@@ -401,7 +398,7 @@ const VisitorFeedbackReview = () => {
           <div className="flex gap-2 items-center">
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              className="px-3 py-1 border border-[#D3D9D滿足2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2] disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={currentPage === 1}
             >
               <BsArrowLeft />

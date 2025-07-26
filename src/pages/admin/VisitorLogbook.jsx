@@ -1,15 +1,18 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { FiSearch, FiDownload, FiEdit, FiTrash2, FiLogOut, FiX } from 'react-icons/fi';
-import { BsArrowsExpand, BsThreeDotsVertical, BsArrowLeft, BsArrowRight } from 'react-icons/bs';
+import { useState, useEffect, useCallback, useMemo, useContext } from 'react';
+import { FiSearch, FiDownload, FiTrash2, FiX } from 'react-icons/fi';
+import { BsThreeDotsVertical, BsArrowLeft, BsArrowRight } from 'react-icons/bs';
 import { FaSpinner } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useAuth } from '../../App'; // Adjust path to match your project structure
 
 const VisitorLogbook = () => {
+  const { authState } = useAuth();
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [openMenuId, setOpenMenuId] = useState(null);
   const [logEntries, setLogEntries] = useState([]);
+  const [totalEntries, setTotalEntries] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -17,14 +20,18 @@ const VisitorLogbook = () => {
   const [itemsPerPage] = useState(5);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
-  const [editEntry, setEditEntry] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [startDate, setStartDate] = useState(() => {
     const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+    yesterday.setUTCHours(0, 0, 0, 0);
     return yesterday;
   });
-  const [endDate, setEndDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(() => {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    return today;
+  });
 
   // Debug component renders
   useEffect(() => {
@@ -57,22 +64,25 @@ const VisitorLogbook = () => {
     try {
       setLoading(true);
       const query = new URLSearchParams();
-      if (startDate) query.append('startDate', startDate.toISOString());
-      if (endDate) query.append('endDate', endDate.toISOString());
+      const normalizedStartDate = new Date(startDate);
+      normalizedStartDate.setUTCHours(0, 0, 0, 0);
+      const normalizedEndDate = new Date(endDate);
+      normalizedEndDate.setUTCHours(23, 59, 59, 999);
+      query.append('startDate', normalizedStartDate.toISOString());
+      query.append('endDate', normalizedEndDate.toISOString());
+      query.append('page', currentPage);
+      query.append('limit', itemsPerPage);
+
+      console.log('Fetching logs with query:', query.toString());
+
       const response = await fetch(`http://localhost:5000/api/logbook?${query.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch visitor log data');
-      const data = await response.json();
+      const { logEntries, total } = await response.json();
 
-      // Check for duplicate IDs and log date fields
-      const ids = data.map(entry => entry.visitorId);
-      const uniqueIds = new Set(ids);
-      if (ids.length !== uniqueIds.size) {
-        console.warn('Duplicate visitor IDs detected:', ids);
-      }
-      console.log('API response data:', data); // Debug API response
+      console.log('API response data:', logEntries);
+      console.log('Total entries:', total);
 
-      // Remove duplicates and validate dates
-      const mappedEntries = [...new Map(data.map(entry => [entry.visitorId, {
+      const mappedEntries = logEntries.map(entry => ({
         id: entry.visitorId,
         visitor: entry.name || 'Unknown',
         host: entry.host || 'Unknown',
@@ -82,12 +92,14 @@ const VisitorLogbook = () => {
         email: entry.email || 'N/A',
         status: entry.status || 'Awaiting Check-In',
         createdAt: entry.createdAt ? new Date(entry.createdAt) : null,
-      }])).values()].sort((a, b) => {
+      })).sort((a, b) => {
         const aTime = a.checkIn || a.createdAt || 0;
         const bTime = b.checkIn || b.createdAt || 0;
         return bTime - aTime;
       });
+
       setLogEntries(mappedEntries);
+      setTotalEntries(total);
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -98,7 +110,7 @@ const VisitorLogbook = () => {
 
   useEffect(() => {
     fetchLogEntries();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, currentPage]);
 
   const filters = ['All', 'Awaiting Check-In', 'Checked-In', 'Checked-Out'];
 
@@ -120,25 +132,24 @@ const VisitorLogbook = () => {
     });
   };
 
-  const filteredEntries = logEntries.filter(entry => {
-    const matchesFilter = activeFilter === 'All' || entry.status === activeFilter;
-    const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = searchQuery
-      ? (
-          (entry.visitor && entry.visitor.toLowerCase().includes(searchLower)) ||
-          (entry.host && entry.host.toLowerCase().includes(searchLower)) ||
-          (entry.purpose && entry.purpose.toLowerCase().includes(searchLower)) ||
-          (entry.email && entry.email.toLowerCase().includes(searchLower)) ||
-          (formatDate(entry.checkIn || entry.createdAt).toLowerCase().includes(searchLower))
-        )
-      : true;
-    return matchesFilter && matchesSearch;
-  });
+  const filteredEntries = useMemo(() => {
+    return logEntries.filter(entry => {
+      const matchesFilter = activeFilter === 'All' || entry.status === activeFilter;
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = searchQuery
+        ? (
+            (entry.visitor && entry.visitor.toLowerCase().includes(searchLower)) ||
+            (entry.host && entry.host.toLowerCase().includes(searchLower)) ||
+            (entry.purpose && entry.purpose.toLowerCase().includes(searchLower)) ||
+            (entry.email && entry.email.toLowerCase().includes(searchLower)) ||
+            (formatDate(entry.checkIn || entry.createdAt).toLowerCase().includes(searchLower))
+          )
+        : true;
+      return matchesFilter && matchesSearch;
+    });
+  }, [logEntries, activeFilter, searchQuery]);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentEntries = filteredEntries.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredEntries.length / itemsPerPage);
+  const totalPages = Math.ceil(totalEntries / itemsPerPage);
 
   const handleSort = (column) => {
     if (sortColumn === column) {
@@ -150,42 +161,81 @@ const VisitorLogbook = () => {
   };
 
   const sortedEntries = useMemo(() => {
-    return [...currentEntries].sort((a, b) => {
+    return [...filteredEntries].sort((a, b) => {
       if (!sortColumn) return 0;
       const aValue = a[sortColumn] instanceof Date ? a[sortColumn].getTime() : a[sortColumn];
       const bValue = b[sortColumn] instanceof Date ? b[sortColumn].getTime() : b[sortColumn];
       return sortDirection === 'asc' ? aValue > bValue ? 1 : -1 : aValue < bValue ? 1 : -1;
     });
-  }, [currentEntries, sortColumn, sortDirection]);
+  }, [filteredEntries, sortColumn, sortDirection]);
 
   const handleDelete = async (id) => {
     setDeleteConfirmId(id);
+    setOpenMenuId(null);
   };
 
   const confirmDelete = async () => {
     if (deleteConfirmId) {
       try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
+        console.log('Token for DELETE request:', token);
+
+        if (!token || !authState.isAuthenticated) {
+          setError('Please log in to delete log entries.');
+          setTimeout(() => {
+            setError(null);
+            window.location.href = '/login';
+          }, 2000);
+          setDeleteConfirmId(null);
+          return;
+        }
+
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const exp = payload.exp * 1000;
+          if (Date.now() > exp) {
+            setError('Your session has expired. Please log in again.');
+            localStorage.removeItem('authToken');
+            setTimeout(() => {
+              setError(null);
+              window.location.href = '/login';
+            }, 2000);
+            setDeleteConfirmId(null);
+            return;
+          }
+        } catch (decodeError) {
+          console.error('Token decode error:', decodeError);
+          setError('Invalid token. Please log in again.');
+          setTimeout(() => {
+            setError(null);
+            window.location.href = '/login';
+          }, 2000);
+          setDeleteConfirmId(null);
+          return;
+        }
+
         const response = await fetch(`http://localhost:5000/api/logbook/${deleteConfirmId}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : '',
+            'Authorization': `Bearer ${token}`,
           },
         });
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ message: 'Server error' }));
           throw new Error(errorData.message || 'Failed to delete entry');
         }
+
         setLogEntries(logEntries.filter(entry => entry.id !== deleteConfirmId));
         setDeleteConfirmId(null);
         setOpenMenuId(null);
         setMessage('Entry deleted successfully');
         setTimeout(() => setMessage(null), 3000);
       } catch (err) {
-        setError(`Delete failed: ${err.message}`);
-        setTimeout(() => setError(null), 3000);
         console.error('Delete error:', err);
+        setError(err.message);
+        setTimeout(() => setError(null), 3000);
         setDeleteConfirmId(null);
       }
     }
@@ -193,81 +243,6 @@ const VisitorLogbook = () => {
 
   const cancelDelete = () => {
     setDeleteConfirmId(null);
-  };
-
-  const handleCheckOut = async (id) => {
-    try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/logbook/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-        body: JSON.stringify({
-          checkOutTime: new Date().toISOString(),
-          status: 'Checked-Out',
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Server error' }));
-        throw new Error(errorData.message || 'Failed to check out');
-      }
-      const updatedEntry = await response.json();
-      console.log('Check out response:', updatedEntry);
-      setLogEntries(logEntries.map(entry => entry.id === id ? { ...entry, ...updatedEntry } : entry));
-      setOpenMenuId(null);
-      setMessage('Checked out successfully');
-      setTimeout(() => setMessage(null), 3000);
-    } catch (err) {
-      setError(`Check out failed: ${err.message}`);
-      setTimeout(() => setError(null), 3000);
-      console.error('Check out error:', err);
-    }
-  };
-
-  const handleEdit = (id) => {
-    const entryToEdit = logEntries.find(entry => entry.id === id);
-    setEditEntry({ ...entryToEdit, purpose: entryToEdit.purpose });
-    setOpenMenuId(null);
-    console.log('Editing entry:', entryToEdit);
-  };
-
-  const handleSaveEdit = async () => {
-    if (editEntry) {
-      try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const response = await fetch(`http://localhost:5000/api/logbook/${editEntry.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : '',
-          },
-          body: JSON.stringify({
-            purpose: editEntry.purpose,
-          }),
-        });
-        if (!response.ok) {
-          const errorData = await response.text().then(text => {
-            try { return JSON.parse(text); } catch { return { message: text || 'Server error' }; }
-          }).catch(() => ({ message: 'Server error' }));
-          throw new Error(errorData.message || 'Failed to update entry');
-        }
-        const updatedEntry = await response.json();
-        console.log('Edit response:', updatedEntry);
-        setLogEntries(logEntries.map(entry => entry.id === editEntry.id ? { 
-          ...entry, 
-          purpose: updatedEntry.purpose || entry.purpose 
-        } : entry));
-        setEditEntry(null);
-        setMessage('Entry updated successfully');
-        setTimeout(() => setMessage(null), 3000);
-      } catch (err) {
-        setError(`Edit failed: ${err.message}`);
-        setTimeout(() => setError(null), 3000);
-        console.error('Edit error:', err);
-      }
-    }
   };
 
   const exportToPDF = () => {
@@ -368,36 +343,6 @@ const VisitorLogbook = () => {
     <div className="flex-1 overflow-auto p-6 bg-[#F8F9FA] mt-10">
       {message && <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-lg">{message}</div>}
       {error && <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-lg">Error: {error}</div>}
-      {editEntry && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-lg font-medium text-[#2E3944] mb-4">Edit Entry</h2>
-            <div className="mb-4">
-              <label className="block text-sm text-[#2E3944] mb-1">Purpose</label>
-              <input
-                type="text"
-                value={editEntry.purpose || ''}
-                onChange={(e) => setEditEntry({ ...editEntry, purpose: e.target.value })}
-                className="w-full p-2 border border-[#D3D9D2] rounded-lg"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleSaveEdit}
-                className="px-4 py-2 bg-[#124E66] text-white rounded-lg hover:bg-[#0E3D52]"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => setEditEntry(null)}
-                className="px-4 py-2 bg-gray-300 text-[#2E3944] rounded-lg hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {deleteConfirmId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -429,7 +374,7 @@ const VisitorLogbook = () => {
             </div>
             <input
               type="text"
-              placeholder="Search date, visitors, hosts, or email..."
+              placeholder="Search visitors, hosts, or email..."
               className="pl-10 pr-4 py-2 w-full border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -448,7 +393,11 @@ const VisitorLogbook = () => {
               <label className="text-sm text-[#2E3944] mb-1">Start Date</label>
               <DatePicker
                 selected={startDate}
-                onChange={(date) => setStartDate(date)}
+                onChange={(date) => {
+                  const normalizedDate = new Date(date);
+                  normalizedDate.setUTCHours(0, 0, 0, 0);
+                  setStartDate(normalizedDate);
+                }}
                 selectsStart
                 startDate={startDate}
                 endDate={endDate}
@@ -461,7 +410,11 @@ const VisitorLogbook = () => {
               <label className="text-sm text-[#2E3944] mb-1">End Date</label>
               <DatePicker
                 selected={endDate}
-                onChange={(date) => setEndDate(date)}
+                onChange={(date) => {
+                  const normalizedDate = new Date(date);
+                  normalizedDate.setUTCHours(0, 0, 0, 0);
+                  setEndDate(normalizedDate);
+                }}
                 selectsEnd
                 startDate={startDate}
                 endDate={endDate}
@@ -515,10 +468,7 @@ const VisitorLogbook = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('visitor')}>
-                  <div className="flex items-center gap-1">
-                    Visitor
-                    <BsArrowsExpand size={14} />
-                  </div> {sortColumn === 'visitor' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  Visitor {sortColumn === 'visitor' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('host')}>
@@ -557,8 +507,8 @@ const VisitorLogbook = () => {
                   </td>
                 </tr>
               ) : (
-                sortedEntries.map((entry) => (
-                  <tr key={entry.id} className="hover:bg-[#F8F9FA] even:bg-[#F8F9FA]/50">
+                sortedEntries.map((entry, index) => (
+                  <tr key={`${entry.id}-${index}`} className="hover:bg-[#F8F9FA] even:bg-[#F8F9FA]/50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
                       {entry.id}
                     </td>
@@ -585,29 +535,15 @@ const VisitorLogbook = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative action-menu-container">
                       <button
-                        onClick={() => toggleMenu(entry.id)}
+                        onClick={() => toggleMenu(`${entry.id}-${index}`)}
                         className="text-[#748D92] hover:text-[#124E66]"
                         aria-label={`Actions for ${entry.visitor}`}
                       >
                         <BsThreeDotsVertical />
                       </button>
-                      {openMenuId === entry.id && (
+                      {openMenuId === `${entry.id}-${index}` && (
                         <div className="absolute right-0 top-10 z-[100] mt-2 w-48 bg-white rounded-md shadow-lg border border-[#D3D9D2]">
                           <div className="py-1">
-                            <button
-                              onClick={() => handleEdit(entry.id)}
-                              className="flex items-center px-4 py-2 text-sm text-[#2E3944] hover:bg-[#F8F9FA] w-full text-left"
-                            >
-                              <FiEdit className="mr-2" /> Edit
-                            </button>
-                            {entry.status !== 'Checked-Out' && (
-                              <button
-                                onClick={() => handleCheckOut(entry.id)}
-                                className="flex items-center px-4 py-2 text-sm text-[#2E3944] hover:bg-[#F8F9FA] w-full text-left"
-                              >
-                                <FiLogOut className="mr-2" /> Check Out
-                              </button>
-                            )}
                             <button
                               onClick={() => handleDelete(entry.id)}
                               className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-[#F8F9FA] w-full text-left"
@@ -627,7 +563,7 @@ const VisitorLogbook = () => {
 
         <div className="bg-[#F8F9FA] px-6 py-3 flex flex-col md:flex-row justify-between items-center border-t border-[#D3D9D2]">
           <div className="text-sm text-[#748D92] mb-2 md:mb-0">
-            Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to <span className="font-medium">{Math.min(indexOfLastItem, filteredEntries.length)}</span> of <span className="font-medium">{filteredEntries.length}</span> entries
+            Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalEntries)}</span> of <span className="font-medium">{totalEntries}</span> entries
           </div>
           <div className="flex gap-2 items-center">
             <button

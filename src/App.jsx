@@ -1,5 +1,5 @@
 import { useEffect, useState, createContext, useContext } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -29,7 +29,7 @@ import VisitorFeedbackReview from "./pages/admin/VisitorFeedbackReview.jsx";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminInsights from "./pages/admin/AdminInsights.jsx";
 import Settings from "./pages/admin/AdminSettings";
-import AccessControl from './pages/admin/AccessControl';
+import AccessControl from "./pages/admin/AccessControl";
 import Notifications from "./pages/admin/Notifications";
 
 // User Details Pages
@@ -78,6 +78,37 @@ import StaffDashboard from "./pages/StaffDashboard";
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
+
+// Unauthorized Page Component (for role-based access denial)
+function Unauthorized() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+      <h1 className="text-3xl font-bold mb-4">Unauthorized Access</h1>
+      <p className="mb-4">You do not have permission to view this page.</p>
+      <a href="/login" className="text-blue-600 underline">Go to Login</a>
+    </div>
+  );
+}
+
+// ProtectedRoute component for role-based protection
+function ProtectedRoute({ allowedRoles, children }) {
+  const { authState } = useAuth();
+  const location = useLocation();
+
+  if (!authState.isAuthenticated) {
+    // Not logged in — redirect to login, preserve intended route
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Check if user's role is allowed
+  if (!allowedRoles.includes(authState.role?.toLowerCase())) {
+    // Role not allowed — show Unauthorized page
+    return <Unauthorized />;
+  }
+
+  // Role allowed — render children components
+  return children;
+}
 
 // Debug Component
 const TokenDebugger = () => {
@@ -184,7 +215,7 @@ function App() {
             // Only navigate if not already on a valid route
             const currentPath = location.pathname;
             const validRoutes = ["/admin", "/host", "/security", "/visitor"];
-            const isOnValidRoute = validRoutes.some(route => currentPath.startsWith(route));
+            const isOnValidRoute = validRoutes.some((route) => currentPath.startsWith(route));
 
             // Don't redirect if user is trying to access login or contact pages
             const isAccessingSpecificPage = currentPath === "/login" || currentPath === "/contact";
@@ -294,8 +325,15 @@ function App() {
           <Route path="/*" element={<MainComponent />} />
           <Route path="/roles" element={<LoginPage />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
+          {/* Admin Routes - Protected */}
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<AdminDashboard />} />
             <Route path="userdetails" element={<UserDetailsMain />}>
               <Route path="visitor" element={<VisitorDetails />} />
@@ -319,8 +357,15 @@ function App() {
           {/* Staff Dashboard Route */}
           <Route path="/staff/:role" element={<StaffDashboard />} />
 
-          {/* Host Routes */}
-          <Route path="/host" element={<HostLayout />}>
+          {/* Host Routes - Protected */}
+          <Route
+            path="/host/*"
+            element={
+              <ProtectedRoute allowedRoles={["host"]}>
+                <HostLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<HostDashboard />} />
             <Route path="meeting" element={<MeetingRequests />} />
             <Route path="profile" element={<HostProfile />} />
@@ -329,15 +374,29 @@ function App() {
             <Route path="appointmentdetails" element={<AppointmentDetails />} />
           </Route>
 
-          {/* Security Routes */}
-          <Route path="/security" element={<SecurityLayout />}>
+          {/* Security Routes - Protected */}
+          <Route
+            path="/security/*"
+            element={
+              <ProtectedRoute allowedRoles={["security"]}>
+                <SecurityLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<SecurityDashboard />} />
             <Route path="visitor" element={<VerifyVisitors />} />
             <Route path="profile" element={<SecurityProfile />} />
           </Route>
 
-          {/* Visitor Routes */}
-          <Route path="/visitor" element={<VisitorLayout />}>
+          {/* Visitor Routes - Protected */}
+          <Route
+            path="/visitor/*"
+            element={
+              <ProtectedRoute allowedRoles={["visitor"]}>
+                <VisitorLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<VisitorDashboard />} />
             <Route path="appointment" element={<VisitorAppointment />} />
             <Route path="history" element={<Visithistory />} />
@@ -371,9 +430,7 @@ function MainComponent() {
 
   return (
     <>
-      {!isNoNavbarRoute && (
-        pathname === "/" ? <HomeNavbar /> : <MainNavbar />
-      )}
+      {!isNoNavbarRoute && (pathname === "/" ? <HomeNavbar /> : <MainNavbar />)}
 
       <Routes>
         <Route index element={<Home />} />
