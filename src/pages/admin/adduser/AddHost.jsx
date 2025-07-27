@@ -27,14 +27,19 @@ const AddHost = () => {
   const fields = ["username", "name", "email", "phone", "password", "confirmPassword", "nicNumber", "faculty", "department"];
 
   // Get field label for display
-  const getFieldLabel = (field) => {
-    const labels = {
-      phone: "Phone Number",
-      nicNumber: "NIC Number",
-      confirmPassword: "Confirm Password"
-    };
-    return labels[field] || field.replace(/([A-Z])/g, " $1").trim();
+const getFieldLabel = (field) => {
+  const labels = {
+    phone: "Phone Number",
+    nicNumber: "NIC Number",
+    confirmPassword: "Confirm Password"
   };
+
+  const label = labels[field] || field.replace(/([A-Z])/g, " $1").trim();
+
+  // Capitalize the first letter of each word
+  return label.replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
 
   const validateForm = (data) => {
     let tempErrors = {};
@@ -203,7 +208,7 @@ const AddHost = () => {
                       }
                       name={field}
                       value={host[field] || ""}
-                      placeholder={`Enter ${getFieldLabel(field)}`}
+                      placeholder={field === "confirmPassword" ? "Confirm Password" : `Enter ${getFieldLabel(field)}`}
                       onChange={handleChange}
                       className={`w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
                         errors[field]

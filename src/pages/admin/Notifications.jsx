@@ -6,7 +6,7 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch all notifications
+  // Fetch all notifications
   const fetchNotifications = async () => {
     try {
       setLoading(true);
@@ -20,7 +20,7 @@ const Notifications = () => {
     }
   };
 
-  // ✅ Delete a notification
+  // Delete a notification
   const deleteNotification = async (id) => {
     try {
       await fetch(`http://localhost:5000/api/notifications/${id}`, { method: "DELETE" });
@@ -28,6 +28,36 @@ const Notifications = () => {
     } catch (error) {
       console.error("Delete failed", error);
     }
+  };
+
+  // Mark notification as read
+  const markAsRead = async (id) => {
+    try {
+      await fetch(`http://localhost:5000/api/notifications/${id}/read`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ read: true }),
+      });
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+      );
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
+
+  // Parse notification message for better display
+  const parseNotificationMessage = (message) => {
+    if (message.startsWith("Visitor Report:")) {
+      const parts = message.split(" (Visitor: ");
+      const reportDetails = parts[0].replace("Visitor Report: ", "");
+      const [category, reason] = reportDetails.split(" - ");
+      const visitorInfo = parts[1]?.split(", Email: ");
+      const visitorName = visitorInfo[0];
+      const email = visitorInfo[1]?.replace(")", "");
+      return { category, reason, visitorName, email };
+    }
+    return { message };
   };
 
   useEffect(() => {
@@ -52,22 +82,47 @@ const Notifications = () => {
         ) : notifications.length === 0 ? (
           <p className="text-sm text-[#748D92]">No notifications available.</p>
         ) : (
-          notifications.map((n) => (
-            <div key={n._id} className="flex justify-between items-center p-3 border-b border-gray-200">
-              <div>
-                <p className="font-medium text-[#212A31]">{n.message}</p>
-                <p className="text-xs text-[#748D92]">
-                  {new Date(n.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <button
-                onClick={() => deleteNotification(n._id)}
-                className="text-red-500 hover:underline text-sm"
+          notifications.map((n) => {
+            const parsed = parseNotificationMessage(n.message);
+            return (
+              <div
+                key={n._id}
+                className={`flex justify-between items-center p-3 border-b border-gray-200 ${
+                  !n.read ? "bg-blue-50" : ""
+                }`}
+                onClick={() => !n.read && markAsRead(n._id)}
               >
-                Delete
-              </button>
-            </div>
-          ))
+                <div>
+                  {n.type === "visitor" ? (
+                    <div className={`text-[#212A31] ${!n.read ? "font-bold" : "font-medium"}`}>
+                      <p>
+                        <strong>Visitor Report:</strong> {parsed.category} - {parsed.reason}
+                      </p>
+                      <p className="text-sm">
+                        Visitor: {parsed.visitorName} | Email: {parsed.email}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className={`font-medium text-[#212A31] ${!n.read ? "font-bold" : ""}`}>
+                      {n.message}
+                    </p>
+                  )}
+                  <p className="text-xs text-[#748D92]">
+                    {new Date(n.timestamp).toLocaleString()}
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent triggering markAsRead
+                    deleteNotification(n._id);
+                  }}
+                  className="text-red-500 hover:underline text-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            );
+          })
         )}
       </div>
     </div>
