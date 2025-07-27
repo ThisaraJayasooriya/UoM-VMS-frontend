@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo, useContext } from 'react';
-import { FiSearch, FiDownload, FiTrash2, FiX } from 'react-icons/fi';
-import { BsThreeDotsVertical, BsArrowLeft, BsArrowRight } from 'react-icons/bs';
+import { useState, useEffect, useMemo } from 'react';
+import { FiSearch, FiDownload, FiX } from 'react-icons/fi';
+import { BsArrowLeft, BsArrowRight } from 'react-icons/bs';
 import { FaSpinner } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -10,7 +10,6 @@ const VisitorLogbook = () => {
   const { authState } = useAuth();
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [openMenuId, setOpenMenuId] = useState(null);
   const [logEntries, setLogEntries] = useState([]);
   const [totalEntries, setTotalEntries] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -20,7 +19,6 @@ const VisitorLogbook = () => {
   const [itemsPerPage] = useState(5);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [startDate, setStartDate] = useState(() => {
     const yesterday = new Date();
     yesterday.setUTCDate(yesterday.getUTCDate() - 1);
@@ -32,33 +30,6 @@ const VisitorLogbook = () => {
     today.setUTCHours(0, 0, 0, 0);
     return today;
   });
-
-  // Debug component renders
-  useEffect(() => {
-    console.log('VisitorLogbook rendered, openMenuId:', openMenuId);
-  });
-
-  const toggleMenu = useCallback((id) => {
-    console.log('Toggling menu for ID:', id, 'Previous openMenuId:', openMenuId);
-    if (openMenuId !== id) {
-      setTimeout(() => setOpenMenuId(id), 100); // Debounce to prevent rapid toggling
-    } else {
-      setOpenMenuId(null);
-    }
-  }, [openMenuId]);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (openMenuId && !event.target.closest('.action-menu-container')) {
-        setOpenMenuId(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [openMenuId]);
 
   const fetchLogEntries = async () => {
     try {
@@ -169,82 +140,6 @@ const VisitorLogbook = () => {
     });
   }, [filteredEntries, sortColumn, sortDirection]);
 
-  const handleDelete = async (id) => {
-    setDeleteConfirmId(id);
-    setOpenMenuId(null);
-  };
-
-  const confirmDelete = async () => {
-    if (deleteConfirmId) {
-      try {
-        const token = localStorage.getItem('authToken');
-        console.log('Token for DELETE request:', token);
-
-        if (!token || !authState.isAuthenticated) {
-          setError('Please log in to delete log entries.');
-          setTimeout(() => {
-            setError(null);
-            window.location.href = '/login';
-          }, 2000);
-          setDeleteConfirmId(null);
-          return;
-        }
-
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const exp = payload.exp * 1000;
-          if (Date.now() > exp) {
-            setError('Your session has expired. Please log in again.');
-            localStorage.removeItem('authToken');
-            setTimeout(() => {
-              setError(null);
-              window.location.href = '/login';
-            }, 2000);
-            setDeleteConfirmId(null);
-            return;
-          }
-        } catch (decodeError) {
-          console.error('Token decode error:', decodeError);
-          setError('Invalid token. Please log in again.');
-          setTimeout(() => {
-            setError(null);
-            window.location.href = '/login';
-          }, 2000);
-          setDeleteConfirmId(null);
-          return;
-        }
-
-        const response = await fetch(`http://localhost:5000/api/logbook/${deleteConfirmId}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: 'Server error' }));
-          throw new Error(errorData.message || 'Failed to delete entry');
-        }
-
-        setLogEntries(logEntries.filter(entry => entry.id !== deleteConfirmId));
-        setDeleteConfirmId(null);
-        setOpenMenuId(null);
-        setMessage('Entry deleted successfully');
-        setTimeout(() => setMessage(null), 3000);
-      } catch (err) {
-        console.error('Delete error:', err);
-        setError(err.message);
-        setTimeout(() => setError(null), 3000);
-        setDeleteConfirmId(null);
-      }
-    }
-  };
-
-  const cancelDelete = () => {
-    setDeleteConfirmId(null);
-  };
-
   const exportToPDF = () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
@@ -343,28 +238,6 @@ const VisitorLogbook = () => {
     <div className="flex-1 overflow-auto p-6 bg-[#F8F9FA] mt-10">
       {message && <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-lg">{message}</div>}
       {error && <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-lg">Error: {error}</div>}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-lg font-medium text-[#2E3944] mb-4">Confirm Deletion</h2>
-            <p className="text-sm text-[#2E3944] mb-4">Are you sure you want to delete this entry?</p>
-            <div className="flex gap-2">
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Yes, Delete
-              </button>
-              <button
-                onClick={cancelDelete}
-                className="px-4 py-2 bg-gray-300 text-[#2E3944] rounded-lg hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end">
@@ -494,15 +367,12 @@ const VisitorLogbook = () => {
                   onClick={() => handleSort('email')}>
                   Email {sortColumn === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-[#2E3944] uppercase tracking-wider">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-[#D3D9D2]">
               {sortedEntries.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="px-6 py-4 text-center text-sm text-[#2E3944]">
+                  <td colSpan="8" className="px-6 py-4 text-center text-sm text-[#2E3944]">
                     No visitor logs found
                   </td>
                 </tr>
@@ -532,27 +402,6 @@ const VisitorLogbook = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
                       {entry.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative action-menu-container">
-                      <button
-                        onClick={() => toggleMenu(`${entry.id}-${index}`)}
-                        className="text-[#748D92] hover:text-[#124E66]"
-                        aria-label={`Actions for ${entry.visitor}`}
-                      >
-                        <BsThreeDotsVertical />
-                      </button>
-                      {openMenuId === `${entry.id}-${index}` && (
-                        <div className="absolute right-0 top-10 z-[100] mt-2 w-48 bg-white rounded-md shadow-lg border border-[#D3D9D2]">
-                          <div className="py-1">
-                            <button
-                              onClick={() => handleDelete(entry.id)}
-                              className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-[#F8F9FA] w-full text-left"
-                            >
-                              <FiTrash2 className="mr-2" /> Delete
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </td>
                   </tr>
                 ))
