@@ -67,12 +67,12 @@ function VisitorDashboard() {
           <div
             key={card.id}
             onClick={() => handleCardClick(card.title, card.path)}
-            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex flex-col items-center text-center cursor-pointer group hover:scale-105"
+            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex flex-col items-center text-center cursor-pointer group hover:scale-105 border-2 border-gray-500"
           >
             <div className="w-20 h-20 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center mb-5 group-hover:border-blue2 transition-colors duration-300">
               {card.icon}
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 group-hover:text-blue transition-colors duration-300">
+            <h3 className="text-xl font-semibold text-gray-700 group-hover:text-[#124E66] transition-colors duration-300">
               {card.title}
             </h3>
           </div>
