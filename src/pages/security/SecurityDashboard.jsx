@@ -92,12 +92,14 @@ const SecurityDashboard = () => {
       changeColor: "text-red-300",
     },
   ]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userData"));
     if (storedUser?.username) {
       setUserName(storedUser.username);
     }
+
 
     const fetchStats = async () => {
       try {
@@ -106,7 +108,6 @@ const SecurityDashboard = () => {
         );
         const data = await response.json();
         setStats([
-          
           {
             icon: FaUserPlus,
             title: "Expected Visitors",
@@ -138,11 +139,28 @@ const SecurityDashboard = () => {
         ]);
       } catch (error) {
         console.error("Failed to fetch visitor stats:", error);
+      } finally {
+        setTimeout(() => setLoading(false), 500);
       }
     };
 
     fetchStats();
   }, []);
+
+  // Skeleton Loader for cards
+  const SkeletonCard = () => (
+    <div className="relative bg-white/80 border border-gray-200/50 rounded-3xl p-6 shadow-[0_8px_32px_rgba(18,78,102,0.12)] min-h-[160px] animate-pulse overflow-hidden">
+      <div className="flex justify-between items-start mb-6">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center" />
+        <div className="px-8 py-2 rounded-full bg-gray-200" />
+      </div>
+      <div className="space-y-3">
+        <div className="h-4 w-1/3 bg-gray-200 rounded" />
+        <div className="h-8 w-2/3 bg-gray-200 rounded" />
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-gray-200 to-gray-300" />
+    </div>
+  );
 
   return (
     <div className="pt-24 px-4 lg:px-10">
@@ -158,16 +176,18 @@ const SecurityDashboard = () => {
 
       {/* Stat Cards */}
       <div className="pt-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <DashboardCard
-            key={index}
-            icon={stat.icon}
-            title={stat.title}
-            count={stat.count}
-            change={stat.change}
-            changeColor={stat.changeColor}
-          />
-        ))}
+        {loading
+          ? Array(4).fill(0).map((_, idx) => <SkeletonCard key={idx} />)
+          : stats.map((stat, index) => (
+              <DashboardCard
+                key={index}
+                icon={stat.icon}
+                title={stat.title}
+                count={stat.count}
+                change={stat.change}
+                changeColor={stat.changeColor}
+              />
+            ))}
       </div>
     </div>
   );

@@ -33,15 +33,7 @@ function Visithistory() {
         const formattedVisits = completedVisits.map(appointment => ({
           visitorName: `${appointment.firstname} ${appointment.lastname}`,
           host: appointment.hostName || "Unknown Host",
-          dateTime: appointment.appointmentDate 
-            ? new Date(appointment.appointmentDate).toLocaleString('en-US', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit',
-                hour: '2-digit', 
-                minute: '2-digit'
-              }) 
-            : new Date(appointment.createdAt).toLocaleString('en-US', { 
+          dateTime: new Date(appointment.checkInTime).toLocaleString('en-US', { 
                 year: 'numeric', 
                 month: '2-digit', 
                 day: '2-digit',
