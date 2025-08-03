@@ -85,7 +85,7 @@ function AppointmentDetails() {
                   </span>
                 )}
               </div>
-              <p className="text-2xl font-bold mt-2">Meeting Request</p>
+              <p className="text-2xl font-bold mt-2">Meeting Requests</p>
               <p className="font-light text-center">
                 View and respond to <br />
                 incoming requests
