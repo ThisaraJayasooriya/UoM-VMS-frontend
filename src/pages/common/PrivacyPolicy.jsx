@@ -73,7 +73,7 @@ const PrivacyPolicy = () => {
                 </li>
                 <li className="flex items-start">
                   <span className="bg-[#748D92] text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0">•</span>
-                  <span className="text-gray-800"><strong>Communication:</strong> To send SMS notifications, appointment confirmations, and real-time updates to hosts and visitors.</span>
+                  <span className="text-gray-800"><strong>Communication:</strong> To send email notifications, appointment confirmations, and real-time updates to hosts and visitors.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="bg-[#748D92] text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0">•</span>
