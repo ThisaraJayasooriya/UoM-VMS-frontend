@@ -73,7 +73,7 @@ const PrivacyPolicy = () => {
                 </li>
                 <li className="flex items-start">
                   <span className="bg-[#748D92] text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0">•</span>
-                  <span className="text-gray-800"><strong>Communication:</strong> To send email notifications, appointment confirmations, and real-time updates to hosts and visitors.</span>
+                  <span className="text-gray-800"><strong>Communication:</strong> To send email notifications, appointment confirmations, and real-time updates to visitors.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="bg-[#748D92] text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0">•</span>
@@ -105,7 +105,7 @@ const PrivacyPolicy = () => {
                 </li>
                 <li className="flex items-start">
                   <span className="bg-[#748D92] text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0">•</span>
-                  <span className="text-gray-800"><strong>Data Retention:</strong> Visitor data is retained only for as long as necessary to fulfill the purposes outlined in this policy or as required by law.</span>
+                  <span className="text-gray-800"><strong>Data Retention:</strong> Visitor data is retained within the system until it is manually deleted or managed in accordance with administrative procedures or applicable legal requirements.</span>
                 </li>
               </ul>
             </div>

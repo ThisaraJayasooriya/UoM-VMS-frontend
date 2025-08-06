@@ -5,7 +5,7 @@ import campusImage from "../../assets/campus.jpeg";
 
 const About = () => {
   const stats = [
-    { value: "500+", label: "Daily Visitors", icon: <FiUsers className="text-2xl" /> },
+    { value: "100+", label: "Daily Visitors", icon: <FiUsers className="text-2xl" /> },
     { value: "99.9%", label: "Security Accuracy", icon: <FiShield className="text-2xl" /> },
     { value: "<1 min", label: "Check-in Time", icon: <FiClock className="text-2xl" /> },
     { value: "24/7", label: "System Availability", icon: <FiCalendar className="text-2xl" /> },
