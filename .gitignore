@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+__tests__/
+jest-*
+babel.config.js
+
+babel.config.cjs
+jest.config.cjs
+jest.env-mock.cjs
+jest.setup.cjs

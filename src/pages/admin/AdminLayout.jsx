@@ -45,7 +45,7 @@ function AdminLayout() {
 
     { 
     icon: <FaUserTimes />, 
-    description: "Access Control", 
+    description: "Block Users", 
     route: "/admin/access-control" 
     },
     {
@@ -58,7 +58,7 @@ function AdminLayout() {
       description: "Insights",
       route: "/admin/adminInsights",
     },
-    { icon: <FaCog />, description: "Settings", route: "/admin/settings" },
+    { icon: <FaCog />, description: "Profile", route: "/admin/settings" },
   ];
 
   /*const pageTitles = {
@@ -82,13 +82,13 @@ function AdminLayout() {
     if (path.includes("/admin/userdetails/security")) return "Security Details";
     if (path.includes("/admin/userdetails/admin")) return "Admin Details";
     if (path.includes("/admin/userdetails")) return "User Details";
-    if (path.includes("/admin/access-control")) return "Access Control";
+    if (path.includes("/admin/access-control")) return "Block Users";
     if (path.includes("/admin/adminreports")) return "Reports";
     if (path.includes("/admin/visitorlogbook")) return "Visitor Logbook";
     if (path.includes("/admin/visitorhistoryreport")) return "Visitor History Report";
     if (path.includes("/admin/visitorfeedbackreview")) return "Visitors' Feedback Review";
     if (path.includes("/admin/adminInsights")) return "Insights";
-    if (path.includes("/admin/settings")) return "Settings";
+    if (path.includes("/admin/settings")) return "Profile";
     if (path.includes("/notifications")) return "All Notifications";
     return "Dashboard";
   };

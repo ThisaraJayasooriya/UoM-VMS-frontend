@@ -29,3 +29,13 @@ export const fetchAcceptedAppointmentsCount = async (hostId) => {
   const res = await axiosInstance.get(`/appointments/host/${hostId}/confirmedcount`);
   return res.data;
 };
+
+export const rescheduleAppointment = async (appointmentId, rescheduleData) => {
+  const res = await axiosInstance.put(`/appointments/reschedule/${appointmentId}`, rescheduleData);
+  return res.data;
+};
+
+export const cancelAppointment = async (appointmentId) => {
+  const res = await axiosInstance.put(`/appointments/cancel/${appointmentId}`);
+  return res.data;
+};

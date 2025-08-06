@@ -35,9 +35,9 @@ const ContactUs = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-[#2E3944]">Address</h3>
                   <p className="text-[#748D92] mt-1">
-                    University of Moratuwa<br />
-                    Bandaranayake Mawatha<br />
-                    Moratuwa 10400
+                    University of Moratuwa.<br />
+                    Bandaranayake Mawatha,<br />
+                    Moratuwa 10400.
                   </p>
                 </div>
               </div>

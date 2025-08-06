@@ -2,6 +2,17 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:5000/api/appointment"; // Backend base URL
 
+// Get visitor details for auto-filling the form
+export const getVisitorDetails = async (visitorId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/visitor-details/${visitorId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching visitor details:", error);
+    throw error;
+  }
+};
+
 // Faculty and department structure as requested - keeping as fallback
 const facultyDepartmentStructure = {
   "IT": ["CM", "IT", "IDS"],

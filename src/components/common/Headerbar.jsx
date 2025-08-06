@@ -21,13 +21,15 @@ function Headerbar({ toggleSidebar, userName, userRole, pageTitle, pageSubtitle,
         </div>
 
         <div className="flex items-center space-x-6">
-          <div className="relative">
-            <button onClick={handleNotificationsClick} className="relative">
-              <FaBell className="text-lg cursor-pointer" />
-              {/* Notification Dot */}
-              <span className="absolute top-0 right-0 bg-red-500 w-2.5 h-2.5 rounded-full"></span>
-            </button>
-          </div>
+          {userRole.toLowerCase().includes("admin") && (
+            <div className="relative">
+              <button onClick={handleNotificationsClick} className="relative">
+                <FaBell className="text-lg cursor-pointer" />
+                {/* Notification Dot */}
+                <span className="absolute top-0 right-0 bg-red-500 w-2.5 h-2.5 rounded-full"></span>
+              </button>
+            </div>
+          )}
           <div className="flex items-center space-x-2 cursor-pointer  hover:bg-opacity-20 p-2 rounded-lg transition-colors" onClick={onUserClick}>
             <FaUserCircle className="text-xl" />
             <div>

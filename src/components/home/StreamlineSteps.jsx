@@ -10,7 +10,7 @@ const steps = [
   {
     icon: <FaEnvelope className="text-3xl text-[#124666]" />,
     title: "Receive Confirmation",
-    description: "Get a unique confirmation code via email.",
+    description: "A unique confirmation code will be assigned to your appointment",
   },
   {
     icon: <FaUserCheck className="text-3xl text-[#124666]" />,
@@ -20,7 +20,7 @@ const steps = [
   {
     icon: <FaSmile className="text-3xl text-[#124666]" />,
     title: "Enjoy Your Visit",
-    description: "Your host will be notified of your arrival.",
+    description: "Everything is set for a pleasant visit with us.",
   },
 ];
 

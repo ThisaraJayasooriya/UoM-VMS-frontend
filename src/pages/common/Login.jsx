@@ -43,6 +43,8 @@ const Login = () => {
         localStorage.setItem("authRemember", rememberMe ? "true" : "false");
         if (data.user) {
           localStorage.setItem("userData", JSON.stringify(data.user));
+          localStorage.setItem("userRole", data.user.role); // ✅ store role like admin, visitor, etc.
+          localStorage.setItem("userType", data.user.userType); // ✅ optional if you use userType
         }
         console.log("Token saved with rememberMe:", rememberMe);
 

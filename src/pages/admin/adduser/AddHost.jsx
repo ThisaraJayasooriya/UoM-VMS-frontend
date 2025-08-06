@@ -1,27 +1,46 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const AddHost = () => {
-  // State for form input fields
   const [host, setHost] = useState({
     username: "",
     name: "",
     email: "",
     phone: "",
     password: "",
-    confirmPassword: "", // New state for confirm password
+    confirmPassword: "",
     nicNumber: "",
     faculty: "",
     department: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState({
+    password: false, // Default: password hidden, shows FiEyeOff (closed eye)
+    confirmPassword: false, // Default: confirmPassword hidden, shows FiEyeOff (closed eye)
+  });
+  const [selectedFaculty, setSelectedFaculty] = useState("");
   const navigate = useNavigate();
 
-  const fields = ["username", "name", "email", "phone", "password", "confirmPassword", "nicNumber", "faculty", "department"]; // Added confirmPassword
+  const fields = ["username", "name", "email", "phone", "password", "confirmPassword", "nicNumber", "faculty", "department"];
 
-  // Form validation function
+  // Get field label for display
+const getFieldLabel = (field) => {
+  const labels = {
+    phone: "Phone Number",
+    nicNumber: "NIC Number",
+    confirmPassword: "Confirm Password"
+  };
+
+  const label = labels[field] || field.replace(/([A-Z])/g, " $1").trim();
+
+  // Capitalize the first letter of each word
+  return label.replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+
   const validateForm = (data) => {
     let tempErrors = {};
     const phoneRegex = /^[0-9]{9}$/;
@@ -30,15 +49,11 @@ const AddHost = () => {
 
     fields.forEach((field) => {
       const value = data[field] || "";
-
-      // Check required fields
       if (["username", "name", "email", "phone", "password", "confirmPassword", "faculty", "department"].includes(field)) {
         if (!value.trim()) {
           tempErrors[field] = "This field is required";
         }
       }
-
-      // Additional field-specific validations
       if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
       if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
       if (field === "phone" && value && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
@@ -59,11 +74,9 @@ const AddHost = () => {
     const tempErrors = validateForm(host);
     setErrors(tempErrors);
 
-    // If no validation errors, proceed to submit data
     if (Object.keys(tempErrors).length === 0) {
       setIsLoading(true);
       try {
-        // Send POST request to register host
         const res = await fetch("http://localhost:5000/api/staff/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -71,8 +84,6 @@ const AddHost = () => {
         });
 
         const data = await res.json();
-
-        // Check for successful response
         if (res.ok && data.success) {
           if (data.message.includes("email sent") || !data.message.includes("failed to send")) {
             toast.success("Host registered and email sent successfully!");
@@ -96,18 +107,28 @@ const AddHost = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setHost((prev) => ({ ...prev, [name]: value }));
+    if (name === "faculty") setSelectedFaculty(value);
     setErrors((prev) => ({ ...prev, [name]: "", general: "" }));
   };
 
-  // Cancel and go back to host list
   const handleCancel = () => {
     navigate("/admin/userdetails/host");
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  // Department options based on selected faculty
+  const departmentOptions = {
+    IT: ["IDS", "IT", "CM"],
+    ENGINEERING: ["MECHANICAL", "CIVIL", "ENTC", "CHEMICAL"],
+    ARCHITECTURE: ["DESIGN", "LANDSCAPE", "ARCHITECTURE"],
   };
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
       <div className="bg-[#FFFFFF] w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden">
-        {/* Header Section */}
         <div className="bg-gradient-to-r from-[#124E66] to-[#1d4756] px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-[#FFFFFF]">Add New Host</h2>
           <button
@@ -119,30 +140,98 @@ const AddHost = () => {
           </button>
         </div>
 
-        {/* Form Section */}
         <form onSubmit={handleSubmit} className="p-6 bg-gradient-to-b from-[#F9FAFB] to-[#F3F4F6]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map((field) => (
-              <div key={field}>
-                <label className="block mb-1 text-sm font-medium text-[#374151] capitalize">
-                  {field} <span className="text-[#EF4444]">*</span>
+              <div
+                key={field}
+                className={`flex flex-col ${field === "confirmPassword" ? "space-y-4" : "space-y-1"}`}
+                style={field === "confirmPassword" ? { marginBottom: "16px" } : {}}
+              >
+                <label className="block text-sm font-medium text-[#374151]">
+                  {getFieldLabel(field)} <span className="text-[#EF4444]">*</span>
                 </label>
-                <input
-                  type={field === "password" || field === "confirmPassword" ? "password" : "text"} // Updated for confirmPassword
-                  name={field}
-                  value={host[field] || ""}
-                  placeholder={`Enter ${field}`}
-                  onChange={handleChange}
-                  className={`w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
-                    errors[field]
-                      ? "border-[#EF4444] focus:ring-[#F87171]"
-                      : "border-[#D1D5DB] focus:ring-[#3B82F6]"
-                  } transition duration-200 bg-[#FFFFFF]`}
-                  aria-required="true"
-                  aria-invalid={!!errors[field]}
-                  aria-describedby={errors[field] ? `error-${field}` : undefined}
-                  disabled={isLoading}
-                />
+                {field === "faculty" ? (
+                  <select
+                    name="faculty"
+                    value={host.faculty}
+                    onChange={handleChange}
+                    className={`w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
+                      errors[field]
+                        ? "border-[#EF4444] focus:ring-[#F87171]"
+                        : "border-[#D1D5DB] focus:ring-[#3B82F6]"
+                    } transition duration-200 bg-[#FFFFFF]`}
+                    aria-required="true"
+                    aria-invalid={!!errors[field]}
+                    aria-describedby={errors[field] ? `error-${field}` : undefined}
+                    disabled={isLoading}
+                  >
+                    <option value="">Select Faculty</option>
+                    {["IT", "ENGINEERING", "ARCHITECTURE"].map((faculty) => (
+                      <option key={faculty} value={faculty}>
+                        {faculty}
+                      </option>
+                    ))}
+                  </select>
+                ) : field === "department" ? (
+                  <select
+                    name="department"
+                    value={host.department}
+                    onChange={handleChange}
+                    className={`w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
+                      errors[field]
+                        ? "border-[#EF4444] focus:ring-[#F87171]"
+                        : "border-[#D1D5DB] focus:ring-[#3B82F6]"
+                    } transition duration-200 bg-[#FFFFFF]`}
+                    aria-required="true"
+                    aria-invalid={!!errors[field]}
+                    aria-describedby={errors[field] ? `error-${field}` : undefined}
+                    disabled={isLoading || !selectedFaculty}
+                  >
+                    <option value="">Select Department</option>
+                    {selectedFaculty &&
+                      departmentOptions[selectedFaculty].map((dept) => (
+                        <option key={dept} value={dept}>
+                          {dept}
+                        </option>
+                      ))}
+                  </select>
+                ) : (
+                  <div className="flex flex-row items-center">
+                    <input
+                      type={
+                        field === "password" || field === "confirmPassword"
+                          ? showPassword[field]
+                            ? "text"
+                            : "password"
+                          : "text"
+                      }
+                      name={field}
+                      value={host[field] || ""}
+                      placeholder={field === "confirmPassword" ? "Confirm Password" : `Enter ${getFieldLabel(field)}`}
+                      onChange={handleChange}
+                      className={`w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
+                        errors[field]
+                          ? "border-[#EF4444] focus:ring-[#F87171]"
+                          : "border-[#D1D5DB] focus:ring-[#3B82F6]"
+                      } transition duration-200 bg-[#FFFFFF] mr-2`}
+                      aria-required="true"
+                      aria-invalid={!!errors[field]}
+                      aria-describedby={errors[field] ? `error-${field}` : undefined}
+                      disabled={isLoading}
+                    />
+                    {(field === "password" || field === "confirmPassword") && (
+                      <button
+                        type="button"
+                        onClick={() => togglePasswordVisibility(field)}
+                        className="p-2 text-[#6B7280] hover:text-[#374151] focus:outline-none"
+                        aria-label={showPassword[field] ? "Hide password" : "Show password"}
+                      >
+                        {showPassword[field] ? <FiEye /> : <FiEyeOff />}
+                      </button>
+                    )}
+                  </div>
+                )}
                 {errors[field] && (
                   <p id={`error-${field}`} className="text-[#EF4444] text-sm mt-1">
                     {errors[field]}
@@ -157,7 +246,6 @@ const AddHost = () => {
               {errors.general}
             </div>
           )}
-          {/* Action Buttons */}
           <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
             <button
               type="button"

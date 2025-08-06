@@ -90,7 +90,7 @@ function Home() {
             <FeatureCard
               icon={<FaBell className="text-4xl text-[#124E66] mb-4" />}
               title="Real-Time Notifications"
-              description="Hosts receive instant notifications when visitors arrive."
+              description="Visitors receive instant notifications if the host cancels or reschedules the appointment."
               bgColor="bg-white"
               borderColor="border-[#124E66]"
             />

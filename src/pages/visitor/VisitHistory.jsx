@@ -24,24 +24,16 @@ function Visithistory() {
         // Fetch appointments from backend
         const appointments = await getAppointmentStatus(visitorId);
         
-        // Filter only appointments with completed or confirmed status
+        // Filter only appointments with completed
         const completedVisits = appointments.filter(appointment => 
-          appointment.status === "completed" || appointment.status === "confirmed"
+          appointment.status === "Completed"
         );
         
         // Format the data for our component
         const formattedVisits = completedVisits.map(appointment => ({
           visitorName: `${appointment.firstname} ${appointment.lastname}`,
           host: appointment.hostName || "Unknown Host",
-          dateTime: appointment.appointmentDate 
-            ? new Date(appointment.appointmentDate).toLocaleString('en-US', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit',
-                hour: '2-digit', 
-                minute: '2-digit'
-              }) 
-            : new Date(appointment.createdAt).toLocaleString('en-US', { 
+          dateTime: new Date(appointment.checkInTime).toLocaleString('en-US', { 
                 year: 'numeric', 
                 month: '2-digit', 
                 day: '2-digit',

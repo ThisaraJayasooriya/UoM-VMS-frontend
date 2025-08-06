@@ -6,17 +6,26 @@ import { fetchUserProfile } from "../../services/userProfileService";
 const SecurityProfile = () => {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
 
- useEffect(() => {
+  useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
     if (userData?.id) {
       fetchUserProfile(userData.id)
-        .then((data) => setProfile(data))
+        .then((data) => {
+          setTimeout(() => {
+            setProfile(data);
+            setLoading(false);
+          }, 500);
+        })
         .catch((err) => {
           console.error("Error loading profile", err);
+          setLoading(false);
         });
+    } else {
+      setLoading(false);
     }
   }, []);
 
@@ -28,8 +37,63 @@ const SecurityProfile = () => {
     navigate("/");
   };
 
+
   if (error) return <div className="text-red-600 p-6">{error}</div>;
-  if (!profile) return <div className="p-6">Loading profile...</div>;
+  if (loading || !profile) {
+    // Skeleton loader for profile card
+    return (
+      <div className="pt-20 px-4 lg:px-20 min-h-screen">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
+            {/* Header Skeleton */}
+            <div className="bg-[#124E66] p-6 text-white">
+              <div className="flex items-center">
+                <div className="bg-[#748D92] p-3 rounded-full mr-4 w-12 h-12" />
+                <div>
+                  <div className="h-6 w-40 bg-gray-200 rounded mb-2" />
+                  <div className="flex items-center mt-1 gap-3">
+                    <div className="h-5 w-16 bg-gray-300 rounded-full" />
+                    <div className="h-4 w-20 bg-gray-300 rounded" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Details Skeleton */}
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array(3).fill(0).map((_, idx) => (
+                  <div key={idx} className="bg-[#F8FAF9] p-4 rounded-lg border border-[#D3D9D2]">
+                    <div className="flex items-center mb-3 gap-2">
+                      <div className="w-5 h-5 bg-gray-200 rounded-full" />
+                      <div className="h-4 w-24 bg-gray-200 rounded" />
+                    </div>
+                    <div className="h-4 w-32 bg-gray-100 rounded" />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8">
+                <div className="h-6 w-60 bg-gray-200 rounded mb-4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
+                    <div className="h-4 w-24 bg-gray-100 rounded" />
+                  </div>
+                  <div>
+                    <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
+                    <div className="h-4 w-24 bg-gray-100 rounded" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Footer Skeleton */}
+            <div className="bg-[#F8FAF9] px-6 py-4 border-t border-[#D3D9D2] flex justify-end">
+              <div className="h-10 w-28 bg-gray-200 rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-20 px-4 lg:px-20 min-h-screen">

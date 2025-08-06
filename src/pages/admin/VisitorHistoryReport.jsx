@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiSearch, FiDownload, FiCalendar } from 'react-icons/fi';
+import { FiSearch, FiDownload, FiCalendar, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 const VisitorHistoryReport = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -7,12 +7,15 @@ const VisitorHistoryReport = () => {
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Set items per page
 
   // Fetch data from backend
   useEffect(() => {
     const fetchHistoryData = async () => {
       try {
         setLoading(true);
+        setCurrentPage(1); // Reset to page 1 when filters change
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const response = await fetch(
           `http://localhost:5000/api/visitor-history?searchQuery=${encodeURIComponent(searchQuery)}&selectedDate=${encodeURIComponent(selectedDate)}`,
@@ -31,7 +34,7 @@ const VisitorHistoryReport = () => {
         
         console.log('Raw backend response:', data); // Debug raw response
 
-        // Map backend data to frontend format (as fallback)
+        // Map backend data to frontend format with unique ID check
         const mappedData = data.map(entry => ({
           id: entry.id || 'Unknown',
           visitor: entry.visitor || 'Unknown',
@@ -40,6 +43,13 @@ const VisitorHistoryReport = () => {
           checkIn: entry.checkIn ? new Date(entry.checkIn).toISOString() : null,
           checkOut: entry.checkOut ? new Date(entry.checkOut).toISOString() : null,
         }));
+
+        // Log to check for duplicate IDs
+        const ids = mappedData.map(entry => entry.id);
+        const uniqueIds = new Set(ids);
+        if (ids.length !== uniqueIds.size) {
+          console.warn('Duplicate IDs detected:', ids);
+        }
 
         console.log('Fetched and mapped data:', mappedData); // Debug frontend data
 
@@ -64,6 +74,16 @@ const VisitorHistoryReport = () => {
     
     return matchesSearch && matchesDate;
   });
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = (currentPage - 1) * itemsPerPage; // Start from 0-based index
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfFirstItem + itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  console.log('Current Page:', currentPage, 'Current Items:', currentItems.length, 'Filtered Data Length:', filteredData.length); // Debug pagination
 
   const formatDate = (datetime) => {
     if (!datetime) return '-';
@@ -160,7 +180,7 @@ const VisitorHistoryReport = () => {
             <div className="p-4 text-center text-[#2E3944]">Loading...</div>
           ) : error ? (
             <div className="p-4 text-center text-red-500">{error}</div>
-          ) : filteredData.length === 0 ? (
+          ) : currentItems.length === 0 ? (
             <div className="p-4 text-center text-[#2E3944]">No visitor history found</div>
           ) : (
             <table className="min-w-full divide-y divide-[#D3D9D2]">
@@ -184,8 +204,8 @@ const VisitorHistoryReport = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-[#D3D9D2]">
-                {filteredData.map((entry) => (
-                  <tr key={entry.id} className="hover:bg-[#F8F9FA]">
+                {currentItems.map((entry, index) => (
+                  <tr key={`${entry.id}-${index}`} className="hover:bg-[#F8F9FA]">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#2E3944]">
                       {entry.id}
                     </td>
@@ -209,6 +229,37 @@ const VisitorHistoryReport = () => {
               </tbody>
             </table>
           )}
+        </div>
+
+        <div className="bg-[#F8F9FA] px-6 py-3 flex flex-col md:flex-row justify-between items-center border-t border-[#D3D9D2]">
+          <div className="text-sm text-[#748D92] mb-2 md:mb-0">
+            Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to <span className="font-medium">{Math.min(indexOfFirstItem + currentItems.length, filteredData.length)}</span> of <span className="font-medium">{filteredData.length}</span> entries
+          </div>
+          <div className="flex gap-2 items-center">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2] disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentPage === 1}
+            >
+              <FiChevronLeft />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1 border border-[#D3D9D2] rounded text-sm ${currentPage === page ? 'bg-[#124E66] text-white' : 'text-[#2E3944] hover:bg-[#D3D9D2]'}`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2] disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentPage === totalPages}
+            >
+              <FiChevronRight />
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ function HostAvailableTimeSlots() {
   const [loading, setLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [isMultipleSlots, setIsMultipleSlots] = useState(false);
+  const [notification, setNotification] = useState({ show: false, type: '', message: '' });
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userData"));
@@ -50,10 +51,30 @@ function HostAvailableTimeSlots() {
         }
       }));
       
-      alert("Time slot selected successfully!");
+      // Show success notification
+      setNotification({
+        show: true,
+        type: 'success',
+        message: 'Time slot selected successfully!'
+      });
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification({ show: false, type: '', message: '' });
+      }, 5000);
     } catch (error) {
       console.error("Error selecting time slot:", error);
-      alert("Failed to select time slot. Please try again.");
+      // Show error notification
+      setNotification({
+        show: true,
+        type: 'error',
+        message: 'Failed to select time slot. Please try again.'
+      });
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification({ show: false, type: '', message: '' });
+      }, 5000);
     } finally {
       setLoading(false);
     }
@@ -64,19 +85,47 @@ function HostAvailableTimeSlots() {
 
     // For multiple slots, check if slot is selected
     if (isMultipleSlots && !selectedSlot && !appointment.selectedTimeSlot) {
-      alert("Please select a time slot first");
+      setNotification({
+        show: true,
+        type: 'warning',
+        message: 'Please select a time slot first'
+      });
+      
+      setTimeout(() => {
+        setNotification({ show: false, type: '', message: '' });
+      }, 5000);
       return;
     }
 
     setLoading(true);
     try {
       await confirmAppointment(appointment._id);
-      alert("Appointment confirmed!");
+      
+      // Show success notification
+      setNotification({
+        show: true,
+        type: 'success',
+        message: 'Appointment confirmed!'
+      });
+      
       // Update UI: set status to confirmed locally
       setAppointment({ ...appointment, status: "confirmed" });
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification({ show: false, type: '', message: '' });
+      }, 5000);
     } catch (error) {
-      alert("Failed to confirm appointment");
       console.error(error);
+      setNotification({
+        show: true,
+        type: 'error',
+        message: 'Failed to confirm appointment'
+      });
+      
+      setTimeout(() => {
+        setNotification({ show: false, type: '', message: '' });
+      }, 5000);
     } finally {
       setLoading(false);
     }
@@ -88,20 +137,66 @@ function HostAvailableTimeSlots() {
     setLoading(true);
     try {
       await rejectAppointment(appointment._id);
-      alert("Appointment rejected!");
+      
+      // Show notification
+      setNotification({
+        show: true,
+        type: 'warning',
+        message: 'Appointment rejected!'
+      });
       
       setAppointment({ ...appointment, status: "visitorRejected" });
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification({ show: false, type: '', message: '' });
+      }, 5000);
     } catch (error) {
-      alert("Failed to reject appointment");
       console.error(error);
+      setNotification({
+        show: true,
+        type: 'error',
+        message: 'Failed to reject appointment'
+      });
+      
+      setTimeout(() => {
+        setNotification({ show: false, type: '', message: '' });
+      }, 5000);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg- pt-24 px-4">
+    <div className="min-h-screen bg- pt-24 px-4">      
       <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-2xl p-10 border border-gray-200">
+        {/* Inline Notification */}
+        {notification.show && (
+          <div 
+            className={`${
+              notification.type === 'success' 
+                ? 'bg-green-100 border border-green-400 text-green-700' 
+                : notification.type === 'error'
+                ? 'bg-red-100 border border-red-400 text-red-700'
+                : 'bg-yellow-100 border border-yellow-400 text-yellow-700'
+            } px-4 py-3 rounded relative mb-6`} 
+            role="alert"
+          >
+            <strong className="font-bold">
+              {notification.type === 'success' ? 'Success! ' : notification.type === 'error' ? 'Error! ' : 'Warning! '}
+            </strong>
+            <span className="block sm:inline">{notification.message}</span>
+            <button 
+              onClick={() => setNotification({ show: false, type: '', message: '' })}
+              className="absolute top-0 bottom-0 right-0 px-4 py-3"
+            >
+              <svg className="fill-current h-6 w-6" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <title>Close</title>
+                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+              </svg>
+            </button>
+          </div>
+        )}
         {appointment ? (
           <div>
             {isMultipleSlots ? (
@@ -162,7 +257,7 @@ function HostAvailableTimeSlots() {
                       disabled={!selectedSlot || loading}
                       className={`px-6 py-3 rounded-lg font-semibold transition ${
                         selectedSlot && !loading
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          ? 'bg-[#124E66] text-white hover:bg-[#0E3D52] '
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       }`}
                     >
@@ -174,7 +269,7 @@ function HostAvailableTimeSlots() {
                     <button
                       onClick={handleConfirm}
                       disabled={loading}
-                      className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition"
+                      className="px-6 py-3 bg-[#124E66] text-white rounded-lg hover:bg-[#0E3D52]  font-semibold transition"
                     >
                       {loading ? "Confirming..." : "Confirm Appointment"}
                     </button>

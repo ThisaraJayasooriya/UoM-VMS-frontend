@@ -52,7 +52,7 @@ function HostDashboard() {
 
 return (
     <div className="pt-20 px-4 lg:px-20">
-        <h1 className="text-2xl font-bold mb-5 text-center lg:text-left">Hi, {userName}! 👋</h1>
+        <h1 className="text-2xl font-bold mb-5 text-center lg:text-left">Hi, {userName}! </h1>
         <div className="flex flex-col  justify-center lg:flex-row lg:space-x-50 space-y-4 lg:space-y-0">
         <div className="mb-4 lg:mb-0">
           <DashboardCard icon={<FaClipboardList />} title="Total Meeting Requests" count={pendingCount} textcolor="text-white"/>
