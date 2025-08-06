@@ -144,7 +144,7 @@ const AccessControl = () => {
   }, []);
 
   return (
-    <div className="p-6 md:p-8 lg:p-20 max-w-7xl mx-auto">
+    <div className="px-4 py-24 sm:px-6 md:px-8 lg:px-20 max-w-7xl mx-auto">
       <ToastContainer position="top-right" autoClose={2500} />
 
       {/* Summary Cards */}

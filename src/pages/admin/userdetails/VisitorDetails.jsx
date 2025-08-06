@@ -3,10 +3,10 @@ import { FiSearch, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight, FiArrowLeft
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
+
 const VisitorDetails = () => {
   // State management
   const [visitorList, setVisitorList] = useState([]);
-  const [editVisitor, setEditVisitor] = useState(null);
   const [deleteVisitorId, setDeleteVisitorId] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,36 +83,6 @@ const VisitorDetails = () => {
     return email.toLowerCase();
   };
 
-  // Handle visitor edit submission
-  const handleEditSubmit = async () => {
-    const [firstName, lastName] = editVisitor.name.split(" ", 2);
-    try {
-      const res = await fetch(`http://localhost:5000/api/visitor/${editVisitor._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: firstName || editVisitor.name,
-          lastName: lastName || "",
-          username: editVisitor.username,
-          email: editVisitor.email,
-          phoneNumber: editVisitor.phone,
-          nicNumber: editVisitor.nicNumber,
-        }),
-      });
-      if (res.ok) {
-        toast.success("Visitor updated successfully!");
-        setEditVisitor(null);
-        fetchVisitors();
-      } else {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to update visitor");
-      }
-    } catch (err) {
-      console.error("Edit error:", err);
-      toast.error(err.message);
-    }
-  };
-
   // Handle opening the delete confirmation modal
   const handleDeleteClick = (id) => {
     setDeleteVisitorId(id);
@@ -177,7 +147,7 @@ const VisitorDetails = () => {
                   (heading, idx) => (
                     <th
                       key={idx}
-                      className="py-2 px-2 font-medium whitespace-nowrap"
+                      className={`py-2 px-2 font-medium whitespace-nowrap ${heading === "Actions" ? "text-right pr-10" : ""}`}
                       style={{
                         width: idx === 0 ? "5%" : idx === 8 ? "10%" : `${90 / 8}%`,
                       }}
@@ -204,15 +174,8 @@ const VisitorDetails = () => {
                     <td className="py-2 px-2 whitespace-nowrap">{formatPhone(v.phone)}</td>
                     <td className="py-2 px-2 whitespace-nowrap">{v.nicNumber || "-"}</td>
                     <td className="py-2 px-2 whitespace-nowrap">{v.registeredDate || "-"}</td>
-                    <td className="py-2 px-2 whitespace-nowrap space-x-2">
-                      <button
-                        onClick={() => setEditVisitor(v)}
-                        className="p-2 bg-[#1d4756] hover:bg-[#5d8696] text-[#FFFFFF] rounded-full transition"
-                        title="Edit"
-                        aria-label="Edit visitor"
-                      >
-                        <FiEdit2 className="text-lg" />
-                      </button>
+                    <td className="py-2 px-2 whitespace-nowrap space-x-2  text-right pr-12">
+
                       <button
                         onClick={() => handleDeleteClick(v._id)}
                         className="p-2 bg-[#4d0202] hover:bg-[#d18282] text-[#FFFFFF] rounded-full transition"
@@ -273,17 +236,7 @@ const VisitorDetails = () => {
         </div>
       </div>
 
-      {/* Edit Modal */}
-      {editVisitor && (
-        <ModalForm
-          title="Edit Visitor"
-          fields={["userID", "name", "username", "email", "phone", "nicNumber"]}
-          data={editVisitor}
-          setData={setEditVisitor}
-          onSubmit={handleEditSubmit}
-          onClose={() => setEditVisitor(null)}
-        />
-      )}
+
 
       {/* Delete Confirmation Modal */}
       {showConfirmModal && (
@@ -365,118 +318,6 @@ const VisitorDetails = () => {
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-// Form validation helper
-const validateForm = (fields, data) => {
-  let tempErrors = {};
-  const phoneRegex = /^[0-9]{9}$/;
-  const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
-  fields.forEach((field) => {
-    const value = data[field] || "";
-
-    if (["userID", "name", "username", "email", "phone"].includes(field)) {
-      if (!value.trim()) {
-        tempErrors[field] = "This field is required";
-      }
-    }
-
-    if (field === "userID" && value.length < 3) tempErrors[field] = "User ID must be at least 3 characters.";
-    if (field === "name" && value.length < 3) tempErrors[field] = "Name must be at least 3 characters.";
-    if (field === "username" && value.length < 3) tempErrors[field] = "Username must be at least 3 characters.";
-    if (field === "phone" && value && !phoneRegex.test(value)) tempErrors[field] = "Phone number must be exactly 9 digits.";
-    if (field === "email" && value && !emailRegex.test(value)) tempErrors[field] = "Please enter a valid email address.";
-  });
-
-  return tempErrors;
-};
-
-// Reusable Modal Component
-const ModalForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
-  const [errors, setErrors] = useState({});
-
-  // Get field label for display
-  const getFieldLabel = (field) => {
-    const labels = {
-      phone: "Phone Number",
-      nicNumber: "NIC/Passport",
-      userID: "User ID"
-    };
-    return labels[field] || field.charAt(0).toUpperCase() + field.slice(1);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const tempErrors = validateForm(fields, data);
-    setErrors(tempErrors);
-    if (Object.keys(tempErrors).length === 0) {
-      onSubmit();
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-[#00000066] flex items-center justify-center z-50 px-4">
-      <div className="bg-[#FFFFFF] w-full max-w-2xl rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-[#4B5563] px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-[#FFFFFF]">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-[#FFFFFF] text-2xl hover:opacity-80 transition"
-            aria-label="Close"
-          >
-            ×
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 bg-[#F9FAFB]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {fields.map((field) => (
-              <div key={field}>
-                <label className="block mb-1 text-sm font-medium text-[#4B5563]">
-                  {getFieldLabel(field)}
-                </label>
-                <input
-                  type="text"
-                  name={field}
-                  value={data[field] || ""}
-                  placeholder={`Enter ${getFieldLabel(field)}`}
-                  onChange={(e) => setData((prev) => ({ ...prev, [field]: e.target.value }))}
-                  className={`w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 ${
-                    errors[field]
-                      ? "border-[#EF4444] focus:ring-[#F87171]"
-                      : "border-[#E5E7EB] focus:ring-[#6B7280]"
-                  } transition duration-200 bg-[#FFFFFF]`}
-                  aria-required="true"
-                  aria-invalid={!!errors[field]}
-                  aria-describedby={errors[field] ? `error-${field}` : undefined}
-                />
-                {errors[field] && (
-                  <p id={`error-${field}`} className="text-[#EF4444] text-sm mt-1">{errors[field]}</p>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 flex justify-end gap-3 border-t pt-4 border-[#F3F4F6]">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2 bg-[#D1D5DB] text-[#374151] rounded-md hover:bg-[#9CA3AF] transition duration-200"
-              aria-label="Cancel"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 bg-[#4B5563] text-[#FFFFFF] rounded-md hover:bg-[#374151] transition duration-200 shadow-sm"
-              aria-label="Save Changes"
-            >
-              Save Changes
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 };
