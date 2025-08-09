@@ -40,6 +40,7 @@ function Visithistory() {
                 hour: '2-digit', 
                 minute: '2-digit'
               }),
+          checkInDateTime: new Date(appointment.checkInTime), // Keep original date for sorting
           reason: appointment.reason,
           status: "Completed",
           appointmentId: appointment._id,
@@ -49,7 +50,12 @@ function Visithistory() {
           }
         }));
         
-        setVisitHistory(formattedVisits);
+        // Sort visits by date - most recent first (today first, then yesterday, etc.)
+        const sortedVisits = formattedVisits.sort((b, a) => 
+          new Date(a.checkInDateTime) - new Date(b.checkInDateTime)
+        );
+        
+        setVisitHistory(sortedVisits);
         setIsLoading(false);
       } catch (err) {
         console.error("Error fetching visits:", err);
@@ -67,7 +73,7 @@ function Visithistory() {
   // Filter visits based on time selection
   const filteredVisits = visitHistory.filter(visit => {
     // Time filter logic
-    const visitDate = new Date(visit.dateTime);
+    const visitDate = new Date(visit.checkInDateTime);
     const cutoffDate = new Date();
     
     if (timeFilter !== "all") {
@@ -76,7 +82,10 @@ function Visithistory() {
     }
 
     return true;
-  });
+  }).sort((a, b) => 
+    // Sort filtered results by date - most recent first (today, yesterday, etc.)
+    new Date(b.checkInDateTime) - new Date(a.checkInDateTime)
+  );
 
   // Status colors
   const statusColors = {
