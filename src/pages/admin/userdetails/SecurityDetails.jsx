@@ -7,6 +7,8 @@ const SecurityDetails = () => {
   // State variables for managing security details
   const [securityList, setSecurityList] = useState([]);
   const [editSecurity, setEditSecurity] = useState(null);
+  const [deleteSecurityId, setDeleteSecurityId] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 5;
@@ -83,22 +85,41 @@ const SecurityDetails = () => {
     }
   };
 
-  // Function to handle deletion of a security user
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this security user?")) return;
+  // Handle opening the delete confirmation modal
+  const handleDeleteClick = (id) => {
+    setDeleteSecurityId(id);
+    setShowConfirmModal(true);
+  };
+
+  // Handle security deletion
+  const handleDelete = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/staff/${id}`, { method: "DELETE" });
+      const res = await fetch(`http://localhost:5000/api/staff/${deleteSecurityId}`, {
+        method: "DELETE",
+      });
+
       if (res.ok) {
         toast.success("Security deleted successfully!");
         fetchSecurity();
         setCurrentPage(1);
+        setShowConfirmModal(false);
+        setDeleteSecurityId(null);
       } else {
         throw new Error("Failed to delete security");
       }
     } catch (err) {
       console.error("Delete error:", err);
       toast.error("Failed to delete security");
+      setShowConfirmModal(false);
+      setDeleteSecurityId(null);
     }
+  };
+
+  // Handle canceling delete
+  const handleCancelDelete = () => {
+    setShowConfirmModal(false);
+    setDeleteSecurityId(null);
+    toast.info("Delete action cancelled");
   };
 
   // Function to handle navigation to Add Security form
@@ -145,7 +166,7 @@ const SecurityDetails = () => {
           <table className="w-full text-sm text-left text-[#374151]">
             <thead className="bg-[#B0B7BD] text-[#212A31] uppercase text-xs tracking-wider">
               <tr>
-                {["#", "User ID", "Username", "Name", "Email", "Phone", "NIC/Passport", "Registered Date", "Actions"].map((heading, idx) => (
+                {["#", "User ID", "Username", "Name", "Email", "Phone Number", "NIC/Passport", "Registered Date", "Actions"].map((heading, idx) => (
                   <th
                     key={idx}
                     className="py-2 px-2 font-medium whitespace-nowrap"
@@ -183,7 +204,7 @@ const SecurityDetails = () => {
                         <FiEdit2 className="text-lg" />
                       </button>
                       <button
-                        onClick={() => handleDelete(sec._id)}
+                        onClick={() => handleDeleteClick(sec._id)}
                         className="p-2 bg-[#4d0202] hover:bg-[#d18282] text-[#FFFFFF] rounded-full transition"
                         title="Delete"
                         aria-label="Delete security"
@@ -251,6 +272,87 @@ const SecurityDetails = () => {
           onClose={() => setEditSecurity(null)}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      {showConfirmModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '12px',
+            minWidth: '400px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            textAlign: 'center'
+          }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: '#1F2937'
+            }}>
+              Confirm Delete
+            </h2>
+            <p style={{
+              color: '#6B7280',
+              marginBottom: '2rem',
+              lineHeight: '1.5'
+            }}>
+              Are you sure you want to delete this security user? This action cannot be undone.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={handleDelete}
+                style={{
+                  backgroundColor: '#EF4444',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#DC2626'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#EF4444'}
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={handleCancelDelete}
+                style={{
+                  backgroundColor: '#6B7280',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#4B5563'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#6B7280'}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -277,9 +379,20 @@ const validateForm = (fields, data) => {
 
   return tempErrors;
 };
+
 // Edit Security Form Component
 const EditSecurityForm = ({ title, fields, data, setData, onSubmit, onClose }) => {
   const [errors, setErrors] = useState({});
+
+  // Get field label for display
+  const getFieldLabel = (field) => {
+    const labels = {
+      phone: "Phone Number",
+      nicNumber: "NIC/Passport"
+    };
+    return labels[field] || field.charAt(0).toUpperCase() + field.slice(1);
+  };
+
   // Validate form fields on mount and when data changes
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -309,14 +422,14 @@ const EditSecurityForm = ({ title, fields, data, setData, onSubmit, onClose }) =
             {/* Render input fields dynamically based on provided fields */}
             {fields.map((field) => (
               <div key={field}>
-                <label className="block mb-1 text-sm font-medium text-[#4B5563] capitalize">
-                  {field}
+                <label className="block mb-1 text-sm font-medium text-[#4B5563]">
+                  {getFieldLabel(field)}
                 </label>
                 <input
                   type="text"
                   name={field}
                   value={data[field] || ""}
-                  placeholder={`Enter ${field}`}
+                  placeholder={`Enter ${getFieldLabel(field)}`}
                   onChange={(e) => setData((prev) => ({ ...prev, [field]: e.target.value }))}
                   className={`w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 ${
                     errors[field]
@@ -334,7 +447,7 @@ const EditSecurityForm = ({ title, fields, data, setData, onSubmit, onClose }) =
             ))}
             {/* Display userID as read-only */}
             <div>
-              <label className="block mb-1 text-sm font-medium text-[#4B5563] capitalize">
+              <label className="block mb-1 text-sm font-medium text-[#4B5563]">
                 User ID
               </label>
               <input
@@ -370,3 +483,5 @@ const EditSecurityForm = ({ title, fields, data, setData, onSubmit, onClose }) =
 };
 
 export default SecurityDetails;
+
+

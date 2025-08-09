@@ -79,34 +79,15 @@ const AdminProfile = () => {
                 <p className="text-[#2E3944]">0112345678</p>
               </div>
             </div>
-
-            {/* Additional Information Section */}
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold text-[#212A31] mb-4">Admin Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-[#748D92]">Last Login</h4>
-                  <p className="text-[#2E3944]">May 1, 2025</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-[#748D92]">Department</h4>
-                  <p className="text-[#2E3944]">IT Services</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-[#748D92]">Status</h4>
-                  <p className="text-green-600 font-medium">Active</p>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Footer Actions */}
           <div className="bg-[#F8FAF9] px-6 py-4 border-t border-[#D3D9D2] flex justify-end">
-            <button className="bg-[#124E66] text-white px-4 py-2 rounded-md hover:bg-[#0E3D52] transition-colors duration-200 mr-3">
-              Edit Profile
-            </button>
-            <button className="bg-[#748D92] text-white px-4 py-2 rounded-md hover:bg-[#5A7176] transition-colors duration-200"
-              onClick={logout}>
+            {/* ✅ Removed Edit Profile button */}
+            <button
+              className="bg-[#748D92] text-white px-4 py-2 rounded-md hover:bg-[#5A7176] transition-colors duration-200"
+              onClick={logout}
+            >
               Log Out
             </button>
           </div>

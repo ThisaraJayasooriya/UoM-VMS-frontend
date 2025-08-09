@@ -24,30 +24,23 @@ function Visithistory() {
         // Fetch appointments from backend
         const appointments = await getAppointmentStatus(visitorId);
         
-        // Filter only appointments with completed or confirmed status
+        // Filter only appointments with completed
         const completedVisits = appointments.filter(appointment => 
-          appointment.status === "completed" || appointment.status === "confirmed"
+          appointment.status === "Completed"
         );
         
         // Format the data for our component
         const formattedVisits = completedVisits.map(appointment => ({
           visitorName: `${appointment.firstname} ${appointment.lastname}`,
           host: appointment.hostName || "Unknown Host",
-          dateTime: appointment.appointmentDate 
-            ? new Date(appointment.appointmentDate).toLocaleString('en-US', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit',
-                hour: '2-digit', 
-                minute: '2-digit'
-              }) 
-            : new Date(appointment.createdAt).toLocaleString('en-US', { 
+          dateTime: new Date(appointment.checkInTime).toLocaleString('en-US', { 
                 year: 'numeric', 
                 month: '2-digit', 
                 day: '2-digit',
                 hour: '2-digit', 
                 minute: '2-digit'
               }),
+          checkInDateTime: new Date(appointment.checkInTime), // Keep original date for sorting
           reason: appointment.reason,
           status: "Completed",
           appointmentId: appointment._id,
@@ -57,7 +50,12 @@ function Visithistory() {
           }
         }));
         
-        setVisitHistory(formattedVisits);
+        // Sort visits by date - most recent first (today first, then yesterday, etc.)
+        const sortedVisits = formattedVisits.sort((b, a) => 
+          new Date(a.checkInDateTime) - new Date(b.checkInDateTime)
+        );
+        
+        setVisitHistory(sortedVisits);
         setIsLoading(false);
       } catch (err) {
         console.error("Error fetching visits:", err);
@@ -75,7 +73,7 @@ function Visithistory() {
   // Filter visits based on time selection
   const filteredVisits = visitHistory.filter(visit => {
     // Time filter logic
-    const visitDate = new Date(visit.dateTime);
+    const visitDate = new Date(visit.checkInDateTime);
     const cutoffDate = new Date();
     
     if (timeFilter !== "all") {
@@ -84,7 +82,10 @@ function Visithistory() {
     }
 
     return true;
-  });
+  }).sort((a, b) => 
+    // Sort filtered results by date - most recent first (today, yesterday, etc.)
+    new Date(b.checkInDateTime) - new Date(a.checkInDateTime)
+  );
 
   // Status colors
   const statusColors = {

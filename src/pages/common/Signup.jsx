@@ -72,29 +72,82 @@ const Signup = () => {
     return "";
   };
 
+  const validateEmail = (email) => {
+    if (!email) return "Email is required";
+    if (!validator.isEmail(email)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
+
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^(?:\+94|94|0)?(7[0-9]{8})$/;
+    if (!phone) return "Phone number is required";
+    if (!phoneRegex.test(phone)) {
+      return "Please enter a valid Sri Lankan phone number (e.g., 0712345678)";
+    }
+    return "";
+  };
+
+  const validateConfirmPassword = (password, confirmPassword) => {
+    if (!confirmPassword) return "Confirm password is required";
+    if (password !== confirmPassword) {
+      return "Passwords do not match";
+    }
+    return "";
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
+    // Clear existing errors for the field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
     }
 
+    // Real-time validation for email
+    if (name === "email") {
+      const emailError = validateEmail(value);
+      setErrors(prev => ({ ...prev, email: emailError || "" }));
+    }
+
+    // Real-time validation for phone number
+    if (name === "phoneNumber") {
+      const phoneError = validatePhoneNumber(value);
+      setErrors(prev => ({ ...prev, phoneNumber: phoneError || "" }));
+    }
+
+    // Real-time validation for password
     if (name === "password") {
       const passwordError = validatePassword(value);
       setErrors(prev => ({ ...prev, password: passwordError || "" }));
+      // Update confirm password error if confirm password exists
+      if (formData.confirmPassword) {
+        const confirmPasswordError = validateConfirmPassword(value, formData.confirmPassword);
+        setErrors(prev => ({ ...prev, confirmPassword: confirmPasswordError || "" }));
+      }
     }
 
+    // Real-time validation for confirm password
+    if (name === "confirmPassword") {
+      const confirmPasswordError = validateConfirmPassword(formData.password, value);
+      setErrors(prev => ({ ...prev, confirmPassword: confirmPasswordError || "" }));
+    }
+
+    // Existing validation for NIC
     if (name === "nicNumber" && formData.nationality === "Sri Lankan") {
       const nicError = validateNIC(value);
       setErrors(prev => ({ ...prev, nicNumber: nicError || "" }));
     }
     
+    // Existing validation for passport
     if (name === "passportNumber" && formData.nationality === "Foreigner") {
       const passportError = validatePassport(value);
       setErrors(prev => ({ ...prev, passportNumber: passportError || "" }));
     }
 
+    // Existing validation for nationality
     if (name === "nationality") {
       if (!value) {
         setErrors(prev => ({ ...prev, nationality: "Please select your nationality" }));
@@ -108,6 +161,7 @@ const Signup = () => {
       }
     }
   };
+
   // Validate form data before submission 
   const validateForm = () => {
     let isValid = true;
@@ -121,14 +175,15 @@ const Signup = () => {
       passportNumber: ""
     };
 
-    if (!validator.isEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address.";
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      newErrors.email = emailError;
       isValid = false;
     }
 
-    const phoneRegex = /^(?:\+94|94|0)?(7[0-9]{8})$/;
-    if (!phoneRegex.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Please enter a valid Sri Lankan phone number (e.g., 0712345678)";
+    const phoneError = validatePhoneNumber(formData.phoneNumber);
+    if (phoneError) {
+      newErrors.phoneNumber = phoneError;
       isValid = false;
     }
 
@@ -138,8 +193,9 @@ const Signup = () => {
       isValid = false;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match!";
+    const confirmPasswordError = validateConfirmPassword(formData.password, formData.confirmPassword);
+    if (confirmPasswordError) {
+      newErrors.confirmPassword = confirmPasswordError;
       isValid = false;
     }
 

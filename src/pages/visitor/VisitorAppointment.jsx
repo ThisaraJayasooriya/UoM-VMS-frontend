@@ -5,7 +5,8 @@ import {
   getAllHosts, 
   getAllFaculties, 
   getDepartmentsByFaculty,
-  getHostsByFacultyAndDepartment
+  getHostsByFacultyAndDepartment,
+  getVisitorDetails
 } from "../../services/appoinment.api.js";
 
 function VisitorAppointment() {
@@ -28,6 +29,11 @@ function VisitorAppointment() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitSuccess, setIsSubmitSuccess] = useState(false);
+  const [isAutoFilling, setIsAutoFilling] = useState(false);
+  const [autoFillStatus, setAutoFillStatus] = useState({
+    success: false,
+    message: ""
+  });
 
   // Load faculties and all hosts on component mount
   useEffect(() => {
@@ -109,16 +115,65 @@ function VisitorAppointment() {
   }, [selectedDepartment, selectedFaculty]);
 
   const [visitorId, setvisitorId] = useState("");
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("userData"));
-    if (storedUser && storedUser.id) {
-      setvisitorId(storedUser.id);
-    }
-  }, []);
-
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [contact, setContact] = useState("");
+  
+  // Fetch visitor details and auto-fill form
+  useEffect(() => {
+    const fetchVisitorDetails = async () => {
+      const storedUser = JSON.parse(localStorage.getItem("userData"));
+      if (!storedUser || !storedUser.id) {
+        return;
+      }
+      
+      setvisitorId(storedUser.id);
+      setIsAutoFilling(true);
+      
+      try {
+        const visitorDetails = await getVisitorDetails(storedUser.id);
+        
+        // Auto-fill the form fields with visitor details
+        if (visitorDetails) {
+          setFirstname(visitorDetails.firstname || "");
+          setLastname(visitorDetails.lastname || "");
+          
+          // Ensure contact number starts with '0'
+          let contactNumber = visitorDetails.contact || "";
+          if (contactNumber && !contactNumber.startsWith("0")) {
+            contactNumber = "0" + contactNumber;
+          }
+          setContact(contactNumber);
+          
+          // Hide the success message after 5 seconds
+          setTimeout(() => {
+            setAutoFillStatus(prev => ({
+              ...prev,
+              message: ""
+            }));
+          }, 5000);
+        }
+      } catch (error) {
+        console.error("Error auto-filling visitor details:", error);
+        setAutoFillStatus({
+          success: false,
+          message: "Could not auto-fill your information"
+        });
+        
+        // Hide the error message after 5 seconds
+        setTimeout(() => {
+          setAutoFillStatus(prev => ({
+            ...prev,
+            message: ""
+          }));
+        }, 5000);
+      } finally {
+        setIsAutoFilling(false);
+      }
+    };
+    
+    fetchVisitorDetails();
+  }, []);
   const [vehicleRequired, setVehicleRequired] = useState(false);
   const [vehicle, setVehicle] = useState("");
   const [category, setCategory] = useState("");
@@ -250,32 +305,67 @@ function VisitorAppointment() {
         {isSubmitSuccess && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
             <strong className="font-bold">Success!</strong>
-            <span className="block sm:inline"> Your appointment has been submitted successfully.</span>
+            <span className="block sm:inline"> Request submitted. Please wait for the host's response.</span>
+          </div>
+        )}
+        
+      
+        
+        {/* Loading Indicator */}
+        {isAutoFilling && (
+          <div className="flex items-center justify-center mb-6">
+            <svg className="animate-spin h-5 w-5 text-[#124E66] mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span className="text-[#124E66]">Loading your information...</span>
           </div>
         )}
         
         <form className="flex flex-col gap-6 p-4" onSubmit={handleSubmit}>
           {/* First & Last Name */}
           <div className="flex gap-4">
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <input
                 type="text"
                 placeholder="First Name *"
                 value={firstname}
                 onChange={(e) => setFirstname(e.target.value)}
-                className="w-full bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none"
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border 
+                  ${autoFillStatus.success && firstname ? 'border-blue-400 bg-blue-50' : 'border-[#D3D9D2]'} 
+                  focus:ring-2 focus:ring-[#124E66] focus:outline-none
+                  ${isAutoFilling ? 'animate-pulse' : ''}`}
                 required
+                disabled={isAutoFilling}
               />
+              {autoFillStatus.success && firstname && (
+                <div className="absolute right-3 top-3">
+                  <svg className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <input
                 type="text"
                 placeholder="Last Name *"
                 value={lastname}
                 onChange={(e) => setLastname(e.target.value)}
-                className="w-full bg-gray-100 px-4 py-3 rounded-md border border-[#D3D9D2] focus:ring-2 focus:ring-[#124E66] focus:outline-none"
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border 
+                  ${autoFillStatus.success && lastname ? 'border-blue-400 bg-blue-50' : 'border-[#D3D9D2]'} 
+                  focus:ring-2 focus:ring-[#124E66] focus:outline-none
+                  ${isAutoFilling ? 'animate-pulse' : ''}`}
                 required
+                disabled={isAutoFilling}
               />
+              {autoFillStatus.success && lastname && (
+                <div className="absolute right-3 top-3">
+                  <svg className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              )}
             </div>
           </div>
 
@@ -291,17 +381,33 @@ function VisitorAppointment() {
                   const value = e.target.value.replace(/\D/g, "").slice(0, 10);
                   setContact(value);
                 }}
-                className={`w-full bg-gray-100 px-4 py-3 rounded-md border ${contact.length > 0 && contact.length < 10 ? 'border-[#748D92]' : 'border-[#D3D9D2]'} focus:ring-2 focus:ring-[#124E66] focus:outline-none`}
+                className={`w-full bg-gray-100 px-4 py-3 rounded-md border 
+                  ${contact.length > 0 && contact.length < 10 ? 'border-[#748D92]' : 
+                    autoFillStatus.success && contact.length === 10 ? 'border-blue-400 bg-blue-50' : 
+                    'border-[#D3D9D2]'} 
+                  focus:ring-2 focus:ring-[#124E66] focus:outline-none
+                  ${isAutoFilling ? 'animate-pulse' : ''}`}
                 required
                 pattern=".{10,10}"
                 title="Contact number must be exactly 10 digits"
+                disabled={isAutoFilling}
               />
-              <div className="absolute right-3 top-3 text-xs text-[#748D92]">
-                {contact.length}/10
+              <div className="absolute right-3 top-3 flex items-center">
+                {autoFillStatus.success && contact.length === 10 ? (
+                  <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : null}
+                <span className="text-xs text-[#748D92]">
+                  {contact.length}/10
+                </span>
               </div>
             </div>
             {contact.length > 0 && contact.length < 10 && (
               <p className="text-[#748D92] text-xs mt-1">Contact number must be exactly 10 digits</p>
+            )}
+            {autoFillStatus.success && contact.length === 10 && (
+              <p className="text-blue-600 text-xs mt-1">Auto-filled from your profile</p>
             )}
           </div>
 

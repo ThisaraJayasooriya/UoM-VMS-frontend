@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiSearch, FiDownload, FiTrash2, FiEye, FiX } from 'react-icons/fi';
-import { BsArrowsExpand, BsThreeDotsVertical, BsArrowLeft, BsArrowRight } from 'react-icons/bs';
+import { BsThreeDotsVertical, BsArrowLeft, BsArrowRight } from 'react-icons/bs';
 import { FaStar, FaRegStar, FaSpinner } from 'react-icons/fa';
 
 const VisitorFeedbackReview = () => {
@@ -16,6 +16,20 @@ const VisitorFeedbackReview = () => {
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
   const [showDetails, setShowDetails] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+
+  // Move formatDate up to avoid reference error
+  const formatDate = (datetime) => {
+    if (!datetime) return '-';
+    const date = new Date(datetime);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
 
   const toggleMenu = (id) => {
     setOpenMenuId(openMenuId === id ? null : id);
@@ -47,26 +61,25 @@ const VisitorFeedbackReview = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this feedback?')) {
-      try {
-        const response = await fetch(`http://localhost:5000/api/feedback/${id}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-        });
+    try {
+      const response = await fetch(`http://localhost:5000/api/feedback/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to delete feedback');
-        }
-
-        setFeedbackEntries(feedbackEntries.filter(entry => entry._id !== id));
-        setOpenMenuId(null);
-        setMessage('Feedback deleted successfully');
-        setTimeout(() => setMessage(null), 3000);
-      } catch (err) {
-        setError(err.message);
-        setTimeout(() => setError(null), 3000);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete feedback');
       }
+
+      setFeedbackEntries(feedbackEntries.filter(entry => entry._id !== id));
+      setOpenMenuId(null);
+      setShowDeleteConfirm(null);
+      setMessage('Feedback deleted successfully');
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      setError(err.message);
+      setTimeout(() => setError(null), 3000);
     }
   };
 
@@ -79,9 +92,9 @@ const VisitorFeedbackReview = () => {
   const filteredEntries = feedbackEntries.filter(entry => {
     const matchesFilter = activeFilter === 'All' || entry.rating === parseInt(activeFilter.split(' ')[0]);
     const matchesSearch = 
-      entry.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      entry.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entry.experience.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      entry.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      entry.experience?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       formatDate(entry.createdAt).toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
@@ -104,20 +117,8 @@ const VisitorFeedbackReview = () => {
     if (!sortColumn) return 0;
     const aValue = a[sortColumn] instanceof Date ? a[sortColumn].getTime() : a[sortColumn];
     const bValue = b[sortColumn] instanceof Date ? b[sortColumn].getTime() : b[sortColumn];
-    return sortDirection === 'asc' ? aValue > bValue ? 1 : -1 : aValue < bValue ? 1 : -1;
+    return sortDirection === 'asc' ? (aValue > bValue ? 1 : -1) : (aValue < bValue ? 1 : -1);
   });
-
-  const formatDate = (datetime) => {
-    if (!datetime) return '-';
-    const date = new Date(datetime);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
 
   const renderStars = (rating) => {
     return (
@@ -187,8 +188,32 @@ const VisitorFeedbackReview = () => {
       {message && <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-lg">{message}</div>}
       {error && <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-lg">Error: {error}</div>}
 
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-lg font-medium text-[#2E3944] mb-4">Confirm Deletion</h2>
+            <p className="text-sm text-[#2E3944] mb-4">Are you sure you want to delete this feedback from {showDeleteConfirm.name}?</p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => handleDelete(showDeleteConfirm._id)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="px-4 py-2 bg-[#124E66] text-white rounded-lg hover:bg-[#0E3D52] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Feedback Summary */}
-      <div className="mb-6 p-4 bg-white rounded-lg shadow-sm border border-[#D3D9D2]">
+      <div className="mb-6 p-4 bg-white rounded-lg shadowed border border-[#D3D9D2]">
         <p className="text-sm text-[#2E3944]">
           Total Feedback: <span className="font-medium">{feedbackEntries.length}</span> | 
           Average Rating: <span className="font-medium">{averageRating} / 5</span>
@@ -255,10 +280,7 @@ const VisitorFeedbackReview = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('name')}>
-                  <div className="flex items-center gap-1">
-                    Name
-                    <BsArrowsExpand size={14} />
-                  </div> {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  Name {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#2E3944] uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort('email')}>
@@ -332,7 +354,7 @@ const VisitorFeedbackReview = () => {
                               <FiEye className="mr-2" /> View Details
                             </button>
                             <button
-                              onClick={() => handleDelete(entry._id)}
+                              onClick={() => setShowDeleteConfirm(entry)}
                               className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-[#F8F9FA] w-full text-left"
                               aria-label={`Delete feedback from ${entry.name}`}
                             >
