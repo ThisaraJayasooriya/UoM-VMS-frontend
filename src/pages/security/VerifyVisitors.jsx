@@ -38,9 +38,8 @@ const VerifyVisitors = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
   const [filteredHost, setFilteredHost] = useState(null);
-
-  // Full page loading state for initial load
   const [pageLoading, setPageLoading] = useState(true);
+
   useEffect(() => {
     const fetchActivities = async () => {
       try {
@@ -50,44 +49,12 @@ const VerifyVisitors = () => {
       } catch (error) {
         console.error("Error fetching activities:", error);
       } finally {
-        // Add a small delay so skeleton is always visible for a short time
         setTimeout(() => setPageLoading(false), 500);
       }
     };
     fetchActivities();
   }, []);
 
-  // Search for visitor when searchTerm changes
-  useEffect(() => {
-    const term = searchTerm.trim();
-    console.log("Searching for visitor with term:", term);
-    if (term) {
-      const fetchVisitor = async () => {
-        try {
-          const response = await fetch(`http://localhost:5000/api/verify-visitors/search?term=${term}`);
-          if (!response.ok) {
-            setFilteredVisitor(null);
-            setFilteredHost(null);
-            return;
-          }
-          const data = await response.json();
-          setFilteredVisitor(data.visitor);
-          setFilteredHost(data.staff); // Assuming the host data is included in the response
-        } catch (error) {
-          console.error("Error searching for visitor:", error);
-          setFilteredVisitor(null);
-          setFilteredHost(null);
-        }
-      };
-      fetchVisitor();
-    } else {
-      setFilteredVisitor(null);
-      setFilteredHost(null);
-
-    }
-  }, [searchTerm]);
-
-  // Hide alert after 5 seconds
   useEffect(() => {
     if (alert.show) {
       const timer = setTimeout(() => {
@@ -97,8 +64,51 @@ const VerifyVisitors = () => {
     }
   }, [alert]);
 
+  const handleSearch = async () => {
+    const term = searchTerm.trim();
+    console.log("Searching for visitor with term:", term);
+
+    // Validate format: Appointment ID (A-0000) or NIC
+    const idRegex = /^A-\d{4}$/;
+    const nicRegex = /^[A-Za-z0-9]{9,12}$/; // Customize NIC format as needed
+    if (!term || (!idRegex.test(term) && !nicRegex.test(term))) {
+      showAlert('Please enter a valid Appointment ID (e.g., A-0000) or NIC.', 'error');
+      setFilteredVisitor(null);
+      setFilteredHost(null);
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/verify-visitors/search?term=${term}`);
+      if (!response.ok) {
+        setFilteredVisitor(null);
+        setFilteredHost(null);
+        showAlert('No visitor found with this ID or NIC.', 'error');
+        return;
+      }
+      const data = await response.json();
+      setFilteredVisitor(data.visitor);
+      setFilteredHost(data.staff);
+    } catch (error) {
+      console.error("Error searching for visitor:", error);
+      setFilteredVisitor(null);
+      setFilteredHost(null);
+      showAlert('Error searching for visitor.', 'error');
+    }
+  };
+
   const handleInputChange = (e) => setSearchTerm(e.target.value);
-  const handleClearSearch = () => setSearchTerm('');
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setFilteredVisitor(null);
+    setFilteredHost(null);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   const showAlert = (message, type) => {
     setAlert({ show: true, message, type });
@@ -128,7 +138,6 @@ const VerifyVisitors = () => {
       const updatedVisitor = await response.json();
       setFilteredVisitor(updatedVisitor.visitor);
 
-      // Update activities
       const newActivity = {
         visitorId: updatedVisitor.visitor.visitorId, 
         name: updatedVisitor.visitor.name,
@@ -142,6 +151,8 @@ const VerifyVisitors = () => {
         type === 'in' ? 'success-in' : 'success-out'
       );
       setSearchTerm('');
+      setFilteredVisitor(null);
+      setFilteredHost(null);
     } catch (error) {
       showAlert(`Error: ${error.message}`, 'error');
     } finally {
@@ -154,16 +165,13 @@ const VerifyVisitors = () => {
     return date.toLocaleString();
   };
 
-  // Skeleton loader for the whole page
   const PageSkeleton = () => (
     <div className="pt-15 px-4 lg:px-10 max-w-6xl mx-auto min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 animate-pulse">
-      {/* Search Box Skeleton */}
       <div className="bg-white/90 rounded-3xl p-8 mb-8">
         <div className="h-8 w-1/3 bg-gray-200 rounded mb-4" />
         <div className="h-5 w-1/4 bg-gray-100 rounded mb-8" />
         <div className="h-12 w-full max-w-lg bg-gray-200 rounded-2xl mx-auto" />
       </div>
-      {/* Visitor Card Skeleton */}
       <div className="bg-white/90 rounded-3xl p-8 mb-8">
         <div className="h-8 w-1/4 bg-gray-200 rounded mb-6" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -175,12 +183,10 @@ const VerifyVisitors = () => {
           ))}
         </div>
       </div>
-      {/* Action Buttons Skeleton */}
       <div className="flex flex-col sm:flex-row justify-center gap-6 mb-8">
         <div className="h-12 w-44 bg-gray-200 rounded-2xl" />
         <div className="h-12 w-44 bg-gray-200 rounded-2xl" />
       </div>
-      {/* Activities Skeleton */}
       <div className="bg-white/90 rounded-3xl p-8">
         <div className="h-8 w-1/4 bg-gray-200 rounded mb-6" />
         {Array(4).fill(0).map((_, idx) => (
@@ -203,7 +209,6 @@ const VerifyVisitors = () => {
     <div className="pt-15">
       {pageLoading ? <PageSkeleton /> : (
         <div className="pt-15 px-4 lg:px-10 max-w-6xl mx-auto min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-          {/* Alert */}
           {alert.show && (
             <div className={`mb-6 py-4 px-6 rounded-2xl flex items-center justify-between shadow-lg backdrop-blur-sm border transition-all duration-500 ${
               alert.type === 'success-in' ? 'bg-emerald-50/90 text-emerald-700 border-emerald-200/60' : 
@@ -238,11 +243,9 @@ const VerifyVisitors = () => {
               </button>
             </div>
           )}
-          {/* Search Box */}
           <div className="relative bg-white/95 backdrop-blur-sm p-8 rounded-3xl shadow-[0_8px_32px_rgba(18,78,102,0.12)] 
                           border border-gray-200/50 mb-8 group hover:shadow-[0_12px_40px_rgba(18,78,102,0.15)] 
                           transition-all duration-500">
-            {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#124E66]/5 via-transparent to-[#2D7D9A]/3 
                             rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative z-10">
@@ -262,6 +265,7 @@ const VerifyVisitors = () => {
                       type="text"
                       value={searchTerm}
                       onChange={handleInputChange}
+                      onKeyPress={handleKeyPress}
                       placeholder="Enter Appointment ID or NIC"
                       className="pl-12 pr-12 py-4 rounded-2xl border-2 border-gray-200 w-full 
                                focus:outline-none focus:border-[#124E66] focus:ring-4 focus:ring-[#124E66]/10 
@@ -280,18 +284,26 @@ const VerifyVisitors = () => {
                     )}
                   </div>
                 </div>
+                <button
+                  onClick={handleSearch}
+                  className="group relative bg-gradient-to-r from-[#124E66] to-[#2D7D9A] hover:from-[#0F3A4F] hover:to-[#124E66] 
+                           text-white px-6 py-4 rounded-2xl transition-all duration-300 font-semibold 
+                           shadow-[0_4px_20px_rgba(18,78,102,0.3)] hover:shadow-[0_8px_30px_rgba(18,78,102,0.4)] 
+                           hover:-translate-y-1 min-w-[120px] border border-white/20 overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 
+                                  transition-transform duration-300 origin-left"></div>
+                  <div className="relative z-10">Search</div>
+                </button>
               </div>
             </div>
           </div>
-          {/* Visitor Card */}
           {filteredVisitor && (
             <div className="relative bg-white/95 backdrop-blur-sm p-8 rounded-3xl shadow-[0_8px_32px_rgba(18,78,102,0.12)] 
                             border border-gray-200/50 mb-8 group hover:shadow-[0_12px_40px_rgba(18,78,102,0.15)] 
                             transition-all duration-500 overflow-hidden">
-              {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#124E66]/5 via-transparent to-[#2D7D9A]/3 
                               opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              {/* Status accent line */}
               <div className={`absolute top-0 left-0 right-0 h-1 ${
                 filteredVisitor.status === 'Checked-In' 
                   ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' 
@@ -347,7 +359,6 @@ const VerifyVisitors = () => {
               </div>
             </div>
           )}
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row justify-center gap-6 mb-8">
             <button
               onClick={() => handleAction('in')}
@@ -388,11 +399,9 @@ const VerifyVisitors = () => {
               </div>
             </button>
           </div>
-          {/* Recent Activities */}
           <div className="relative bg-white/95 backdrop-blur-sm p-8 rounded-3xl shadow-[0_8px_32px_rgba(18,78,102,0.12)] 
                           border border-gray-200/50 group hover:shadow-[0_12px_40px_rgba(18,78,102,0.15)] 
                           transition-all duration-500 overflow-hidden">
-            {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#124E66]/5 via-transparent to-[#2D7D9A]/3 
                             opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative z-10">

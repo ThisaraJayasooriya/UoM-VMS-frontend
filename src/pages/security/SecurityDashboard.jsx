@@ -104,13 +104,6 @@ const SecurityDashboard = () => {
             changeColor: "text-emerald-500",
           },
           {
-            icon: FaUsers,
-            title: "Total Visitors",
-            count: data.totalVisitorsToday ?? 0,
-            change: "+0%",
-            changeColor: "text-blue-500",
-          },
-          {
             icon: FaArrowDown,
             title: "Total Checked-in",
             count: data.totalCheckedIn ?? 0,
@@ -123,6 +116,13 @@ const SecurityDashboard = () => {
             count: data.totalCheckedOut ?? 0,
             change: "+0%",
             changeColor: "text-red-500",
+          },
+          {
+            icon: FaUsers,
+            title: "Total Visitors",
+            count: data.totalVisitorsToday ?? 0,
+            change: "+0%",
+            changeColor: "text-blue-500",
           },
         ]);
       } catch (error) {
