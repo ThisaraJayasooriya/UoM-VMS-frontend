@@ -5,7 +5,6 @@ import { fetchAllAppointments } from "../../services/appointmentService";
 import { reportBadVisitor } from "../../services/reportVisitorService";
 // Dummy report API (replace with real API call)
 
-
 function formatTo12Hour(time24) {
   const [hourStr, minuteStr] = time24.split(":");
   const hour = parseInt(hourStr, 10);
@@ -68,7 +67,7 @@ const VisitLog = () => {
         reason: reportReason,
         category: reportCategory,
         hostId: hostId,
-      }
+      };
       console.log("bad visitor report", badVisitorReport);
 
       await reportBadVisitor(badVisitorReport);
@@ -76,7 +75,7 @@ const VisitLog = () => {
       setTimeout(() => {
         setIsReportModalOpen(false);
       }, 1200);
-      console.log("Report submitted successfully", );
+      console.log("Report submitted successfully");
     } catch (e) {
       setError("Failed to submit report. Please try again.");
     } finally {
@@ -96,15 +95,15 @@ const VisitLog = () => {
       try {
         setIsInitialLoading(true);
         // Add a small delay to show the loading animation
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
         const data = await fetchAllAppointments(hostId);
         const formatted = data.map((a) => ({
           id: a._id,
-          vId: a.visitorId.visitorId,
+          vId: a.visitorId?.visitorId || "N/A",
           aId: a.appointmentId,
           purpose: a.reason,
-          visitorName: a.firstname + " " + a.lastname,
+          visitorName: (a.firstname || "Unknown") + " " + (a.lastname || ""),
           date: a.response ? formatDate(a.response.date) : "N/A",
           time: a.response
             ? `${formatTo12Hour(a.response.startTime)} - ${formatTo12Hour(
@@ -125,10 +124,12 @@ const VisitLog = () => {
   }, [hostId]);
 
   const filters = ["All", "Completed", "Incompleted"];
-  console.log(appointments.map(a => a.status));
+  console.log(appointments.map((a) => a.status));
 
   const filteredLogs = appointments.filter((log) => {
-    const matchesFilter = activeFilter === "All" ||  log.status?.toLowerCase() === activeFilter.toLowerCase();
+    const matchesFilter =
+      activeFilter === "All" ||
+      log.status?.toLowerCase() === activeFilter.toLowerCase();
     const matchesSearch =
       log.visitorName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.purpose?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -188,7 +189,7 @@ const VisitLog = () => {
           </tbody>
         </table>
       </div>
-      
+
       {/* Footer Skeleton */}
       <div className="bg-[#F8F9FA] px-6 py-3 flex justify-between items-center border-t border-[#D3D9D2]">
         <div className="h-4 w-48 bg-gray-300 rounded animate-pulse"></div>
@@ -202,7 +203,7 @@ const VisitLog = () => {
 
   // Inject CSS keyframes for animations
   useEffect(() => {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
@@ -243,7 +244,6 @@ const VisitLog = () => {
   return (
     <div className="relative">
       <div className="pt-20 px-4 lg:px-20">
-        
         {/* Show skeleton loader while initial loading */}
         {isInitialLoading ? (
           <div className="animate-slide-up">
@@ -373,9 +373,13 @@ const VisitLog = () => {
 
               <div className="bg-[#F8F9FA] px-6 py-3 flex flex-col md:flex-row justify-between items-center border-t border-[#D3D9D2]">
                 <div className="text-sm text-[#748D92] mb-2 md:mb-0">
-                  Showing <span className="font-medium">{indexOfFirstLog + 1}</span>{" "}
-                  to <span className="font-medium">{Math.min(indexOfLastLog, filteredLogs.length)}</span> of{" "}
-                  <span className="font-medium">{filteredLogs.length}</span> entries
+                  Showing{" "}
+                  <span className="font-medium">{indexOfFirstLog + 1}</span> to{" "}
+                  <span className="font-medium">
+                    {Math.min(indexOfLastLog, filteredLogs.length)}
+                  </span>{" "}
+                  of <span className="font-medium">{filteredLogs.length}</span>{" "}
+                  entries
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -387,7 +391,10 @@ const VisitLog = () => {
                   </button>
                   <button
                     onClick={nextPage}
-                    disabled={currentPage >= Math.ceil(filteredLogs.length / logsPerPage)}
+                    disabled={
+                      currentPage >=
+                      Math.ceil(filteredLogs.length / logsPerPage)
+                    }
                     className="px-3 py-1 border border-[#D3D9D2] rounded text-sm text-[#2E3944] hover:bg-[#D3D9D2] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
@@ -407,7 +414,9 @@ const VisitLog = () => {
             <div className="bg-gradient-to-r from-[#124E66] to-[#2E3944] text-white px-5 py-4 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold">Report Visitor</h3>
-                <p className="text-[#748D92] text-sm mt-1">Appointment ID: {reportAppointmentId}</p>
+                <p className="text-[#748D92] text-sm mt-1">
+                  Appointment ID: {reportAppointmentId}
+                </p>
               </div>
               <button
                 onClick={() => setIsReportModalOpen(false)}
@@ -425,7 +434,9 @@ const VisitLog = () => {
               ) : (
                 <>
                   <div>
-                    <label className="block text-sm font-semibold text-[#2E3944] mb-2">Category *</label>
+                    <label className="block text-sm font-semibold text-[#2E3944] mb-2">
+                      Category *
+                    </label>
                     <select
                       className="w-full p-3 border border-[#D3D9D2] rounded-lg focus:ring-2 focus:ring-[#124E66] focus:border-[#124E66] transition-all disabled:bg-gray-100"
                       value={reportCategory}
@@ -433,14 +444,18 @@ const VisitLog = () => {
                       disabled={isReporting}
                     >
                       <option value="">Select category</option>
-                      <option value="Disruptive Behavior">Disruptive Behavior</option>
+                      <option value="Disruptive Behavior">
+                        Disruptive Behavior
+                      </option>
                       <option value="Policy Violation">Policy Violation</option>
                       <option value="Security Concern">Security Concern</option>
                       <option value="Other">Other</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-[#2E3944] mb-2">Reason *</label>
+                    <label className="block text-sm font-semibold text-[#2E3944] mb-2">
+                      Reason *
+                    </label>
                     <textarea
                       className="w-full p-3 border border-[#D3D9D2] rounded-lg focus:ring-2 focus:ring-[#124E66] focus:border-[#124E66] transition-all disabled:bg-gray-100"
                       rows={3}
@@ -467,9 +482,25 @@ const VisitLog = () => {
                 >
                   {isReporting ? (
                     <>
-                      <svg className="animate-spin w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin w-4 h-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Submitting...
                     </>
