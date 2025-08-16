@@ -188,7 +188,7 @@ const AdminInsights = () => {
       fill: "#3B82F6",
     },
     {
-      name: "Walk-Ins",
+      name: "Check-Ins",
       value: insights.liveMonitoring.walkInCount,
       fill: "#F59E0B",
     },

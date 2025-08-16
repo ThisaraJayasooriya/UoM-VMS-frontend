@@ -145,20 +145,20 @@ const SecurityProfile = () => {
             </div>
 
             <div className="mt-8">
-              <h2 className="text-xl font-semibold text-[#212A31] mb-4">
+              {/*<h2 className="text-xl font-semibold text-[#212A31] mb-4">
                 Security Personnel's Information
-              </h2>
+              </h2>*/}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-sm font-medium text-[#748D92]">Registered Date</h4>
                   <p className="text-[#2E3944]">{new Date(profile.registeredDate).toLocaleDateString()}</p>
                 </div>
-                <div>
+                {/*<div>
                   <h4 className="text-sm font-medium text-[#748D92]">Status</h4>
                   <p className={`font-medium ${profile.status === "active" ? "text-green-600" : "text-red-600"}`}>
                     {profile.status}
                   </p>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
