@@ -148,9 +148,11 @@ const VisitorFeedbackReview = () => {
     const doc = new jsPDF();
     doc.setFontSize(12);
     doc.text('Visitor Feedback Review Export', 10, 10);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 10, 20);
 
     if (sortedEntries.length === 0) {
-      doc.text('No feedback data available to export.', 10, 20);
+      doc.text('No feedback data available to export.', 10, 30);
     } else {
       const tableData = sortedEntries.map(entry => [
         entry._id.slice(-6),
@@ -163,9 +165,9 @@ const VisitorFeedbackReview = () => {
       doc.autoTable({
         head: [['ID', 'Name', 'Email', 'Rating', 'Experience', 'Submitted At']],
         body: tableData,
-        startY: 20,
+        startY: 30,
         theme: 'striped',
-        margin: { top: 20 },
+        margin: { top: 30, left: 10, right: 10 },
         styles: { fontSize: 10 },
         headStyles: { fillColor: [18, 78, 102] }
       });

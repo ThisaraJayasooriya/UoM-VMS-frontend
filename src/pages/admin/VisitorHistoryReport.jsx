@@ -108,7 +108,9 @@ const VisitorHistoryReport = () => {
     const doc = new jsPDF();
     doc.setFontSize(12);
     doc.text('Visitor History Report', 10, 10);
-
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 10, 20);
+    
     const headers = [['Visitor ID', 'Visitor', 'Host', 'Purpose', 'Check In', 'Check Out']];
     const data = filteredData.map(entry => [
       entry.id,
@@ -122,9 +124,9 @@ const VisitorHistoryReport = () => {
     doc.autoTable({
       head: headers,
       body: data,
-      startY: 20,
+      startY: 30, // Increased to ensure table starts below the text
       theme: 'striped',
-      margin: { top: 20 },
+      margin: { top: 30, left: 10, right: 10 },
       styles: { fontSize: 10 },
       headStyles: { fillColor: [18, 78, 102] },
     });
@@ -142,7 +144,7 @@ const VisitorHistoryReport = () => {
             </div>
             <input
               type="text"
-              placeholder="Search by visitor name or ID..."
+              placeholder="Search by visitor's name"
               className="pl-10 pr-4 py-2 w-full border border-[#D3D9D2] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#124E66]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
