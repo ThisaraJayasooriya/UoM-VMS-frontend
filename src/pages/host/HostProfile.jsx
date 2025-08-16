@@ -196,25 +196,7 @@ const HostProfile = () => {
                 />
               </div>
 
-              {/* Status */}
-              <div className="mt-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-[#748D92]">
-                      Status
-                    </h4>
-                    <p
-                      className={`font-medium ${
-                        profile?.status === "active"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {profile?.status}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              
             </div>
 
             {/* Footer */}
