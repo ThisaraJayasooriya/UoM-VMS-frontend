@@ -139,7 +139,7 @@ const getFieldLabel = (field) => {
             {fields.map((field) => (
               <div
                 key={field}
-                className={`flex flex-col ${field === "confirmPassword" ? "space-y-4" : "space-y-1"}`}
+                className={`flex flex-col ${field === "confirmPassword" ? "space-y-1" : "space-y-1"}`}
                 style={field === "confirmPassword" ? { marginBottom: "16px" } : {}}
               >
                 <label className="block text-sm font-medium text-[#374151]">

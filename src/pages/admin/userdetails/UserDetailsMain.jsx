@@ -60,7 +60,7 @@ const UserDetailsMain = () => {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-[#212A31] mb-2">User Management Portal</h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Centralized dashboard for managing all user accounts and access privileges
+              Centralized dashboard for managing all user accounts
             </p>
           </div>
 

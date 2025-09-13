@@ -24,19 +24,15 @@ const AddSecurity = () => {
   const fields = ["username", "name", "email", "phone", "password", "confirmPassword", "nicNumber"];
 
   // Get field label for display
-const getFieldLabel = (field) => {
-  const labels = {
-    phone: "Phone Number",
-    nicNumber: "NIC Number",
-    confirmPassword: "Confirm Password"
+  const getFieldLabel = (field) => {
+    const labels = {
+      phone: "Phone Number",
+      nicNumber: "NIC Number",
+      confirmPassword: "Confirm Password"
+    };
+    const label = labels[field] || field.replace(/([A-Z])/g, " $1").trim();
+    return label.replace(/\b\w/g, (char) => char.toUpperCase());
   };
-
-  const label = labels[field] || field.replace(/([A-Z])/g, " $1").trim();
-
-  // Capitalize the first letter of each word
-  return label.replace(/\b\w/g, (char) => char.toUpperCase());
-};
-
 
   const validateForm = (data) => {
     let tempErrors = {};
@@ -134,13 +130,14 @@ const getFieldLabel = (field) => {
             {fields.map((field) => (
               <div
                 key={field}
-                className={`flex flex-col ${field === "confirmPassword" ? "space-y-4" : "space-y-1"}`}
+                className={`flex flex-col ${field === "confirmPassword" ? "space-y-1" : "space-y-1"}`}
                 style={field === "confirmPassword" ? { marginBottom: "16px" } : {}}
               >
                 <label className="block text-sm font-medium text-[#374151]">
                   {getFieldLabel(field)} <span className="text-[#EF4444]">*</span>
                 </label>
-                <div className="flex flex-row items-center">
+                {/* Updated: Relative container + pr-10 + absolute icon */}
+                <div className="relative">
                   <input
                     type={
                       field === "password" || field === "confirmPassword"
@@ -153,11 +150,11 @@ const getFieldLabel = (field) => {
                     value={security[field] || ""}
                     placeholder={field === "confirmPassword" ? "Confirm Password" : `Enter ${getFieldLabel(field)}`}
                     onChange={handleChange}
-                    className={`w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
+                    className={`w-full p-3 pr-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${
                       errors[field]
                         ? "border-[#EF4444] focus:ring-[#F87171]"
                         : "border-[#D1D5DB] focus:ring-[#3B82F6]"
-                    } transition duration-200 bg-[#FFFFFF] mr-2`}
+                    } transition duration-200 bg-[#FFFFFF]`}
                     aria-required="true"
                     aria-invalid={!!errors[field]}
                     aria-describedby={errors[field] ? `error-${field}` : undefined}
@@ -167,7 +164,7 @@ const getFieldLabel = (field) => {
                     <button
                       type="button"
                       onClick={() => togglePasswordVisibility(field)}
-                      className="p-2 text-[#6B7280] hover:text-[#374151] focus:outline-none"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#6B7280] hover:text-[#374151] focus:outline-none"
                       aria-label={showPassword[field] ? "Hide password" : "Show password"}
                     >
                       {showPassword[field] ? <FiEye /> : <FiEyeOff />}
