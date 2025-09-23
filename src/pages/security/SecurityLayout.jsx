@@ -6,7 +6,7 @@ import Headerbar from "../../components/common/Headerbar";
 
 function SecurityLayout() {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
-   const [userName, setUserName] = useState(""); // 🔹 new state for username
+   const [userName, setUserName] = useState(""); 
 
    // 🔹 Load userName from localStorage on mount
   useEffect(() => {
